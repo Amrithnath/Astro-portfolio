@@ -206,11 +206,10 @@ const featuredProject = projects[0];
 				width="1600"
 				height="1131"
 				class="img"
-				src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=75"
-				srcset="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=75 800w,https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=75 1200w,https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&q=75 1600w,https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=2400&q=75 2400w"
+				src="/assets/hero.jpg"
 				sizes="(max-width: 800px) 800px, (max-width: 1200px) 1200px, (max-width: 1600px) 1600px, (max-width: 2400px) 2400px, 1200px"
 			/>
-			<div class="gradient"></div>
+			<!-- <div class="gradient"></div> -->
 			<div class="gradient2"></div>
 			<div class="overlay">
 				<h1 class="title">
@@ -219,7 +218,7 @@ const featuredProject = projects[0];
 				<div class="roles">
 					<span class="role">👩‍💻 Developer <span class="invert">👩‍💻 Developer</span></span>
 					<span class="role">🎮 Gamer <span class="invert">🎮 Gamer</span></span>
-					<span class="role">🎹 Musician <span class="invert">🎹 Musician</span></span>
+					<span class="role">📸 Photographer <span class="invert">📸 Photographer</span></span>
 				</div>
 				<p class="desc">Lover of dogs, cats, roadtrips, and planes.</p>
 			</div>
@@ -227,22 +226,22 @@ const featuredProject = projects[0];
 		<main class="wrapper">
 			<div class="grid">
 				<div class="section">
-					<h3 class="sectionTitle">Selected Work</h3>
-					<PortfolioPreview project={featuredProject} />
-					<div class="buttonContainer">
-						<a href="/projects/" class="button">View All</a>
-					</div>
-				</div>
-				<div class="section">
 					<h3 class="sectionTitle">About me</h3>
 					<p class="bio">
-						<span>Hello!</span> I’m Amrith, and this is my website. It was made using{' '}
-						<a href="https://github.com/withastro/astro" target="_blank" rel="nofollow"> Astro</a>,
+						<span>Hello!</span> I'm Amrith, and this is my website. It was made using{' '}
+						<a href="https://astro.build" target="_blank" rel="nofollow"> Astro</a>,
 						a new way to build static sites. Astro was extremely easy to use, I built all this under 10mins.
 					</p>
 					<p>
 						<a href="/about">Read more</a>
 					</p>
+				</div>
+				<div class="section">
+					<h3 class="sectionTitle">Selected Work</h3>
+					<PortfolioPreview project={featuredProject} />
+					<div class="buttonContainer">
+						<a href="/projects/" class="button">View All</a>
+					</div>
 				</div>
 			</div>
 		</main>
