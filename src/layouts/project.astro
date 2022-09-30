@@ -89,7 +89,7 @@ const { content } = Astro.props;
 			<div class="wrapper">
 				{content.tags.map((t) => <span class="tag">{t}</span>)}
 				<h3 class="tagline">{content.description}</h3>
-				<a href={`${content.link}` target="_blank"}>link to project</a>
+				<a href={`${content.link}`} target="_blank"}>link to project</a>
 			</div>
 		</div>
 		<div class="wrapper">
