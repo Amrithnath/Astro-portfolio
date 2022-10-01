@@ -4,6 +4,7 @@ import MainHead from '../components/MainHead.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import PortfolioPreview from '../components/PortfolioPreview.astro';
+import ThemeSwitch from '../components/ThemeSwitch.astro';
 
 // Data Fetching: List all Markdown posts in the repo.
 const projects = await Astro.glob('./project/**/*.md');
@@ -15,6 +16,7 @@ const featuredProject = projects[0];
 
 <html lang="en">
 	<head>
+		<ThemeSwitch/>
 		<MainHead
 			title="Amrithnath Vijayakumar - Website"
 			description="Amrith: Developer, Gamer, and all around cool person..."
@@ -229,7 +231,7 @@ const featuredProject = projects[0];
 					<small class="subtitle">The one and only site for </small>Amrithnath V
 				</h1>
 				<div class="roles">
-					<span class="role">👩‍💻 Developer <span class="invert">👩‍💻 Developer</span></span>
+					<span class="role">💻 Developer <span class="invert">💻 Developer</span></span>
 					<span class="role">🎮 Gamer <span class="invert">🎮 Gamer</span></span>
 					<span class="role">📸 Photographer <span class="invert">📸 Photographer</span></span>
 				</div>
