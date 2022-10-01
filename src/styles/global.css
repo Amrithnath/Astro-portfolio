@@ -62,6 +62,7 @@
 	--t-twactive: var(--c-tw-blue);
 	--t-liactive: var(--c-li-blue);
 	--t-giactive: var(--c-black);
+	--t-inactive: #C13584;
 
 	--v-dis-dark: none;
 	--v-dis-light: block;
