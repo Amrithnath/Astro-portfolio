@@ -12,5 +12,8 @@
   },
   "dependencies": {
     "astro": "^1.4.0"
+  },
+  "devDependencies": {
+    "astro-themes": "^0.2.3"
   }
 }

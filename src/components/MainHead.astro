@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Themes from 'astro-themes';
 const {
 	title = 'Amrithnath Vijayakumar: Personal Site',
 	description = 'The personal site of Amrithnath Vijayakumar',
@@ -11,6 +12,73 @@ const {
 <meta name="viewport" content="width=device-width" />
 <meta name="generator" content={Astro.generator} />
 <title>{title}</title>
+<Themes/>
+<script>
+
+          // Function that will switch the theme based on the if the theme toggle is checked or not
+          function switchTheme(e) {
+            if (e.target.checked) {
+				document.dispatchEvent(new CustomEvent('set-theme', { detail: 'dark' })) // or pass `null` to clear the saved setting
+            } else {
+				document.dispatchEvent(new CustomEvent('set-theme', { detail: 'null' })) // or pass `null` to clear the saved setting
+            }
+          }
+		  const themeToggle = document.querySelector(
+            '.theme-switch input[type="checkbox"]'
+          );
+          // Add an event listener to the theme toggle, which will switch the theme
+          themeToggle.addEventListener("change", switchTheme, false);
+
+	
+</script>
+<style>
+	html{
+		/* Colors */
+		--c-black: #05091e;
+		--c-text: #05091e;
+		--c-blue: #46b4ff;
+		--c-gray: #90aab7;
+		--c-green: #9ef2cb;
+		--c-pink: #ffb8d9;
+		--c-orange: #ffb7a3;
+		--c-yellow: #ffdace;
+		--c-white: #fff;
+		--c-tw-blue: #1DA1F2;
+		--c-li-blue: #0077b5;
+
+		--t-fg: #05091e;
+		--t-text: #05091e;
+		--t-bg: #fff;
+		--t-subdue: #90aab7;
+		--t-active: #46b4ff;
+		--t-twactive: var(--c-tw-blue);
+		--t-liactive: var(--c-li-blue);
+		--t-giactive: var(--c-black);
+	}
+	[data-theme='dark']{
+		/* Colors */
+		--c-black: #fff;
+		--c-blue: #2b72a1;
+		--c-gray: #455258;
+		--c-green: #33c27f;
+		--c-pink: #ff4fa1;
+		--c-orange: #fc5323;
+		--c-text:#fff;
+		--c-yellow: #ffee59;
+		--c-white: #05091e;
+		--c-tw-blue: #1DA1F2;
+		--c-li-blue: #0077b5;
+
+		--t-fg: #fff;
+		--t-text: #fff;
+		--t-bg: #05091e;
+		--t-subdue: #455258;
+		--t-active: #2b72a1;
+		--t-twactive: var(--c-tw-blue);
+		--t-liactive: var(--c-li-blue);
+		--t-giactive: var(--c-black);
+	}
+</style>
 <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
