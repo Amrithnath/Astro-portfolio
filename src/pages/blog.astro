@@ -1,0 +1,42 @@
+---
+import MainHead from '../components/MainHead.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import BlogPreview from '../components/BlogPreview.astro';
+
+const blogs = (await Astro.glob('./blogs/**/*.md'))
+	.filter(({ frontmatter }) => !!frontmatter.publishDate)
+	.sort(
+		(a, b) =>
+			new Date(b.frontmatter.publishDate).valueOf() - new Date(a.frontmatter.publishDate).valueOf()
+	);
+---
+
+<html lang="en">
+	<head>
+		<MainHead
+			title="Blog | Amrith"
+			description="Streaming thoughts to curious minds"
+		/>
+		<style>
+			.grid {
+				display: grid;
+				grid-gap: 3rem;
+			}
+			.title {
+				margin-top: 2rem;
+				margin-bottom: 2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<Nav />
+		<div class="wrapper">
+			<h1 class="title">Words on the internet</h1>
+			<div class="grid">
+				{blogs.map((blog) => <BlogPreview blog={blog} />)}
+			</div>
+		</div>
+		<Footer />
+	</body>
+</html>
