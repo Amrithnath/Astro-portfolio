@@ -1,16 +1,6 @@
 /* Global variables */
 :root {
-	/* Colors */
-	--c-black: #05091e;
-	--c-blue: #46b4ff;
-	--c-gray: #90aab7;
-	--c-green: #9ef2cb;
-	--c-pink: #ffb8d9;
-	--c-orange: #ffb7a3;
-	--c-yellow: #ffdace;
-	--c-white: #fff;
-	--c-tw-blue: #1DA1F2;
-	--c-li-blue: #0077b5;
+	
 
 	/* Fonts */
 	--f-u18: 11.390625em;
@@ -49,14 +39,6 @@
 	--f-d16: 0.11503940276362785em;
 	--f-d17: 0.10049617492923625em;
 	--f-d18: 0.0877914951989026em;
-
-	--t-fg: var(--c-black);
-	--t-bg: var(--c-white);
-	--t-subdue: var(--c-gray);
-	--t-active: var(--c-blue);
-	--t-twactive: var(--c-tw-blue);
-	--t-liactive: var(--c-li-blue);
-	--t-giactive: var(--c-black);
 }
 
 body {
