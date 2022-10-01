@@ -2,12 +2,14 @@
 import MainHead from '../components/MainHead.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
+import ThemeSwitch from '../components/ThemeSwitch.astro';
 
 const { content } = Astro.props;
 ---
 
 <html lang={content.lang || 'en'}>
 	<head>
+		<ThemeSwitch/>
 		<MainHead title={content.title} description={content.description} />
 		<style>
 			.hero {
