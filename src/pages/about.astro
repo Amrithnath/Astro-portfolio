@@ -2,7 +2,8 @@
 import MainHead from '../components/MainHead.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
+import ThemeSwitch from '../components/ThemeSwitch.astro'
+import {Image} from "astro:assets"
 ---
 
 <html lang="en">
@@ -36,11 +37,12 @@ import ThemeSwitch from '../components/ThemeSwitch.astro';
 		<div class="wrapper">
 			<h1>About Amrith</h1>
 			<div class="heroImg">
-				<img
-					width="1400"
-					height="350"
+				<Image
 					src="https://images.unsplash.com/photo-1581977012607-4091712d36f9?auto=format&fit=crop&w=1400&h=350&q=75"
-				/>
+				    alt="Generic image of person on kerbside with cool shoe"
+                    width=1400
+                    height=350
+                />
 			</div>
 			<div class="bio wrapper">
 				<p>

@@ -3,8 +3,11 @@ import MainHead from '../components/MainHead.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
+import {getImage} from "astro:assets";
 
 const { content } = Astro.props;
+
+const optmizedImage = await getImage({src:content.img,width:1700,height:800,format:'avif'})
 ---
 
 <html lang={content.lang || 'en'}>
@@ -84,12 +87,12 @@ const { content } = Astro.props;
 	</head>
 	<body>
 		<Nav />
-		<header style={`background-image:url(${content.img})`} class="hero">
+		<header style={`background-image:url(${optmizedImage.src} )`} class="hero">
 			<h1 class="title">{content.title}</h1>
 		</header>
 		<div class="leadIn">
 			<div class="wrapper">
-				{content.tags.map((t) => <span class="tag">{t}</span>)}
+				{content.tags.map((t:String) => <span class="tag">{t}</span>)}
 				<h3 class="tagline">{content.description}</h3>
 			</div>
 		</div>
