@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "npm install -g pnpm && pnpm i && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@fontsource/fira-code": "^4.5.11",
