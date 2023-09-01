@@ -4,7 +4,7 @@ import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
 import BlogPreview from '../components/BlogPreview.astro';
-
+import {ViewTransitions} from "astro:transitions"
 const blogs = (await Astro.glob('./blog/**/*.md'))
 	.filter(({ frontmatter }) => !!frontmatter.publishDate)
 	.sort(
@@ -30,6 +30,7 @@ const blogs = (await Astro.glob('./blog/**/*.md'))
 				margin-bottom: 2rem;
 			}
 		</style>
+        <ViewTransitions/>
 	</head>
 	<body>
 		<Nav />
