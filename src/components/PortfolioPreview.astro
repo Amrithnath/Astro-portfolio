@@ -1,16 +1,19 @@
 ---
+import {getImage} from "astro:assets"
 const { frontmatter, url } = Astro.props.project;
+
+const optimizedImage = await getImage({src:frontmatter.img,format:'avif',width:1400,height:700});
 ---
 
 <div class="card">
-	<div class="titleCard" style={`background-image:url(${frontmatter.img})`}>
+	<div class="titleCard" style={`background-image:url(${optimizedImage.src})`}>
 		<h1 class="title">{frontmatter.title}</h1>
 	</div>
 	<div class="descCard">
 		<p class="desc">{frontmatter.description}</p>
 		<div class="tags">
 			Tagged:
-			{frontmatter.tags.map((t) => (
+			{frontmatter.tags.map((t:String) => (
 				<div class="tag" data-tag={t}>
 					{t}
 				</div>
