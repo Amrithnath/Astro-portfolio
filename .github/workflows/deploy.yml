@@ -33,7 +33,7 @@ jobs:
       - name: install deps
         run: pnpm install
       - name: build astro
-        run: astro build
+        run: pnpm build
       - name: Cache build
         id: cache-build
         uses: actions/cache@v3
