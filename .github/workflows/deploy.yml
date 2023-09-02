@@ -19,7 +19,7 @@ jobs:
         id: cache-deps
         uses: actions/cache@v3
         with:
-          path: node_module
+          path: node_modules
           key: ${{ runner.os }}-depop
       - name: install pnpm
         uses: pnpm/action-setup@v2
@@ -64,7 +64,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${GITHUB_SHA}-dist
-          path: '/dist'
+          path: './dist'
       - name: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
@@ -73,5 +73,5 @@ jobs:
       - name: 'upload-folder'
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
-          path: '/dist'
+          path: './dist'
           destination: ${{vars.GCLOUD_BUCKET}}
