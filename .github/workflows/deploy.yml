@@ -43,6 +43,7 @@ jobs:
         uses: actions/deploy-pages@v1
   deploy-gcloud-storage:
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: 'auth'
         uses: 'google-github-actions/auth@v1'
