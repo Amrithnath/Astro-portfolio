@@ -37,7 +37,7 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{GITHUB_SHA}}-dist
+          name: ${GITHUB_SHA}-dist
           path: |
             dist
       - name: Install dependencies and build your site
@@ -63,7 +63,7 @@ jobs:
       - name: 'restore cache'
         uses: actions/download-artifact@v3
         with:
-          name: ${{GITHUB_SHA}}-dist
+          name: ${GITHUB_SHA}-dist
           path: '/dist'
       - name: 'auth'
         uses: 'google-github-actions/auth@v1'
