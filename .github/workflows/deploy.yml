@@ -48,10 +48,10 @@ jobs:
       - name: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: ${{var.GCP_WORKFLOW_ID_PROVIDER_ID}}
-          service_accout: ${{var.GOOGLE_SERVICE_ACCOUNT_EMAIL}}
+          workload_identity_provider: ${{vars.GCP_WORKFLOW_ID_PROVIDER_ID}}
+          service_accout: ${{vars.GOOGLE_SERVICE_ACCOUNT_EMAIL}}
       - name: 'upload-folder'
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
           path: ${{steps.deployment.outputs.page_url}}
-          destination: ${{var.GCLOUD_BUCKET}}
+          destination: ${{vars.GCLOUD_BUCKET}}
