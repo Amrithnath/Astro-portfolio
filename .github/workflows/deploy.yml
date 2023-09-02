@@ -1,9 +1,8 @@
-name: Deploy to github pages
+name: Build and upload to github artifacts
 on:
   push:
     branches:
       - main
-  pull_request:
 
 permissions:
   contents: read
@@ -16,13 +15,23 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v3
-      - name: Install, build, and upload your site output
+      - name: Install dependencies and build your site
         uses: withastro/action@v0
         with:
-             node-version: 18.17.1 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
+             node-version: 18 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
              package-manager: pnpm # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
-             pnpm-version: 8 
-  deploy:
+             pnpm-version: 8
+      - name: verify
+        run: ls -la
+      - name: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+  deploy-ghpages:
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -32,4 +41,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
-  
+  deploy-gcloud-storage:
+    needs: build
+    steps:
+      - name: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          workload_identity_provider: ${{env.GCP_WORKFLOW_ID_PROVIDER_ID}}
+          service_accout: ${{env.GOOGLE_SERVICE_ACCOUNT_EMAIL}}
+      - name: 'upload-folder'
+        uses: 'google-github-actions/upload-cloud-storage@v1'
+        with:
+          path: ${{steps.deployment.outputs.page_url}}
+          destination: ${{env.GCLOUD_BUCKET}}
