@@ -1,6 +1,13 @@
 
 name: Build and deploy site to various hosting providers
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "enter the environment to redeploy, enter 1 for github and 2 for GCP"
+        default : "1"
+        required: true
+        type: string
   push:
     branches:
       - main
