@@ -75,3 +75,4 @@ jobs:
         with:
           path: './dist/*'
           destination: ${{vars.GCLOUD_BUCKET}}
+          parent: false
