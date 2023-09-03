@@ -1,4 +1,5 @@
-name: Build and upload to github artifacts
+
+name: Build and deploy site to various hosting providers
 on:
   push:
     branches:
