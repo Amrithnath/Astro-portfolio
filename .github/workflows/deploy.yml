@@ -74,6 +74,6 @@ jobs:
       - name: 'upload-folder'
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
-          path: './dist/*'
+          path: './dist'
           destination: ${{vars.GCLOUD_BUCKET}}
           parent: false
