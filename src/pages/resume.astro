@@ -1,0 +1,54 @@
+---
+import MainHead from "../components/MainHead.astro";
+import Footer from "../components/Footer.astro";
+import Nav from "../components/Nav.astro";
+import ResumePreview from "../components/ResumePreview.astro";
+import ThemeSwitch from "../components/ThemeSwitch.astro";
+import { ViewTransitions } from "astro:transitions";
+
+const markdownFiles = await Astro.glob("./resume/**/*.md");
+const filteredFiles = markdownFiles
+    .filter(({ frontmatter }) => !!frontmatter.publishDate)
+    .sort(
+        (a, b) =>
+            new Date(b.frontmatter.publishDate).valueOf() -
+            new Date(a.frontmatter.publishDate).valueOf()
+    );
+---
+
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="this page lists the resume of Amrithnath">
+        <ThemeSwitch />
+        <MainHead
+            title="Resume | Amrith"
+            description="Learn about Amrith's resume"
+        />
+        <style>
+            .grid {
+                display: grid;
+                grid-gap: 3rem;
+            }
+            .title {
+                margin-top: 2rem;
+                margin-bottom: 2rem;
+            }
+        </style>
+        <ViewTransitions />
+    </head>
+    <body>
+        <Nav />
+        <div class="wrapper">
+            <h1 class="title">Resume</h1>
+            <div class="grid">
+                {filteredFiles.map((resume) => (
+                    <ResumePreview resume={resume} />
+                ))}
+            </div>
+        </div>
+        <Footer />
+    </body>
+</html>;
+```
+
