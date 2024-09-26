@@ -1,6 +1,14 @@
 ---
-title: Resume1
-tags: test
+layout: ../../../layouts/resume.astro
+title: Resume 1
+link: https://linkedin.com/in/amrithnath
+client: Self
+publishDate: 2024-09-26 00:00:00
+img: https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?fit=crop&w=1400&h=700&q=75
+description: |
+  Here is my resume but it also links to linkedin :P
+tags:
+  - dev
 ---
 # Your Name
 
