@@ -1,5 +1,5 @@
 ---
-layout: ../../../layouts/resume.astro
+layout: ../../../layouts/project.astro
 title: Resume 1
 link: https://linkedin.com/in/amrithnath
 client: Self
