@@ -1,0 +1,44 @@
+---
+// Import your components here
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<html>
+<head>
+  <title>Contact Me</title>
+  <style>
+    .wrapper {
+      padding: 2em;
+      margin: 2em;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+    input, textarea {
+      padding: 0.5em;
+      font-size: 1em;
+    }
+    button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+  <div class="wrapper">
+    <h1>Contact Me</h1>
+    <form action="/submit-form" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <textarea name="message" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+  </div>
+  <Footer />
+</body>
+</html>
