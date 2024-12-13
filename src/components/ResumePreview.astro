@@ -1,0 +1,26 @@
+---
+const { resume } = Astro.props.resume;
+const { frontmatter, url } = resume;
+
+---
+
+<div class="card">
+    <div class="titleCard">
+        <h1 class="title">{frontmatter.title}</h1>
+    </div>
+    <div class="descCard">
+        <p class="desc">{frontmatter.description}</p>
+        <div class="tags">
+            Tagged:
+            {frontmatter.tags.map((t:String) => (
+                <div class="tag" data-tag={t}>
+                    {t}
+                </div>
+            ))}
+        </div>
+        <a class="link" href={url}>
+            <span class="linkInner">View</span>
+        </a>
+    </div>
+</div>
+
