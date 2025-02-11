@@ -1,0 +1,58 @@
+---
+import Nav from "../components/Nav.astro";
+import ThemeSwitch from "../components/ThemeSwitch.astro";
+import { ViewTransitions } from "astro:transitions";
+
+---
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="this page lists the resume of Amrithnath">
+        <ThemeSwitch />
+
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="this page lists the resume of Amrithnath">
+            <ThemeSwitch />
+          </head>
+          <body>
+            <Nav />
+            <div class="wrapper">
+              <h1 class="title">Contact</h1>
+              <form action="/submit-form" method="POST">
+                <input type="text" name="name" placeholder="Your Name" required />
+                <input type="email" name="email" placeholder="Your Email" required />
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+              </form>
+            </div>
+          </body>
+        </html>
+        <style>
+            .grid {
+                display: grid;
+                grid-gap: 3rem;
+            }
+            .title {
+                margin-top: 2rem;
+                margin-bottom: 2rem;
+            }
+        </style>
+        <ViewTransitions />
+    </head>
+    <body>
+        <Nav />
+        <div class="wrapper">
+            <h1 class="title">Contact</h1>
+            <form action="/submit-form" method="POST">
+              <input type="text" name="name" placeholder="Your Name" required />
+              <input type="email" name="email" placeholder="Your Email" required />
+              <textarea name="message" placeholder="Your Message" required></textarea>
+              <button type="submit">Send Message</button>
+            </form>
+        </div>
+       
+    </body>
+</html>
