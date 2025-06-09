@@ -4,7 +4,7 @@ import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import PortfolioPreview from '../components/PortfolioPreview.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
-import {ViewTransitions} from "astro:transitions"
+
 const projects = (await Astro.glob('./project/**/*.md'))
 	.filter(({ frontmatter }) => !!frontmatter.publishDate)
 	.sort(
@@ -15,8 +15,6 @@ const projects = (await Astro.glob('./project/**/*.md'))
 
 <html lang="en">
 	<head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="this page lists the projects that Amrithnath has worked on">
 		<ThemeSwitch/>
 		<MainHead
 			title="All Projects | Amrith"
@@ -32,7 +30,6 @@ const projects = (await Astro.glob('./project/**/*.md'))
 				margin-bottom: 2rem;
 			}
 		</style>
-        <ViewTransitions/>
 	</head>
 	<body>
 		<Nav />
@@ -44,4 +41,4 @@ const projects = (await Astro.glob('./project/**/*.md'))
 		</div>
 		<Footer />
 	</body>
-</html>
+</html> 

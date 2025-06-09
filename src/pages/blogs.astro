@@ -4,11 +4,11 @@ import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
 import BlogPreview from '../components/BlogPreview.astro';
-import {ViewTransitions} from "astro:transitions"
-const blogs = (await Astro.glob('./blog/**/*.md'))
+import {ClientRouter} from "astro:transitions"
+const blogs = Object.values(import.meta.glob('./blog/**/*.md', { eager: true }))
 	.filter(({ frontmatter }) => !!frontmatter.publishDate)
 	.sort(
-		(a, b) =>
+		(a: any, b: any) =>
 			new Date(b.frontmatter.publishDate).valueOf() - new Date(a.frontmatter.publishDate).valueOf()
 	);
 ---
@@ -30,7 +30,7 @@ const blogs = (await Astro.glob('./blog/**/*.md'))
 				margin-bottom: 2rem;
 			}
 		</style>
-        <ViewTransitions/>
+        <ClientRouter/>
 	</head>
 	<body>
 		<Nav />

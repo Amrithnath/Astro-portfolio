@@ -1,0 +1,123 @@
+---
+// Performance monitoring component for Core Web Vitals
+---
+
+<script>
+// Performance monitoring - tracks Core Web Vitals
+class PerformanceMonitor {
+  metrics;
+
+  constructor() {
+    this.metrics = {};
+    this.init();
+  }
+
+  init() {
+    if (typeof window !== 'undefined') {
+      this.trackCLS();
+      this.trackFID();
+      this.trackLCP();
+      this.trackFCP();
+      this.trackTTFB();
+      this.trackPageLoad();
+    }
+  }
+
+  // Cumulative Layout Shift
+  trackCLS() {
+    let cls = 0;
+    const observer = new PerformanceObserver((entryList) => {
+      for (const entry of entryList.getEntries()) {
+        if (!entry.hadRecentInput) {
+          cls += entry.value;
+        }
+      }
+      this.metrics.cls = cls;
+    });
+    observer.observe({ entryTypes: ['layout-shift'] });
+  }
+
+  // First Input Delay
+  trackFID() {
+    const observer = new PerformanceObserver((entryList) => {
+      for (const entry of entryList.getEntries()) {
+        this.metrics.fid = entry.processingStart - entry.startTime;
+      }
+    });
+    observer.observe({ entryTypes: ['first-input'] });
+  }
+
+  // Largest Contentful Paint
+  trackLCP() {
+    const observer = new PerformanceObserver((entryList) => {
+      const entries = entryList.getEntries();
+      const lastEntry = entries[entries.length - 1];
+      this.metrics.lcp = lastEntry.startTime;
+    });
+    observer.observe({ entryTypes: ['largest-contentful-paint'] });
+  }
+
+  // First Contentful Paint
+  trackFCP() {
+    const observer = new PerformanceObserver((entryList) => {
+      for (const entry of entryList.getEntries()) {
+        if (entry.name === 'first-contentful-paint') {
+          this.metrics.fcp = entry.startTime;
+        }
+      }
+    });
+    observer.observe({ entryTypes: ['paint'] });
+  }
+
+  // Time to First Byte
+  trackTTFB() {
+    if (performance.timing) {
+      this.metrics.ttfb = performance.timing.responseStart - performance.timing.navigationStart;
+    }
+  }
+
+  // Page Load Time
+  trackPageLoad() {
+    window.addEventListener('load', () => {
+      this.metrics.loadTime = performance.now();
+      
+      // Log metrics in development
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        console.log('🚀 Performance Metrics:', {
+          'TTFB': `${this.metrics.ttfb}ms`,
+          'FCP': `${this.metrics.fcp?.toFixed(0)}ms`,
+          'LCP': `${this.metrics.lcp?.toFixed(0)}ms`,
+          'CLS': this.metrics.cls?.toFixed(3),
+          'FID': `${this.metrics.fid?.toFixed(0)}ms`,
+          'Load Time': `${this.metrics.loadTime?.toFixed(0)}ms`
+        });
+
+        // Performance warnings
+        if (this.metrics.lcp > 2500) console.warn('⚠️ LCP > 2.5s - Consider optimizing largest contentful paint');
+        if (this.metrics.fid > 100) console.warn('⚠️ FID > 100ms - Consider optimizing interactivity');
+        if (this.metrics.cls > 0.1) console.warn('⚠️ CLS > 0.1 - Consider fixing layout shifts');
+      }
+    });
+  }
+
+  getMetrics() {
+    return this.metrics;
+  }
+}
+
+// Initialize performance monitoring
+const perfMonitor = new PerformanceMonitor();
+
+// Service Worker registration for caching
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('🎯 SW registered:', registration);
+      })
+      .catch(error => {
+        console.log('SW registration failed:', error);
+      });
+  });
+}
+</script> 

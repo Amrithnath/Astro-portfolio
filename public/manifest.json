@@ -1,0 +1,51 @@
+{
+  "name": "Amrithnath Vijayakumar - Terminal Portfolio",
+  "short_name": "Terminal Portfolio",
+  "description": "~/dev/portfolio $ cat README.md - A retro terminal-themed developer portfolio",
+  "start_url": "/",
+  "display": "standalone", 
+  "background_color": "#0d1117",
+  "theme_color": "#58a6ff",
+  "orientation": "portrait-primary",
+  "categories": ["portfolio", "developer", "terminal"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Skills",
+      "short_name": "Skills",
+      "description": "~/skills $ tree",
+      "url": "/",
+      "icons": [{ "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Projects", 
+      "short_name": "Projects",
+      "description": "~/projects $ ls -la",
+      "url": "/projects/",
+      "icons": [{ "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact", 
+      "description": "~/contact $ cat info.json",
+      "url": "/contact/",
+      "icons": [{ "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+} 
