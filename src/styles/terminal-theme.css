@@ -54,7 +54,7 @@
   --terminal-yellow: #f9e2af;
   --terminal-red: #f38ba8;
   --terminal-cyan: #94e2d5;
-  --terminal-gray: #6c7086;
+  --terminal-gray: #9399b2;
   --window-bg: #313244;
   --window-border: #45475a;
 }
@@ -125,6 +125,9 @@
   overflow: visible;
   min-height: 100vh;
   font-size: 14px;
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: auto;
 }
 
 .theme-terminal .prompt {
@@ -613,6 +616,10 @@
   line-height: 1.4;
   margin: 8px 0;
   font-weight: normal;
+  /* Performance optimizations for LCP */
+  will-change: auto;
+  contain: layout style;
+  content-visibility: auto;
 }
 
 .theme-terminal .json-output .json-key {
