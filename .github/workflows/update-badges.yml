@@ -1,5 +1,8 @@
 name: Update Badges
 
+permissions:
+  contents: read
+
 on:
   workflow_run:
     workflows: ["Lint and Test", "Comprehensive Tests", "Build and Deploy"]
