@@ -2,11 +2,26 @@
 import {getImage} from "astro:assets"
 const { frontmatter, url } = Astro.props.project;
 
-const optimizedImage = await getImage({src:frontmatter.img,format:'avif',width:1400,height:700});
+// Handle missing images gracefully
+let optimizedImage = null;
+let backgroundStyle = '';
+
+if (frontmatter.img) {
+	try {
+		optimizedImage = await getImage({src: frontmatter.img, format: 'avif', width: 1400, height: 700});
+		backgroundStyle = `background-image: url(${optimizedImage.src})`;
+	} catch (error) {
+		console.warn('Failed to process image for project:', frontmatter.title, error);
+		backgroundStyle = 'background: linear-gradient(135deg, var(--accent-regular), var(--accent-dark))';
+	}
+} else {
+	// Use a gradient fallback when no image is provided
+	backgroundStyle = 'background: linear-gradient(135deg, var(--accent-regular), var(--accent-dark))';
+}
 ---
 
 <div class="card">
-	<div class="titleCard" style={`background-image:url(${optimizedImage.src})`}>
+	<div class="titleCard" style={backgroundStyle}>
 		<h1 class="title">{frontmatter.title}</h1>
 	</div>
 	<div class="descCard">
@@ -48,6 +63,7 @@ const optimizedImage = await getImage({src:frontmatter.img,format:'avif',width:1
 		font-weight: 900;
 		text-transform: uppercase;
 		letter-spacing: 0.0625em;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 	}
 
 	.titleCard {

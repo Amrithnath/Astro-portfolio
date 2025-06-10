@@ -12,22 +12,49 @@ import heroImage from  "../assets/hero.jpg"
 import heroImage2 from "../assets/hero-2.jpg"
 import { getImage } from "astro:assets";
 import myBackground from "../assets/mesh-gradient.jpg"
+
+// Dynamic data service
+import { generateSeededLandingData } from '../data/landing-data-service';
+
 const optimizedBackground = await getImage({src: myBackground, format: 'avif'})
 
 // Data Fetching: List all Markdown posts in the repo.
 const projects = await Astro.glob('./project/**/*.md');
 
-// Portfolio data that can be passed to all themes
+// Generate dynamic data from resume compendium
+const dynamicData = generateSeededLandingData();
+
+// Combine projects with dynamic project data
+const allProjects = [
+  ...projects,
+  ...dynamicData.projects.map(project => ({
+    frontmatter: {
+      title: project.name,
+      description: project.description,
+      tags: project.technologies,
+      demo: project.demo,
+      github: project.github,
+      type: project.type,
+      status: project.status
+    },
+    url: `/project/${project.id}`,
+    title: project.name
+  }))
+];
+
+// Portfolio data with dynamic content
 const portfolioData = {
-  title: "Amrithnath Vijayakumar",
-  description: "Full-stack developer, gamer, and photographer",
-  projects: projects,
-  skills: ["React", "Node.js", "Python", "TypeScript", "Astro"],
-  contact: {
-    email: "hello@amrithnath.com",
-    github: "github.com/amrithnath", 
-    linkedin: "linkedin.com/in/amrithnath"
-  }
+  title: dynamicData.name,
+  description: dynamicData.description,
+  projects: allProjects,
+  skills: dynamicData.skills,
+  techStack: dynamicData.techStack,
+  contact: dynamicData.contact,
+  achievements: dynamicData.achievements,
+  interests: dynamicData.interests,
+  stats: dynamicData.stats,
+  terminal: dynamicData.terminal,
+  currentRole: dynamicData.currentRole
 };
 
 // CSS Imports
@@ -41,11 +68,11 @@ import '../styles/personal-theme.css';
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Amrith's portfolio landing page">
+        <meta name="description" content={`${dynamicData.name}'s portfolio - ${dynamicData.description}`}>
         <ThemeProvider />
 		<MainHead
-			title="Amrithnath Vijayakumar - Website"
-			description="Amrith: Developer, Gamer, and all around cool person..."
+			title={`${dynamicData.name} - ${dynamicData.title}`}
+			description={dynamicData.description}
 		/>
 		<ViewTransitions/>
 	</head>
@@ -58,7 +85,11 @@ import '../styles/personal-theme.css';
 			description={portfolioData.description}
 			projects={portfolioData.projects}
 			skills={portfolioData.skills}
+			techStack={portfolioData.techStack}
 			contact={portfolioData.contact}
+			achievements={portfolioData.achievements}
+			terminal={portfolioData.terminal}
+			stats={portfolioData.stats}
 		/>
 		
 		<!-- Professional Theme -->
@@ -66,18 +97,24 @@ import '../styles/personal-theme.css';
 			title={portfolioData.title}
 			description={portfolioData.description}
 			projects={portfolioData.projects}
+			skills={portfolioData.techStack}
 			contact={portfolioData.contact}
+			achievements={portfolioData.achievements}
+			stats={portfolioData.stats}
+			currentRole={portfolioData.currentRole}
 		/>
 		
 		<!-- Personal Theme (Original) -->
 		<PersonalView 
-			title="Amrithnath V"
+			title={portfolioData.title}
 			subtitle="The one and only site for"
-			description="Lover of dogs, cats, roadtrips, and planes."
+			description={`${dynamicData.currentRole?.position} with ${dynamicData.yearsOfExperience}+ years of experience. ${dynamicData.interests.slice(0, 3).join(', ')}.`}
 			projects={portfolioData.projects}
 			heroImage={heroImage}
 			heroImage2={heroImage2}
 			backgroundImage={optimizedBackground.src}
+			achievements={portfolioData.achievements}
+			interests={portfolioData.interests}
 		/>
 	</body>
 </html>

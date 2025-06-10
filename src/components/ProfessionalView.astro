@@ -15,6 +15,19 @@ export interface Props {
     linkedin?: string;
     phone?: string;
   };
+  achievements?: string[];
+  stats?: {
+    projectsCompleted?: number;
+    technologiesUsed?: number;
+    yearsOfExperience?: number;
+    certifications?: number;
+    awards?: number;
+  };
+  currentRole?: {
+    company?: string;
+    position?: string;
+    location?: string;
+  };
 }
 
 const { 
@@ -27,7 +40,10 @@ const {
     "Database": ["PostgreSQL", "MongoDB", "Redis"],
     "DevOps": ["Docker", "AWS", "CI/CD"]
   },
-  contact = {}
+  contact = {},
+  achievements = [],
+  stats = {},
+  currentRole = {}
 } = Astro.props;
 ---
 
@@ -55,6 +71,9 @@ const {
       <div class="hero-image">👨‍💻</div>
       <h1 class="hero-title">{title}</h1>
       <p class="hero-subtitle">{description}</p>
+      {stats.yearsOfExperience && (
+        <p class="hero-stats">{stats.yearsOfExperience}+ years of experience • {stats.projectsCompleted || 20}+ projects completed</p>
+      )}
       <a href="/contact" class="btn">Get In Touch</a>
     </div>
   </section>
@@ -66,15 +85,15 @@ const {
       <div class="card-grid">
         <div class="card">
           <h3 class="card-title">💻 Developer</h3>
-          <p class="card-text">Passionate about creating clean, efficient code and beautiful user experiences.</p>
+          <p class="card-text">{achievements.length > 0 ? achievements[0] : "Passionate about creating clean, efficient code and beautiful user experiences."}</p>
         </div>
         <div class="card">
-          <h3 class="card-title">🎮 Gamer</h3>
-          <p class="card-text">Love exploring virtual worlds and the technology that brings them to life.</p>
+          <h3 class="card-title">🚀 {currentRole.position || "Engineer"}</h3>
+          <p class="card-text">{currentRole.company ? `Currently working at ${currentRole.company}` : "Building innovative solutions and driving technical excellence."}</p>
         </div>
         <div class="card">
-          <h3 class="card-title">📸 Photographer</h3>
-          <p class="card-text">Capturing moments and beauty through the lens, with an eye for composition.</p>
+          <h3 class="card-title">📈 Results-Driven</h3>
+          <p class="card-text">{achievements.length > 1 ? achievements[1] : "Focused on delivering measurable business impact through technology."}</p>
         </div>
       </div>
     </div>
@@ -99,6 +118,41 @@ const {
     </div>
   </section>
 
+  <!-- Stats Section -->
+  {Object.keys(stats).length > 0 && (
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Professional Stats</h2>
+        <div class="stats-grid">
+          {stats.yearsOfExperience && (
+            <div class="stat-card">
+              <h3 class="stat-number">{stats.yearsOfExperience}+</h3>
+              <p class="stat-label">Years Experience</p>
+            </div>
+          )}
+          {stats.projectsCompleted && (
+            <div class="stat-card">
+              <h3 class="stat-number">{stats.projectsCompleted}+</h3>
+              <p class="stat-label">Projects Completed</p>
+            </div>
+          )}
+          {stats.technologiesUsed && (
+            <div class="stat-card">
+              <h3 class="stat-number">{stats.technologiesUsed}+</h3>
+              <p class="stat-label">Technologies Used</p>
+            </div>
+          )}
+          {stats.awards && (
+            <div class="stat-card">
+              <h3 class="stat-number">{stats.awards}</h3>
+              <p class="stat-label">Awards & Recognition</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- Featured Projects -->
   <section class="section">
     <div class="container">
@@ -108,21 +162,21 @@ const {
           <div class="project-card">
             <div class="project-image">🚀</div>
             <div class="project-content">
-              <h3 class="project-title">{project.frontmatter?.title || "Untitled Project"}</h3>
-              <p class="project-description">{project.frontmatter?.description || "No description available"}</p>
+              <h3 class="project-title">{project.frontmatter?.title || project.name || "Untitled Project"}</h3>
+              <p class="project-description">{project.frontmatter?.description || project.description || "No description available"}</p>
               <div class="project-tech">
-                {project.frontmatter?.tags?.map(tag => (
+                {(project.frontmatter?.tags || project.technologies || []).map(tag => (
                   <span class="tech-tag">{tag}</span>
-                )) || []}
+                ))}
               </div>
               <div class="project-links">
-                {project.frontmatter?.demo && (
-                  <a href={project.frontmatter.demo} class="project-link">Live Demo</a>
+                {(project.frontmatter?.demo || project.demo) && (
+                  <a href={project.frontmatter?.demo || project.demo} class="project-link">Live Demo</a>
                 )}
-                {project.frontmatter?.github && (
-                  <a href={project.frontmatter.github} class="project-link">GitHub</a>
+                {(project.frontmatter?.github || project.github) && (
+                  <a href={project.frontmatter?.github || project.github} class="project-link">GitHub</a>
                 )}
-                <a href={project.url} class="project-link">View {project.title} Project</a>
+                <a href={project.url || `/project/${project.id}`} class="project-link">View Project</a>
               </div>
             </div>
           </div>
@@ -184,4 +238,42 @@ const {
       <p>&copy; 2024 {title}. Built with Astro and lots of ☕</p>
     </div>
   </footer>
-</div> 
+</div>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .stat-card {
+    background: var(--gray-999_40);
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    border: 1px solid var(--gray-800);
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--accent-regular);
+    margin: 0;
+  }
+
+  .stat-label {
+    font-size: 1rem;
+    color: var(--gray-200);
+    margin: 0.5rem 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-stats {
+    color: var(--gray-200);
+    font-size: 1.1rem;
+    margin: 0.5rem 0 1.5rem 0;
+  }
+</style> 
