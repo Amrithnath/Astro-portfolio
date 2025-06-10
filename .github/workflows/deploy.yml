@@ -66,6 +66,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
   deploy-gcloud-storage:
+    if: inputs.name == '2' # only deploy to gcloud if the input is 2
     needs: build
     runs-on: ubuntu-latest
     steps:
