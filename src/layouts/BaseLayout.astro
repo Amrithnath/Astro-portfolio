@@ -1,6 +1,6 @@
 ---
 import ThemeProvider from '../components/ThemeProvider.astro';
-import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+// import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 import TerminalNav from '../components/TerminalNav.astro';
 import { ViewTransitions } from 'astro:transitions';
 import '../styles/terminal-theme.css';
@@ -40,7 +40,7 @@ const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } 
       <div class="page-transition-loader"></div>
     </div>
     
-    <ThemeSwitcher />
+    <!-- <ThemeSwitcher /> -->
     
     <!-- Terminal Navigation (only visible in terminal theme) -->
     <TerminalNav currentPage={currentPage} />
