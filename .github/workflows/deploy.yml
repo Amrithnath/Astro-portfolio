@@ -43,7 +43,7 @@ jobs:
       - name: build astro
         run: pnpm build
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{github.sha}}-dist
           path: |
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'restore cache'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{github.sha}}-dist
           path: './dist'
