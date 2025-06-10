@@ -1,0 +1,1551 @@
+---
+// Resume Generator Component
+import { portfolioData } from '../data/portfolio';
+import { resumeCompendium } from '../data/resume-compendium';
+
+export interface Props {
+  theme: 'terminal' | 'professional' | 'personal';
+}
+
+const { theme = 'professional' } = Astro.props;
+---
+
+<div class={`resume-generator ${theme}-theme`}>
+  <!-- Terminal Theme Interactive Interface -->
+  <div class="terminal-interface" style={theme === 'terminal' ? 'display: flex;' : 'display: none;'}>
+    <div class="terminal-output" id="terminal-output">
+      <div class="command-line">
+        <span class="prompt">amrith@portfolio:~/resume$ </span>
+        <span class="command">ls -la</span>
+      </div>
+      <div class="output">
+        <pre>total 24
+drwxr-xr-x  5 amrith amrith  4096 Dec 12 05:20 .
+drwxr-xr-x  8 amrith amrith  4096 Dec 12 05:20 ..
+-rwxr-xr-x  1 amrith amrith  3072 Dec 12 05:20 generator.py
+-rw-r--r--  1 amrith amrith  1536 Dec 12 05:20 profile.json
+-rw-r--r--  1 amrith amrith   512 Dec 12 05:20 config.yml
+drwxr-xr-x  2 amrith amrith  4096 Dec 12 05:20 templates/
+drwxr-xr-x  2 amrith amrith  4096 Dec 12 05:20 output/</pre>
+      </div>
+      
+      <div class="command-line">
+        <span class="prompt">amrith@portfolio:~/resume$ </span>
+        <span class="command">cat README.md</span>
+      </div>
+      <div class="output">
+        <pre>## Resume Generator CLI
+
+Available commands:
+  help                 - Show all commands
+  generate [format]    - Generate resume (pdf|md|txt)
+  sections             - List available sections
+  config              - Show current configuration
+  preview             - Preview resume content
+  export [format]     - Export and download resume
+
+Examples:
+  generate pdf         - Generate PDF resume
+  generate md          - Generate Markdown resume
+  sections --toggle    - Interactive section selection
+  export txt           - Export as plain text</pre>
+      </div>
+      
+      <div class="command-line">
+        <span class="prompt">amrith@portfolio:~/resume$ </span>
+        <span class="command">python generator.py --help</span>
+      </div>
+      <div class="output">
+        <pre>Resume Generator v3.0
+
+Usage: python generator.py [OPTIONS] COMMAND
+
+Commands:
+  generate    Generate resume in specified format
+  preview     Show resume preview
+  config      Configure resume sections
+  export      Export and download resume
+
+Options:
+  --format [pdf|md|txt]     Output format
+  --sections TEXT           Comma-separated sections to include
+  --template [modern|classic|minimal]  Template style
+  --output PATH            Output directory
+
+Try: python generator.py generate --format pdf</pre>
+      </div>
+    </div>
+    
+    <div class="terminal-input-line">
+      <span class="prompt">amrith@portfolio:~/resume$ </span>
+      <input type="text" id="terminal-input" class="terminal-input" placeholder="Type 'help' for commands..." autocomplete="off" spellcheck="false" />
+    </div>
+    
+    <div class="terminal-suggestions">
+      <div class="suggestion-title">💡 Try these commands:</div>
+      <div class="suggestions">
+        <span class="suggestion" data-cmd="help">help</span>
+        <span class="suggestion" data-cmd="sections">sections</span>
+        <span class="suggestion" data-cmd="preview">preview</span>
+        <span class="suggestion" data-cmd="generate pdf">generate pdf</span>
+        <span class="suggestion" data-cmd="export md">export md</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Professional/Personal Theme GUI Interface -->
+  <div class="gui-interface" style={theme !== 'terminal' ? 'display: grid;' : 'display: none;'}>
+    <!-- Resume Customization Panel -->
+    <div class="resume-controls">
+      <h2>Customize Your Resume</h2>
+      <p>Select the sections you want to include in your resume:</p>
+      
+      <div class="section-toggles">
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="include-contact" checked />
+            <span class="checkmark"></span>
+            Contact Information
+          </label>
+          
+          <label class="toggle-item">
+            <input type="checkbox" id="include-bio" checked />
+            <span class="checkmark"></span>
+            Professional Summary
+          </label>
+          
+          <label class="toggle-item">
+            <input type="checkbox" id="include-skills" checked />
+            <span class="checkmark"></span>
+            Skills & Technologies
+          </label>
+          
+          <label class="toggle-item">
+            <input type="checkbox" id="include-experience" checked />
+            <span class="checkmark"></span>
+            Experience (Sample)
+          </label>
+          
+          <label class="toggle-item">
+            <input type="checkbox" id="include-education" checked />
+            <span class="checkmark"></span>
+            Education (Sample)
+          </label>
+        </div>
+      </div>
+      
+      <div class="export-controls">
+        <h3>Download Resume</h3>
+        <div class="export-buttons">
+          <button id="export-pdf" class="export-btn pdf-btn">
+            📄 Download PDF
+          </button>
+          <button id="export-md" class="export-btn md-btn">
+            📝 Download Markdown
+          </button>
+          <button id="export-txt" class="export-btn txt-btn">
+            📄 Download Text
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Resume Preview -->
+    <div class="resume-preview">
+      <div id="resume-content" class="resume-document">
+        <!-- Header Section -->
+        <div class="resume-section" id="contact-section">
+          <div class="resume-header">
+            <h1 class="resume-name">{resumeCompendium.contact.name}</h1>
+            <div class="resume-title">{resumeCompendium.contact.title}</div>
+          </div>
+          <div class="resume-contact">
+            <div class="contact-item">📧 {resumeCompendium.contact.email}</div>
+            {resumeCompendium.contact.phone && <div class="contact-item">📞 {resumeCompendium.contact.phone}</div>}
+            {resumeCompendium.contact.location && <div class="contact-item">📍 {resumeCompendium.contact.location}</div>}
+            {resumeCompendium.contact.website && <div class="contact-item">🌐 {resumeCompendium.contact.website}</div>}
+            {resumeCompendium.contact.github && <div class="contact-item">🔗 {resumeCompendium.contact.github}</div>}
+            {resumeCompendium.contact.linkedin && <div class="contact-item">💼 {resumeCompendium.contact.linkedin}</div>}
+          </div>
+        </div>
+        
+        <!-- Bio Section -->
+        <div class="resume-section" id="bio-section">
+          <h2 class="section-title">Professional Summary</h2>
+          <p class="bio-text">{resumeCompendium.summary}</p>
+        </div>
+        
+        <!-- Skills Section -->
+        <div class="resume-section" id="skills-section">
+          <h2 class="section-title">Skills & Technologies</h2>
+          <div class="skills-grid">
+            {resumeCompendium.skills.sort((a, b) => a.priority - b.priority).map(category => (
+              <div class="skill-category">
+                <h3 class="skill-category-title">{category.category}</h3>
+                <div class="skill-list">
+                  {category.skills.map(skill => (
+                    <span class="skill-tag" data-level={skill.level}>{skill.name}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <!-- Experience Section -->
+        <div class="resume-section" id="experience-section">
+          <h2 class="section-title">Experience</h2>
+          {resumeCompendium.experience.map(exp => (
+            <div class="experience-item">
+              <div class="job-header">
+                <h3 class="job-title">{exp.position}</h3>
+                <span class="job-period">{exp.startDate} - {exp.endDate || 'Present'}</span>
+              </div>
+              <div class="company">{exp.company} • {exp.location}</div>
+              <p class="job-description">{exp.description}</p>
+              <ul class="job-responsibilities">
+                {exp.achievements.map(achievement => {
+                  // Remove specific metrics and percentages for cleaner resume format
+                  const cleanAchievement = achievement
+                    .replace(/\$[\d,]+[KMB]?/g, 'significant') // Replace dollar amounts
+                    .replace(/\b\d+%/g, 'substantial') // Replace percentages
+                    .replace(/\b\d+\+?\s*(clients?|projects?|users?|engineers?|developers?|attendees?|volunteers?)\b/gi, 'multiple $1') // Replace numbers with "multiple"
+                    .replace(/\b\d+\s*years?\b/gi, 'several years') // Replace specific years
+                    .replace(/\s+/g, ' ') // Clean up extra spaces
+                    .trim()
+                    .replace(/^(Led|Delivered|Architected|Designed|Drove|Mentored|Regularly|Working)/i, (match) => match); // Preserve action words
+                  
+                  return <li>{cleanAchievement}</li>;
+                })}
+              </ul>
+              {exp.technologies && (
+                <div class="job-technologies">
+                  <strong>Technologies:</strong>
+                  {exp.technologies.map(tech => (
+                    <span class="tech-tag">{tech}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <!-- Education Section -->
+        <div class="resume-section" id="education-section">
+          <h2 class="section-title">Education</h2>
+          {resumeCompendium.education.map(edu => (
+            <div class="education-item">
+              <div class="degree-header">
+                <h3 class="degree-title">{edu.degree} in {edu.field}</h3>
+                <span class="graduation-year">{edu.endDate || 'In Progress'}</span>
+              </div>
+              <div class="institution">{edu.institution} • {edu.location}</div>
+              <div class="education-details">
+                {edu.gpa && <p><strong>GPA:</strong> {edu.gpa}</p>}
+                {edu.honors && edu.honors.length > 0 && (
+                  <p><strong>Honors:</strong> {edu.honors.join(', ')}</p>
+                )}
+                {edu.coursework && edu.coursework.length > 0 && (
+                  <p><strong>Relevant Coursework:</strong> {edu.coursework.join(', ')}</p>
+                )}
+                {edu.activities && edu.activities.length > 0 && (
+                  <p><strong>Activities:</strong> {edu.activities.join(', ')}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  class ResumeGenerator {
+    constructor() {
+      // Bind methods to preserve 'this' context
+      this.handleTerminalInput = this.handleTerminalInput.bind(this);
+      this.handleToggleChange = this.handleToggleChange.bind(this);
+      this.handlePDFExport = this.handlePDFExport.bind(this);
+      this.handleMDExport = this.handleMDExport.bind(this);
+      this.handleTXTExport = this.handleTXTExport.bind(this);
+      
+      this.portfolioData = {
+        personal: {
+          name: "Amrithnath Vijayakumar",
+          title: "Full-Stack Developer & Creator"
+        },
+        contact: {
+          email: "hello@amrithnath.com",
+          github: "github.com/amrithnath",
+          linkedin: "linkedin.com/in/amrithnath"
+        },
+        bio: {
+          short: "Full-stack developer, gamer, and photographer passionate about creating clean, efficient code and beautiful user experiences."
+        },
+        skills: {
+          "Frontend": ["React", "Next.js", "TypeScript", "Astro", "Vue.js", "HTML/CSS"],
+          "Backend": ["Node.js", "Python", "Django", "Express", "FastAPI"],
+          "Database": ["PostgreSQL", "MongoDB", "Redis", "SQLite"],
+          "DevOps & Tools": ["Docker", "AWS", "CI/CD", "Git", "Vercel"]
+        }
+      };
+      
+      this.sections = {
+        contact: true,
+        bio: true,
+        skills: true,
+        experience: true,
+        education: true
+      };
+      
+      this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
+      
+      this.initializeInterfaces();
+      this.initializeEventListeners();
+    }
+    
+    initializeInterfaces() {
+      const terminalInterface = document.querySelector('.terminal-interface');
+      const guiInterface = document.querySelector('.gui-interface');
+      
+      if (!terminalInterface || !guiInterface) {
+        setTimeout(() => this.initializeInterfaces(), 100);
+        return;
+      }
+      
+      // Get current theme
+      this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
+      
+      if (this.currentTheme === 'terminal') {
+        terminalInterface.style.display = 'flex';
+        guiInterface.style.display = 'none';
+        
+        // Focus terminal input
+        setTimeout(() => {
+          const terminalInput = document.getElementById('terminal-input');
+          if (terminalInput) {
+            terminalInput.focus();
+          }
+        }, 300);
+      } else {
+        terminalInterface.style.display = 'none';
+        guiInterface.style.display = 'grid';
+      }
+    }
+    
+    initializeEventListeners() {
+      // Remove any existing event listeners first
+      this.cleanupEventListeners();
+      
+      // GUI interface events
+      const toggles = document.querySelectorAll('.section-toggles input[type="checkbox"]');
+      toggles.forEach(toggle => {
+        toggle.addEventListener('change', this.handleToggleChange);
+      });
+      
+      // Export button events with null checks
+      const exportPdfBtn = document.getElementById('export-pdf');
+      const exportMdBtn = document.getElementById('export-md');
+      const exportTxtBtn = document.getElementById('export-txt');
+      
+      if (exportPdfBtn) {
+        exportPdfBtn.removeEventListener('click', this.handlePDFExport);
+        exportPdfBtn.addEventListener('click', this.handlePDFExport);
+      }
+      if (exportMdBtn) {
+        exportMdBtn.removeEventListener('click', this.handleMDExport);
+        exportMdBtn.addEventListener('click', this.handleMDExport);
+      }
+      if (exportTxtBtn) {
+        exportTxtBtn.removeEventListener('click', this.handleTXTExport);
+        exportTxtBtn.addEventListener('click', this.handleTXTExport);
+      }
+      
+      // Terminal interface events
+      const terminalInput = document.getElementById('terminal-input');
+      if (terminalInput) {
+        // Remove existing event listener if any
+        terminalInput.removeEventListener('keypress', this.handleTerminalInput);
+        terminalInput.addEventListener('keypress', this.handleTerminalInput);
+        
+        // Focus terminal input when in terminal theme
+        if (this.currentTheme === 'terminal') {
+          setTimeout(() => terminalInput.focus(), 500);
+        }
+      }
+      
+      // Suggestion clicks
+      document.querySelectorAll('.suggestion').forEach(suggestion => {
+        suggestion.addEventListener('click', () => {
+          const cmd = suggestion.getAttribute('data-cmd');
+          const input = document.getElementById('terminal-input');
+          if (input) {
+            input.value = cmd;
+            input.focus();
+          }
+        });
+      });
+      
+      // Theme change detection
+      window.addEventListener('themeChange', (e) => {
+        this.currentTheme = e.detail.theme;
+        this.initializeInterfaces();
+        
+        // Focus terminal input if switching to terminal theme
+        if (this.currentTheme === 'terminal') {
+          setTimeout(() => {
+            const terminalInput = document.getElementById('terminal-input');
+            if (terminalInput) terminalInput.focus();
+          }, 300);
+        }
+      });
+      
+      // System ready event
+      window.addEventListener('themeSystemReady', (e) => {
+        this.currentTheme = e.detail.theme;
+        this.initializeInterfaces();
+      });
+    }
+    
+    cleanupEventListeners() {
+      // Clean up any existing event listeners
+      const terminalInput = document.getElementById('terminal-input');
+      if (terminalInput) {
+        terminalInput.removeEventListener('keypress', this.handleTerminalInput);
+      }
+    }
+    
+    handleTerminalInput(e) {
+      if (e.key === 'Enter') {
+        this.handleTerminalCommand(e.target.value.trim());
+        e.target.value = '';
+      }
+    }
+    
+    handleToggleChange() {
+      this.updatePreview();
+    }
+    
+    handlePDFExport() {
+      this.exportPDF();
+    }
+    
+    handleMDExport() {
+      this.exportMarkdown();
+    }
+    
+    handleTXTExport() {
+      this.exportText();
+    }
+    
+    handleTerminalCommand(command) {
+      const output = document.getElementById('terminal-output');
+      const parts = command.toLowerCase().split(' ');
+      const cmd = parts[0];
+      
+      // Don't process empty commands
+      if (!cmd) return;
+      
+      // Add user input to terminal
+      const inputLine = document.createElement('div');
+      inputLine.className = 'command-line';
+      inputLine.innerHTML = `<span class="prompt">amrith@portfolio:~/resume$ </span><span class="command">${command}</span>`;
+      output.appendChild(inputLine);
+      
+      const responseDiv = document.createElement('div');
+      responseDiv.className = 'output';
+      
+      switch(cmd) {
+        case 'help':
+          responseDiv.innerHTML = `<div class="terminal-help">
+<div class="help-header">━━━ Resume Generator Commands ━━━</div>
+
+<div class="help-section">
+<div class="help-category">BASIC COMMANDS:</div>
+  help                    - Show this help message
+  sections               - List available resume sections
+  sections --toggle      - Toggle sections interactively
+  preview               - Show current resume preview
+  clear                 - Clear terminal output
+</div>
+
+<div class="help-section">
+<div class="help-category">GENERATION & EXPORT:</div>
+  generate [format]     - Generate resume (pdf, md, txt)
+  export [format]       - Export and download resume
+  config                - Show current configuration
+</div>
+
+<div class="help-section">
+<div class="help-category">EXAMPLES:</div>
+  <span class="example">sections --toggle</span>     # Interactive section selection
+  <span class="example">generate pdf</span>         # Generate PDF resume
+  <span class="example">export md</span>           # Export as Markdown
+  <span class="example">preview</span>             # Show resume content
+</div>
+
+<div class="help-footer">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+</div>`;
+          break;
+          
+        case 'sections':
+          if (parts[1] === '--toggle') {
+            responseDiv.innerHTML = `<div class="terminal-sections">
+<div class="sections-header">📋 Interactive Section Selection</div>
+
+<div class="sections-list">
+  <div class="section-item">1. Contact Information    <span class="status ${this.sections.contact ? 'enabled' : 'disabled'}">[${this.sections.contact ? '✓' : '✗'}]</span></div>
+  <div class="section-item">2. Professional Summary   <span class="status ${this.sections.bio ? 'enabled' : 'disabled'}">[${this.sections.bio ? '✓' : '✗'}]</span></div>
+  <div class="section-item">3. Skills & Technologies  <span class="status ${this.sections.skills ? 'enabled' : 'disabled'}">[${this.sections.skills ? '✓' : '✗'}]</span></div>
+  <div class="section-item">4. Experience History     <span class="status ${this.sections.experience ? 'enabled' : 'disabled'}">[${this.sections.experience ? '✓' : '✗'}]</span></div>
+  <div class="section-item">5. Education Background   <span class="status ${this.sections.education ? 'enabled' : 'disabled'}">[${this.sections.education ? '✓' : '✗'}]</span></div>
+</div>
+
+<div class="sections-usage">💡 Type section number (1-5) to toggle on/off</div>
+</div>`;
+          } else {
+            responseDiv.innerHTML = `<div class="terminal-sections">
+<div class="sections-header">📋 Available Resume Sections</div>
+
+<div class="sections-list">
+  <div class="section-item enabled">✓ Contact Information</div>
+  <div class="section-item enabled">✓ Professional Summary</div>
+  <div class="section-item enabled">✓ Skills & Technologies</div>
+  <div class="section-item enabled">✓ Experience History</div>
+  <div class="section-item enabled">✓ Education Background</div>
+</div>
+
+<div class="sections-usage">💡 Use 'sections --toggle' for interactive selection</div>
+</div>`;
+          }
+          break;
+          
+        case 'preview':
+          const previewContent = this.generatePreviewText();
+          responseDiv.innerHTML = `<pre>Resume Preview:
+${previewContent}</pre>`;
+          break;
+          
+        case 'generate':
+          const format = parts[1] || 'pdf';
+          if (['pdf', 'md', 'txt'].includes(format)) {
+            responseDiv.innerHTML = `<div class="terminal-generate">
+<div class="generate-header">🔧 Generating resume in ${format.toUpperCase()} format...</div>
+
+<div class="progress-steps">
+  <div class="step">✓ Loading profile data</div>
+  <div class="step">✓ Processing sections</div>
+  <div class="step">✓ Applying template</div>
+  <div class="step">✓ Rendering content</div>
+</div>
+
+<div class="generate-success">✅ Resume generated successfully!</div>
+<div class="generate-next">💾 Use 'export ${format}' to download.</div>
+</div>`;
+          } else {
+            responseDiv.innerHTML = `<div class="terminal-error">
+<div class="error-header">❌ Error: Invalid format '${format}'</div>
+<div class="error-info">Supported formats: pdf, md, txt</div>
+<div class="error-usage">Usage: generate [pdf|md|txt]</div>
+</div>`;
+          }
+          break;
+          
+        case 'export':
+          const exportFormat = parts[1] || 'pdf';
+          if (['pdf', 'md', 'txt'].includes(exportFormat)) {
+            responseDiv.innerHTML = `<pre>Exporting resume as ${exportFormat.toUpperCase()}...
+
+✓ Preparing content
+✓ Formatting output
+✓ Initiating download
+
+Download started! Check your downloads folder.</pre>`;
+            
+            // Actually trigger the export
+            setTimeout(() => {
+              if (exportFormat === 'pdf') this.exportPDF();
+              else if (exportFormat === 'md') this.exportMarkdown();
+              else if (exportFormat === 'txt') this.exportText();
+            }, 1000);
+          } else {
+            responseDiv.innerHTML = `<pre>Error: Invalid export format '${exportFormat}'
+Supported formats: pdf, md, txt
+
+Usage: export [pdf|md|txt]</pre>`;
+          }
+          break;
+          
+        case 'config':
+          responseDiv.innerHTML = `<pre>Current Configuration:
+
+Output Directory: ~/resume/output/
+Template Style:   modern
+Default Format:   pdf
+Sections Enabled: ${Object.entries(this.sections).filter(([k,v]) => v).map(([k,v]) => k).join(', ')}
+
+Generator Version: 3.0
+Last Updated:     ${new Date().toLocaleDateString()}</pre>`;
+          break;
+          
+        case 'clear':
+          output.innerHTML = '';
+          return; // Don't add the command to output
+          
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+          const sectionMap = {
+            '1': 'contact',
+            '2': 'bio', 
+            '3': 'skills',
+            '4': 'experience',
+            '5': 'education'
+          };
+          const section = sectionMap[cmd];
+          this.sections[section] = !this.sections[section];
+          const sectionNames = {
+            'contact': 'Contact Information',
+            'bio': 'Professional Summary',
+            'skills': 'Skills & Technologies', 
+            'experience': 'Experience History',
+            'education': 'Education Background'
+          };
+          responseDiv.innerHTML = `<pre>Toggled ${sectionNames[section]}: ${this.sections[section] ? 'ON' : 'OFF'}
+
+Current sections:
+${Object.entries(this.sections).map(([k,v]) => `  ${sectionNames[k]}: ${v ? '✓' : '✗'}`).join('\n')}</pre>`;
+          this.updatePreviewFromSections();
+          break;
+          
+        default:
+          responseDiv.innerHTML = `<pre>Command not found: ${command}
+
+Type 'help' to see available commands.</pre>`;
+          break;
+      }
+      
+      output.appendChild(responseDiv);
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    generatePreviewText() {
+      let preview = '';
+      
+      if (this.sections.contact) {
+        preview += `${this.portfolioData.personal.name}\n${this.portfolioData.personal.title}\n\n`;
+        preview += `Email: ${this.portfolioData.contact.email}\n`;
+        preview += `GitHub: ${this.portfolioData.contact.github}\n`;
+        preview += `LinkedIn: ${this.portfolioData.contact.linkedin}\n\n`;
+      }
+      
+      if (this.sections.bio) {
+        preview += `PROFESSIONAL SUMMARY\n${'='.repeat(20)}\n`;
+        preview += `${this.portfolioData.bio.short}\n\n`;
+      }
+      
+      if (this.sections.skills) {
+        preview += `SKILLS & TECHNOLOGIES\n${'='.repeat(20)}\n`;
+        Object.entries(this.portfolioData.skills).forEach(([category, skills]) => {
+          preview += `${category}: ${skills.join(', ')}\n`;
+        });
+        preview += '\n';
+      }
+      
+      return preview;
+    }
+    
+    updatePreviewFromSections() {
+      const sections = ['contact', 'bio', 'skills', 'experience', 'education'];
+      
+      sections.forEach(section => {
+        const sectionElement = document.getElementById(`${section}-section`);
+        if (sectionElement) {
+          sectionElement.style.display = this.sections[section] ? 'block' : 'none';
+        }
+      });
+    }
+    
+    updatePreview() {
+      const sections = ['contact', 'bio', 'skills', 'experience', 'education'];
+      
+      sections.forEach(section => {
+        const checkbox = document.getElementById(`include-${section}`);
+        const sectionElement = document.getElementById(`${section}-section`);
+        
+        if (checkbox && sectionElement) {
+          sectionElement.style.display = checkbox.checked ? 'block' : 'none';
+          this.sections[section] = checkbox.checked;
+        }
+      });
+    }
+    
+    getResumeContent() {
+      const sections = [];
+      
+      if (this.sections.contact) {
+        sections.push({
+          type: 'contact',
+          content: this.portfolioData.personal.name + '\n' + this.portfolioData.personal.title
+        });
+      }
+      
+      if (this.sections.bio) {
+        sections.push({
+          type: 'bio',
+          title: 'Professional Summary',
+          content: this.portfolioData.bio.short
+        });
+      }
+      
+      if (this.sections.skills) {
+        const skillsContent = Object.entries(this.portfolioData.skills)
+          .map(([category, skills]) => `${category}: ${skills.join(', ')}`)
+          .join('\n');
+        
+        sections.push({
+          type: 'skills',
+          title: 'Skills & Technologies',
+          content: skillsContent
+        });
+      }
+      
+      if (this.sections.experience) {
+        sections.push({
+          type: 'experience',
+          title: 'Experience',
+          content: 'Full-Stack Developer (2023 - Present)\nTech Company • Remote\n- Developed and maintained web applications\n- Collaborated with cross-functional teams\n- Optimized application performance'
+        });
+      }
+      
+      if (this.sections.education) {
+        sections.push({
+          type: 'education',
+          title: 'Education',
+          content: 'Bachelor\'s in Computer Science (2022)\nUniversity Name • Location\nRelevant coursework: Data Structures, Algorithms, Software Engineering'
+        });
+      }
+      
+      return sections;
+    }
+    
+    exportMarkdown() {
+      const sections = this.getResumeContent();
+      let markdown = '';
+      
+      sections.forEach(section => {
+        if (section.type === 'contact') {
+          markdown += `# ${this.portfolioData.personal.name}\n`;
+          markdown += `## ${this.portfolioData.personal.title}\n\n`;
+          markdown += `📧 ${this.portfolioData.contact.email}\n`;
+          markdown += `🔗 ${this.portfolioData.contact.github}\n`;
+          markdown += `💼 ${this.portfolioData.contact.linkedin}\n\n`;
+        } else {
+          markdown += `## ${section.title}\n\n${section.content}\n\n`;
+        }
+      });
+      
+      this.downloadFile(markdown, 'resume.md', 'text/markdown');
+    }
+    
+    exportText() {
+      const sections = this.getResumeContent();
+      let text = '';
+      
+      sections.forEach(section => {
+        if (section.type === 'contact') {
+          text += `${this.portfolioData.personal.name}\n`;
+          text += `${this.portfolioData.personal.title}\n\n`;
+          text += `Email: ${this.portfolioData.contact.email}\n`;
+          text += `GitHub: ${this.portfolioData.contact.github}\n`;
+          text += `LinkedIn: ${this.portfolioData.contact.linkedin}\n\n`;
+        } else {
+          text += `${section.title.toUpperCase()}\n`;
+          text += '='.repeat(section.title.length) + '\n';
+          text += `${section.content}\n\n`;
+        }
+      });
+      
+      this.downloadFile(text, 'resume.txt', 'text/plain');
+    }
+    
+    exportPDF() {
+      // Generate resume content programmatically
+      const sections = this.getResumeContent();
+      let htmlContent = '';
+      
+      sections.forEach(section => {
+        if (section.type === 'contact') {
+          htmlContent += `
+            <div class="resume-header">
+              <h1 class="resume-name">${this.portfolioData.personal.name}</h1>
+              <div class="resume-title">${this.portfolioData.personal.title}</div>
+            </div>
+            <div class="resume-contact">
+              <div class="contact-item">Email: ${this.portfolioData.contact.email}</div>
+              <div class="contact-item">GitHub: ${this.portfolioData.contact.github}</div>
+              <div class="contact-item">LinkedIn: ${this.portfolioData.contact.linkedin}</div>
+            </div>
+          `;
+        } else {
+          htmlContent += `
+            <div class="resume-section">
+              <h2 class="section-title">${section.title}</h2>
+              <div class="section-content">${section.content.replace(/\n/g, '<br>')}</div>
+            </div>
+          `;
+        }
+      });
+      
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Resume - ${this.portfolioData.personal.name}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              line-height: 1.6; 
+              margin: 20px;
+              color: #333;
+            }
+            .resume-header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .resume-name { 
+              font-size: 28px; 
+              margin-bottom: 5px; 
+              color: #2c3e50;
+            }
+            .resume-title { 
+              font-size: 16px; 
+              color: #7f8c8d; 
+              margin-bottom: 20px;
+            }
+            .resume-contact {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .section-title { 
+              font-size: 18px; 
+              border-bottom: 2px solid #3498db; 
+              padding-bottom: 5px; 
+              margin: 25px 0 15px 0;
+              color: #2c3e50;
+            }
+            .section-content {
+              margin-bottom: 20px;
+            }
+            .contact-item { 
+              margin: 5px 0;
+            }
+            @media print {
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+    
+    downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+    }
+  }
+  
+  // Global resume generator instance
+  let resumeGeneratorInstance = null;
+  
+  function initResumeGenerator() {
+    // Clean up existing instance
+    if (resumeGeneratorInstance) {
+      resumeGeneratorInstance = null;
+    }
+    
+    // Create new instance
+    resumeGeneratorInstance = new ResumeGenerator();
+  }
+  
+  // Use theme system queue for proper initialization
+  function attemptInit() {
+    if (window.onThemeReady) {
+      window.onThemeReady(initResumeGenerator);
+    } else {
+      // Fallback if theme system isn't ready yet
+      setTimeout(attemptInit, 50);
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attemptInit);
+  } else {
+    attemptInit();
+  }
+  
+  // Handle Astro navigation
+  document.addEventListener('astro:page-load', attemptInit);
+  document.addEventListener('astro:after-swap', attemptInit);
+</script>
+
+<style>
+  .resume-generator {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  /* Terminal Interface Styles */
+  .terminal-interface {
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .terminal-output {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 500px;
+    background: var(--terminal-bg);
+  }
+  
+  .command-line {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .prompt {
+    color: var(--terminal-green);
+    user-select: none;
+  }
+  
+  .command {
+    color: var(--terminal-text);
+    margin-left: 8px;
+  }
+  
+  .output {
+    margin: 8px 0 16px 0;
+    color: var(--terminal-cyan);
+  }
+  
+  .output pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--terminal-text);
+  }
+  
+  .terminal-input-line {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--terminal-bg);
+    border-top: 1px solid var(--terminal-border);
+  }
+  
+  .terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--terminal-text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    margin-left: 8px;
+  }
+  
+  .terminal-suggestions {
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid var(--terminal-border);
+  }
+  
+  .suggestion-title {
+    color: var(--terminal-yellow);
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .suggestion {
+    background: var(--terminal-bg-secondary);
+    color: var(--terminal-cyan);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .suggestion:hover {
+    background: var(--terminal-cyan);
+    color: var(--terminal-bg);
+  }
+  
+  /* GUI Interface Styles */
+  .gui-interface {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+  }
+  
+  .resume-controls {
+    background: var(--control-bg, #f8f9fa);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e1e5e9);
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+  }
+  
+  .theme-terminal .resume-controls {
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-gray);
+    border-radius: 0;
+    padding: 20px;
+  }
+  
+  .resume-controls h2 {
+    margin-top: 0;
+    color: var(--heading-color, #2c3e50);
+  }
+  
+  .theme-terminal .resume-controls h2 {
+    color: var(--terminal-purple);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .section-toggles {
+    margin: 1.5rem 0;
+  }
+  
+  .toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .toggle-item:hover {
+    background-color: var(--hover-bg, rgba(52, 152, 219, 0.1));
+  }
+  
+  .toggle-item input[type="checkbox"] {
+    margin-right: 0.75rem;
+    transform: scale(1.2);
+  }
+  
+  .export-controls {
+    border-top: 1px solid var(--border-color, #e1e5e9);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .export-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  .export-btn {
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  
+  .theme-terminal .export-btn {
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: normal;
+    border: 1px solid var(--terminal-gray);
+  }
+  
+  .pdf-btn {
+    background: #e74c3c;
+    color: white;
+  }
+  
+  .theme-terminal .pdf-btn {
+    background: var(--terminal-red);
+    color: var(--terminal-bg);
+  }
+  
+  .pdf-btn:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+  }
+  
+  .theme-terminal .pdf-btn:hover {
+    background: var(--terminal-red);
+    opacity: 0.8;
+    transform: none;
+  }
+  
+  .md-btn {
+    background: #34495e;
+    color: white;
+  }
+  
+  .theme-terminal .md-btn {
+    background: var(--terminal-blue);
+    color: var(--terminal-bg);
+  }
+  
+  .md-btn:hover {
+    background: #2c3e50;
+    transform: translateY(-1px);
+  }
+  
+  .theme-terminal .md-btn:hover {
+    background: var(--terminal-blue);
+    opacity: 0.8;
+    transform: none;
+  }
+  
+  .txt-btn {
+    background: #27ae60;
+    color: white;
+  }
+  
+  .theme-terminal .txt-btn {
+    background: var(--terminal-green);
+    color: var(--terminal-bg);
+  }
+  
+  .txt-btn:hover {
+    background: #229954;
+    transform: translateY(-1px);
+  }
+  
+  .theme-terminal .txt-btn:hover {
+    background: var(--terminal-green);
+    opacity: 0.8;
+    transform: none;
+  }
+  
+  .resume-preview {
+    background: white;
+    border: 1px solid var(--border-color, #e1e5e9);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Terminal theme overrides for resume section */
+  .theme-terminal .resume-preview {
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-gray);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .resume-document {
+    padding: 2rem;
+    background: white;
+    color: #333;
+    line-height: 1.6;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  
+  .theme-terminal .resume-document {
+    background: var(--terminal-bg);
+    color: var(--terminal-fg);
+    font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    line-height: 1.5;
+    padding: 20px;
+  }
+  
+  .resume-header {
+    margin-bottom: 1rem;
+  }
+  
+  .resume-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    color: #2c3e50;
+  }
+  
+  .theme-terminal .resume-name {
+    color: var(--terminal-cyan);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .resume-title {
+    font-size: 1.1rem;
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+  }
+  
+  .theme-terminal .resume-title {
+    color: var(--terminal-yellow);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .resume-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #ecf0f1;
+  }
+  
+  .theme-terminal .resume-contact {
+    border-bottom: 1px solid var(--terminal-gray);
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  
+  .contact-item {
+    font-size: 0.9rem;
+    color: #5a6c7d;
+  }
+  
+  .theme-terminal .contact-item {
+    color: var(--terminal-green);
+    font-size: 14px;
+  }
+  
+  .resume-section {
+    margin-bottom: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .theme-terminal .section-title {
+    color: var(--terminal-purple);
+    font-size: 14px;
+    font-weight: normal;
+    border-bottom: 1px solid var(--terminal-gray);
+    margin: 16px 0 8px 0;
+    padding-bottom: 4px;
+  }
+  
+  .bio-text {
+    color: #5a6c7d;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  
+  .theme-terminal .bio-text {
+    color: var(--terminal-fg);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .skill-category-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .theme-terminal .skill-category-title {
+    color: var(--terminal-cyan);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .theme-terminal .skill-list {
+    gap: 8px;
+  }
+  
+  .skill-tag {
+    background: #ecf0f1;
+    color: #2c3e50;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .theme-terminal .skill-tag {
+    background: var(--terminal-gray);
+    color: var(--terminal-bg);
+    padding: 2px 6px;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .experience-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #ecf0f1;
+  }
+  
+  .theme-terminal .experience-item {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--terminal-gray);
+  }
+  
+  .experience-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  
+  .job-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+  
+  .theme-terminal .job-title {
+    color: var(--terminal-blue);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .job-period {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 500;
+  }
+  
+  .theme-terminal .job-period {
+    color: var(--terminal-gray);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .company {
+    color: #7f8c8d;
+    font-style: italic;
+    margin-bottom: 0.75rem;
+  }
+  
+  .theme-terminal .company {
+    color: var(--terminal-yellow);
+    font-style: normal;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .job-responsibilities {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+  
+  .theme-terminal .job-responsibilities {
+    padding-left: 16px;
+  }
+  
+  .job-responsibilities li {
+    margin: 0.25rem 0;
+    color: #5a6c7d;
+  }
+  
+  .theme-terminal .job-responsibilities li {
+    margin: 4px 0;
+    color: var(--terminal-fg);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .education-item {
+    margin-bottom: 1rem;
+  }
+  
+  .theme-terminal .education-item {
+    margin-bottom: 12px;
+  }
+  
+  .degree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  
+  .degree-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+  
+  .theme-terminal .degree-title {
+    color: var(--terminal-blue);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .graduation-year {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 500;
+  }
+  
+  .theme-terminal .graduation-year {
+    color: var(--terminal-gray);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .institution {
+    color: #7f8c8d;
+    font-style: italic;
+    margin-bottom: 0.5rem;
+  }
+  
+  .theme-terminal .institution {
+    color: var(--terminal-yellow);
+    font-style: normal;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .education-details {
+    color: #5a6c7d;
+    font-size: 0.9rem;
+  }
+  
+  .theme-terminal .education-details {
+    color: var(--terminal-fg);
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 1024px) {
+    .gui-interface {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .resume-controls {
+      position: static;
+    }
+    
+    .export-buttons {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .resume-generator {
+      padding: 1rem;
+    }
+    
+    .resume-document {
+      padding: 1.5rem;
+    }
+    
+    .job-header,
+    .degree-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .export-buttons {
+      flex-direction: column;
+    }
+    
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .terminal-interface {
+      max-height: 400px;
+    }
+    
+    .terminal-output {
+      max-height: 300px;
+    }
+  }
+</style> 

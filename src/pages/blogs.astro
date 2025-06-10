@@ -1,45 +1,171 @@
 ---
-import MainHead from '../components/MainHead.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
 import BlogPreview from '../components/BlogPreview.astro';
-import {ClientRouter} from "astro:transitions"
+import LsOutput from '../components/LsOutput.astro';
+import TerminalCommand from '../components/TerminalCommand.astro';
+import CatOutput from '../components/CatOutput.astro';
+
 const blogs = Object.values(import.meta.glob('./blog/**/*.md', { eager: true }))
-	.filter(({ frontmatter }) => !!frontmatter.publishDate)
+	.filter((blog: any) => !!blog.frontmatter?.publishDate)
 	.sort(
 		(a: any, b: any) =>
 			new Date(b.frontmatter.publishDate).valueOf() - new Date(a.frontmatter.publishDate).valueOf()
 	);
+
+// Blogs directory items for ls command
+const blogsDirectoryItems = [
+  {
+    name: '.',
+    isDirectory: true,
+    isAccessible: true,
+    size: 4096,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  {
+    name: '..',
+    isDirectory: true,
+    isAccessible: true,
+    size: 4096,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  {
+    name: 'README.md',
+    isDirectory: false,
+    isAccessible: true,
+    size: 2048,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  ...blogs.map((blog: any, index) => ({
+    name: `${blog.frontmatter.title.toLowerCase().replace(/\s+/g, '-')}.md`,
+    isDirectory: false,
+    isAccessible: true,
+    size: 1024 + index * 256,
+    date: 'Dec 12',
+    time: '04:20',
+    href: blog.url
+  }))
+];
+
+// Markdown content for cat README.md
+const blogsReadme = `
+<div class="md-header"># Mind Stream - Blog Posts</div>
+
+<div class="md-subheader">## Overview</div>
+<div class="md-text">${blogs.length} thought-provoking posts exploring technology, development, and creative insights.</div>
+
+<div class="md-subheader">## Recent Posts</div>
+${blogs.slice(0, 3).map((blog: any) => `
+<div class="blog-entry">
+  <div class="md-subheader">### ${blog.frontmatter.title}</div>
+  <div class="md-text">${blog.frontmatter.description || 'A deep dive into thoughts and ideas.'}</div>
+  <div class="md-list-item">**Published:** ${blog.frontmatter.publishDate}</div>
+  <div class="md-list-item">**Tags:** ${blog.frontmatter.tags?.join(', ') || 'General'}</div>
+</div>
+`).join('')}
+
+<div class="md-subheader">## Statistics</div>
+<div class="md-list-item">- Total Posts: ${blogs.length}</div>
+<div class="md-list-item">- Categories: Tech, Development, Personal Insights</div>
+<div class="md-list-item">- Status: Regularly updated with new content</div>
+
+<div class="md-text">Use 'cat blogs/&lt;post-name&gt;.md' to read individual posts.</div>
+`;
+
+
 ---
 
-<html lang="en">
-	<head>
-		<ThemeSwitch/>
-		<MainHead
-			title="Blog | Amrith"
-			description="Learn about Amrith's most recent projects"
-		/>
-		<style>
-			.grid {
-				display: grid;
-				grid-gap: 3rem;
-			}
-			.title {
-				margin-top: 2rem;
-				margin-bottom: 2rem;
-			}
-		</style>
-        <ClientRouter/>
-	</head>
-	<body>
-		<Nav />
-		<div class="wrapper">
-			<h1 class="title">Mind Stream</h1>
-			<div class="grid">
-				{blogs.map((blog) => <BlogPreview blog={blog} />)}
-			</div>
-		</div>
-		<Footer />
-	</body>
-</html>
+<BaseLayout title="Mind Stream | Amrith" description="Amrith's blog - thoughts on technology, development, and life" currentPage="/blog">
+  <!-- Terminal Theme View -->
+  <div class="terminal-view">
+    <div class="terminal-container">
+      <div class="terminal">
+          <TerminalCommand command="cat blogs/README.md" />
+          <div class="output">
+            <CatOutput type="markdown" content={blogsReadme} />
+          </div>
+          
+          <TerminalCommand command="ls -la ~/blogs/" />
+          <div class="output">
+            <LsOutput items={blogsDirectoryItems} totalSize={blogs.length + 8} />
+          </div>
+          
+          <div class="prompt">
+            <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">_</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Professional Theme View -->
+  <div class="professional-view">
+    <Nav />
+    <main class="container">
+      <h1 class="title">Mind Stream</h1>
+      <div class="blogs-grid">
+        {blogs.map((blog) => <BlogPreview blog={blog} />)}
+      </div>
+    </main>
+    <Footer />
+  </div>
+
+  <!-- Personal Theme View -->
+  <div class="personal-view">
+    <Nav />
+    <div class="wrapper">
+      <h1 class="title">Mind Stream</h1>
+      <div class="grid">
+        {blogs.map((blog) => <BlogPreview blog={blog} />)}
+      </div>
+    </div>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Professional Theme Styles */
+  .theme-professional .professional-view .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .theme-professional .professional-view .blogs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .theme-professional .professional-view .title {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: var(--pro-accent);
+  }
+
+  /* Personal Theme Styles */
+  .theme-personal .personal-view .grid {
+    display: grid;
+    grid-gap: 3rem;
+  }
+  
+  .theme-personal .personal-view .title {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Terminal Theme - Hide in other themes */
+  .theme-professional .terminal-view,
+  .theme-personal .terminal-view {
+    display: none !important;
+  }
+  
+  .theme-terminal .professional-view,
+  .theme-terminal .personal-view {
+    display: none !important;
+  }
+</style>

@@ -1,0 +1,116 @@
+/* Simple and Classy Theme Transitions */
+.theme-switching {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.theme-switching * {
+  transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* Subtle Page Transition Loader */
+.page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--transition-bg, rgba(30, 30, 46, 0.95));
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  backdrop-filter: blur(4px);
+}
+
+.page-transition.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.page-transition-loader {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--accent-color, #74c7ec);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Theme-specific subtle loaders */
+.theme-terminal .page-transition {
+  background: rgba(30, 30, 46, 0.95);
+}
+
+.theme-terminal .page-transition-loader {
+  border-color: rgba(116, 199, 236, 0.2);
+  border-top-color: var(--terminal-green, #a6e3a1);
+}
+
+.theme-professional .page-transition {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.theme-professional .page-transition-loader {
+  border-color: rgba(52, 152, 219, 0.2);
+  border-top-color: var(--pro-accent, #3498db);
+}
+
+.theme-personal .page-transition {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.theme-personal .page-transition-loader {
+  border-color: rgba(72, 134, 255, 0.2);
+  border-top-color: var(--c-blue, #4886ff);
+}
+
+/* Elegant theme view transitions */
+.terminal-view,
+.professional-view,
+.personal-view {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.terminal-view.active,
+.professional-view.active,
+.personal-view.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Subtle component animations */
+.component-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Accessibility - respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  .theme-switching,
+  .theme-switching *,
+  .page-transition,
+  .terminal-view,
+  .professional-view,
+  .personal-view,
+  .component-enter {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .page-transition-loader {
+    animation: none !important;
+  }
+} 

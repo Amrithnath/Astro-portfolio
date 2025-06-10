@@ -1,0 +1,19 @@
+---
+export interface Props {
+  command: string;
+  user?: string;
+  host?: string;
+  path?: string;
+}
+
+const { 
+  command, 
+  user = 'amrith', 
+  host = 'portfolio', 
+  path = '~' 
+} = Astro.props;
+---
+
+<div class="prompt">
+  <span class="user">{user}</span><span class="symbol">@</span><span class="host">{host}</span><span class="symbol">:</span><span class="path">{path}</span><span class="symbol">$</span><span class="command">{command}</span>
+</div> 

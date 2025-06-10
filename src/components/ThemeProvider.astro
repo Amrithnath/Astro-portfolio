@@ -1,0 +1,154 @@
+---
+// Theme Provider Component - Manages layout theme switching
+---
+
+<script is:inline>
+  // Global theme management system
+  (function() {
+    let currentTheme = 'terminal'; // Default theme
+    let isInitialized = false;
+    let initQueue = [];
+    
+    // Theme state persistence
+    function loadThemePreference() {
+      try {
+        const savedTheme = localStorage.getItem('portfolio-layout-theme');
+        if (savedTheme && ['terminal', 'professional', 'personal'].includes(savedTheme)) {
+          return savedTheme;
+        }
+      } catch (e) {
+        console.warn('localStorage not available');
+      }
+      return 'terminal';
+    }
+    
+    function saveThemePreference(theme) {
+      try {
+        localStorage.setItem('portfolio-layout-theme', theme);
+      } catch (e) {
+        console.warn('Could not save theme preference');
+      }
+    }
+
+    // Apply theme function with improved reliability
+    function applyTheme(theme) {
+      // Remove all theme classes
+      document.documentElement.classList.remove('theme-terminal', 'theme-professional', 'theme-personal');
+      document.body.classList.remove('theme-terminal', 'theme-professional', 'theme-personal');
+      
+      // Add current theme class to both html and body
+      document.documentElement.classList.add(`theme-${theme}`);
+      document.body.classList.add(`theme-${theme}`);
+      
+      // Handle view visibility
+      const views = ['terminal-view', 'professional-view', 'personal-view'];
+      views.forEach(viewClass => {
+        const view = document.querySelector(`.${viewClass}`);
+        if (view) {
+          view.classList.remove('active');
+          view.style.display = 'none';
+        }
+      });
+      
+      // Show current theme view
+      const currentView = document.querySelector(`.${theme}-view`);
+      if (currentView) {
+        currentView.style.display = 'block';
+        currentView.offsetHeight; // Trigger reflow
+        currentView.classList.add('active');
+      }
+      
+      // Save preference and update current theme
+      saveThemePreference(theme);
+      currentTheme = theme;
+    }
+
+    // Process any queued initialization functions
+    function processQueue() {
+      while (initQueue.length > 0) {
+        const fn = initQueue.shift();
+        try {
+          fn();
+        } catch (e) {
+          console.error('Error processing init queue:', e);
+        }
+      }
+    }
+
+    // Initialize theme system
+    function initThemeSystem() {
+      if (isInitialized) return;
+      
+      // Load saved theme
+      currentTheme = loadThemePreference();
+      
+      // Apply initial theme
+      applyTheme(currentTheme);
+      
+      // Mark as initialized
+      isInitialized = true;
+      
+      // Process any queued functions
+      processQueue();
+      
+      // Dispatch ready event
+      window.dispatchEvent(new CustomEvent('themeSystemReady', {
+        detail: { theme: currentTheme }
+      }));
+    }
+
+    // Expose global theme switching function
+    window.switchToTheme = function(theme) {
+      if (['terminal', 'professional', 'personal'].includes(theme)) {
+        const previousTheme = currentTheme;
+        applyTheme(theme);
+        
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('themeChange', {
+          detail: { theme, previousTheme }
+        }));
+      }
+    };
+
+    window.getCurrentTheme = () => currentTheme;
+    
+    window.reapplyTheme = function() {
+      applyTheme(currentTheme);
+    };
+    
+    // Queue function for execution after theme system is ready
+    window.onThemeReady = function(fn) {
+      if (isInitialized) {
+        fn();
+      } else {
+        initQueue.push(fn);
+      }
+    };
+    
+    // Enhanced initialization
+    function attemptInit() {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initThemeSystem);
+      } else {
+        initThemeSystem();
+      }
+    }
+    
+    // Handle Astro navigation
+    function handleAstroNavigation() {
+      isInitialized = false;
+      setTimeout(initThemeSystem, 50);
+    }
+    
+    // Initialize immediately
+    attemptInit();
+    
+    // Handle navigation events
+    document.addEventListener('astro:page-load', handleAstroNavigation);
+    document.addEventListener('astro:after-swap', handleAstroNavigation);
+    window.addEventListener('load', () => {
+      if (!isInitialized) initThemeSystem();
+    });
+    
+  })();
+</script> 

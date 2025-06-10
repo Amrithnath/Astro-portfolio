@@ -1,0 +1,29 @@
+---
+// Theme wrapper component for pages
+import TerminalView from './TerminalView.astro';
+import ProfessionalView from './ProfessionalView.astro';
+import PersonalView from './PersonalView.astro';
+
+export interface Props {
+  terminalContent: any;
+  professionalContent: any;
+  personalContent: any;
+}
+
+const { terminalContent, professionalContent, personalContent } = Astro.props;
+---
+
+<!-- Terminal Theme View -->
+<div class="theme-terminal">
+  <TerminalView {...terminalContent} />
+</div>
+
+<!-- Professional Theme View -->
+<div class="theme-professional">
+  <ProfessionalView {...professionalContent} />
+</div>
+
+<!-- Personal Theme View -->
+<div class="theme-personal">
+  <PersonalView {...personalContent} />
+</div> 

@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import ResumeGenerator from '../components/ResumeGenerator.astro';
+import { portfolioData } from '../data/portfolio';
+
+
+---
+
+<BaseLayout title="Resume Generator | Amrith Shanbhag" description="Generate and download custom resumes in multiple formats" currentPage="/resume">
+  <!-- Terminal Theme View -->
+  <div class="terminal-view">
+    <ResumeGenerator theme="terminal" />
+  </div>
+
+  <!-- Professional Theme View -->
+  <div class="professional-view">
+    <Nav />
+    <main class="container">
+      <div class="page-header">
+        <h1>Resume Generator</h1>
+        <p>Create a customized resume by selecting the sections you want to include, then download in your preferred format.</p>
+      </div>
+      <ResumeGenerator theme="professional" />
+    </main>
+    <Footer />
+  </div>
+
+  <!-- Personal Theme View -->
+  <div class="personal-view">
+    <Nav />
+    <div class="wrapper">
+      <div class="page-header">
+        <h1>Resume Builder</h1>
+        <p>Build your perfect resume with our interactive generator. Choose what to include and download instantly!</p>
+      </div>
+      <ResumeGenerator theme="personal" />
+    </div>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Professional Theme Styles */
+  .theme-professional .professional-view .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .theme-professional .professional-view .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .theme-professional .professional-view .page-header h1 {
+    color: var(--pro-accent);
+    margin-bottom: 1rem;
+  }
+  
+  .theme-professional .professional-view .page-header p {
+    color: var(--pro-text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Personal Theme Styles */
+  .theme-personal .personal-view .wrapper {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
+  
+  .theme-personal .personal-view .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .theme-personal .personal-view .page-header h1 {
+    color: var(--c-blue);
+    margin-bottom: 1rem;
+  }
+  
+  .theme-personal .personal-view .page-header p {
+    color: var(--c-gray);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Terminal Theme - Full screen */
+  .theme-terminal .terminal-view {
+    height: 100vh;
+    width: 100%;
+  }
+
+  /* Terminal Theme - Hide in other themes */
+  .theme-professional .terminal-view,
+  .theme-personal .terminal-view {
+    display: none !important;
+  }
+  
+  .theme-terminal .professional-view,
+  .theme-terminal .personal-view {
+    display: none !important;
+  }
+</style> 

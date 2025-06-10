@@ -1,0 +1,866 @@
+/* Terminal Theme - Catppuccin Mocha */
+
+.theme-terminal .terminal-view {
+  display: block;
+}
+
+.theme-terminal .professional-view,
+.theme-terminal .personal-view {
+  display: none !important;
+}
+
+/* Hide terminal elements completely in other themes */
+.theme-professional .terminal-view,
+.theme-personal .terminal-view {
+  display: none !important;
+}
+
+.theme-professional .prompt,
+.theme-professional .user,
+.theme-professional .symbol,
+.theme-professional .host,
+.theme-professional .path,
+.theme-professional .command,
+.theme-professional .cursor,
+.theme-professional .terminal,
+.theme-professional .terminal-container,
+.theme-professional .terminal-content,
+.theme-professional .command-block,
+.theme-professional .command-output {
+  display: none !important;
+}
+
+.theme-personal .prompt,
+.theme-personal .user,
+.theme-personal .symbol,
+.theme-personal .host,
+.theme-personal .path,
+.theme-personal .command,
+.theme-personal .cursor,
+.theme-personal .terminal,
+.theme-personal .terminal-container,
+.theme-personal .terminal-content,
+.theme-personal .command-block,
+.theme-personal .command-output {
+  display: none !important;
+}
+
+.theme-terminal {
+  --terminal-bg: #1e1e2e;
+  --terminal-fg: #cdd6f4;
+  --terminal-green: #a6e3a1;
+  --terminal-blue: #89b4fa;
+  --terminal-purple: #cba6f7;
+  --terminal-yellow: #f9e2af;
+  --terminal-red: #f38ba8;
+  --terminal-cyan: #94e2d5;
+  --terminal-gray: #6c7086;
+  --window-bg: #313244;
+  --window-border: #45475a;
+}
+
+.theme-terminal body,
+.theme-terminal .terminal-view {
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  margin: 0;
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.theme-terminal .terminal-container {
+  min-height: 100vh;
+  padding-top: 90px; /* Account for fixed navigation + status bar + margin */
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.theme-terminal .window {
+  background: var(--terminal-bg);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.theme-terminal .window-header {
+  background: var(--window-border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--terminal-gray);
+}
+
+.theme-terminal .window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-terminal .control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.theme-terminal .control.close { background: #ff5f57; }
+.theme-terminal .control.minimize { background: #ffbd2e; }
+.theme-terminal .control.maximize { background: #28ca42; }
+
+.theme-terminal .window-title {
+  color: var(--terminal-fg);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.theme-terminal .terminal {
+  padding: 30px 20px 100px 20px; /* Extra top and bottom padding */
+  background: var(--terminal-bg);
+  overflow: visible;
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+.theme-terminal .prompt {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 8px 0;
+  flex-wrap: wrap;
+}
+
+.theme-terminal .user { color: var(--terminal-green); }
+.theme-terminal .symbol { color: var(--terminal-gray); }
+.theme-terminal .host { color: var(--terminal-blue); }
+.theme-terminal .path { color: var(--terminal-purple); }
+.theme-terminal .command { color: var(--terminal-yellow); margin-left: 8px; }
+
+.theme-terminal .output {
+  margin: 12px 0;
+  padding-left: 0;
+}
+
+.theme-terminal .ascii-art {
+  color: var(--terminal-purple);
+  font-size: 16px;
+  line-height: 1.2;
+  margin: 30px 0;
+  white-space: pre;
+  text-align: center;
+  font-weight: bold;
+}
+
+.theme-terminal .file-tree {
+  font-family: 'JetBrains Mono', monospace;
+  margin: 12px 0;
+}
+
+.theme-terminal .file-line {
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.theme-terminal .folder { color: var(--terminal-blue); }
+.theme-terminal .file { color: var(--terminal-fg); }
+.theme-terminal .executable { color: var(--terminal-green); }
+.theme-terminal .config { color: var(--terminal-yellow); }
+
+.theme-terminal .file-link,
+.theme-terminal .folder-link,
+.theme-terminal .exec-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.theme-terminal .file-link:hover { color: var(--terminal-cyan); }
+.theme-terminal .folder-link:hover { color: var(--terminal-purple); }
+.theme-terminal .exec-link:hover { color: var(--terminal-green); }
+
+.theme-terminal .section-title {
+  color: var(--terminal-purple);
+  font-size: 18px;
+  font-weight: bold;
+  margin: 16px 0 8px 0;
+}
+
+.theme-terminal .project-item {
+  margin: 10px 0;
+  line-height: 1.6;
+  color: var(--terminal-fg);
+  white-space: pre-line;
+}
+
+.theme-terminal .project-title {
+  color: var(--terminal-cyan);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.theme-terminal .project-desc {
+  color: var(--terminal-fg);
+  margin-bottom: 4px;
+}
+
+.theme-terminal .project-tech {
+  color: var(--terminal-gray);
+  font-size: 12px;
+}
+
+.theme-terminal .cursor {
+  animation: blink 1s infinite;
+  color: var(--terminal-green);
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.theme-terminal .command-output {
+  margin: 0;
+  color: var(--terminal-fg);
+  background: transparent;
+  white-space: pre-wrap;
+}
+
+.theme-terminal .output pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.theme-terminal .contact-info {
+  color: var(--terminal-cyan);
+  margin: 12px 0;
+}
+
+.theme-terminal .contact-info a {
+  color: var(--terminal-purple);
+  text-decoration: none;
+}
+
+.theme-terminal .contact-info a:hover {
+  color: var(--terminal-cyan);
+  text-decoration: underline;
+}
+
+.theme-terminal .tree-structure {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--terminal-fg);
+  margin: 12px 0;
+}
+
+.theme-terminal .tree-item {
+  margin: 2px 0;
+  padding: 2px 0;
+}
+
+.theme-terminal .tree-file {
+  color: var(--terminal-fg);
+}
+
+.theme-terminal .tree-dir {
+  color: var(--terminal-blue);
+  font-weight: bold;
+}
+
+.theme-terminal .nav-command {
+  color: var(--terminal-yellow);
+}
+
+/* Terminal Navigation */
+.theme-terminal .terminal-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--terminal-bg);
+  border-bottom: 1px solid var(--terminal-gray);
+}
+
+/* Status Bar (Below Tabs) */
+.theme-terminal .terminal-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--terminal-bg);
+  color: var(--terminal-gray);
+  padding: 4px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  border-top: 1px solid var(--terminal-gray);
+  height: 24px;
+}
+
+.theme-terminal .status-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-terminal .status-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-terminal .branch {
+  color: var(--terminal-blue);
+  font-weight: 500;
+}
+
+.theme-terminal .git-branch {
+  color: var(--terminal-yellow);
+}
+
+.theme-terminal .status-indicator {
+  color: var(--terminal-green);
+  font-weight: bold;
+}
+
+.theme-terminal .terminal-mode {
+  color: var(--terminal-purple);
+  font-weight: 500;
+}
+
+.theme-terminal .position {
+  color: var(--terminal-gray);
+}
+
+/* Tab Bar */
+.theme-terminal .terminal-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--terminal-bg);
+  height: 40px;
+  padding: 0 10px;
+}
+
+.theme-terminal .terminal-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.theme-terminal .tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(88, 91, 112, 0.2);
+  color: var(--terminal-gray);
+  padding: 8px 12px;
+  border-right: 1px solid var(--terminal-gray);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 120px;
+  position: relative;
+  text-decoration: none;
+}
+
+.theme-terminal .tab:hover {
+  background: rgba(88, 91, 112, 0.3);
+  color: var(--terminal-cyan);
+}
+
+.theme-terminal .tab.active {
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+}
+
+.theme-terminal .tab-icon {
+  color: var(--terminal-green);
+  font-size: 8px;
+}
+
+.theme-terminal .tab.active .tab-icon {
+  color: var(--terminal-red);
+}
+
+.theme-terminal .tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-terminal .tab-close {
+  opacity: 0;
+  color: var(--terminal-gray);
+  font-size: 10px;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.theme-terminal .tab:hover .tab-close {
+  opacity: 1;
+}
+
+.theme-terminal .tab-close:hover {
+  color: var(--terminal-red);
+  background: rgba(88, 91, 112, 0.3);
+}
+
+.theme-terminal .tab-add {
+  background: rgba(88, 91, 112, 0.2);
+  color: var(--terminal-gray);
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.theme-terminal .tab-add:hover {
+  background: rgba(88, 91, 112, 0.3);
+  color: var(--terminal-cyan);
+}
+
+/* Theme Switcher in Terminal - Consistent positioning */
+.theme-terminal .theme-switcher {
+  position: fixed;
+  top: 120px; /* Account for terminal navigation */
+  right: 20px;
+  z-index: 1000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .theme-terminal .terminal {
+    padding: 20px 15px 80px 15px;
+    font-size: 13px;
+  }
+  
+  .theme-terminal .terminal-container {
+    padding-top: 100px;
+  }
+  
+  .theme-terminal .prompt {
+    flex-wrap: wrap;
+    margin: 12px 0 6px 0;
+  }
+  
+  .theme-terminal .terminal-tabs {
+    height: 36px;
+    padding: 0 8px;
+  }
+  
+  .theme-terminal .tab {
+    min-width: 100px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .theme-terminal .theme-switcher {
+    top: 110px;
+    right: 15px;
+  }
+}
+
+/* Enhanced Terminal Command Output Formatting */
+.theme-terminal .terminal-help {
+  margin: 12px 0;
+  color: var(--terminal-fg);
+}
+
+.theme-terminal .help-header {
+  color: var(--terminal-cyan);
+  font-weight: normal;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.theme-terminal .help-footer {
+  color: var(--terminal-gray);
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.theme-terminal .help-section {
+  margin: 8px 0;
+}
+
+.theme-terminal .help-category {
+  color: var(--terminal-yellow);
+  font-weight: normal;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.theme-terminal .example {
+  color: var(--terminal-green);
+  font-weight: normal;
+}
+
+/* Sections Output */
+.theme-terminal .terminal-sections {
+  margin: 12px 0;
+}
+
+.theme-terminal .sections-header {
+  color: var(--terminal-cyan);
+  font-weight: normal;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.theme-terminal .sections-list {
+  margin: 8px 0;
+}
+
+.theme-terminal .section-item {
+  color: var(--terminal-fg);
+  margin: 4px 0;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.theme-terminal .status.enabled {
+  color: var(--terminal-green);
+  font-weight: normal;
+}
+
+.theme-terminal .status.disabled {
+  color: var(--terminal-red);
+  font-weight: normal;
+}
+
+.theme-terminal .sections-usage {
+  color: var(--terminal-gray);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Generate Output */
+.theme-terminal .terminal-generate {
+  margin: 12px 0;
+}
+
+.theme-terminal .generate-header {
+  color: var(--terminal-blue);
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.theme-terminal .progress-steps {
+  margin: 8px 0;
+  color: var(--terminal-green);
+}
+
+.theme-terminal .step {
+  margin: 2px 0;
+}
+
+.theme-terminal .generate-success {
+  color: var(--terminal-green);
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.theme-terminal .generate-next {
+  color: var(--terminal-purple);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+/* Error Output */
+.theme-terminal .terminal-error {
+  margin: 12px 0;
+}
+
+.theme-terminal .error-header {
+  color: var(--terminal-red);
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.theme-terminal .error-info {
+  color: var(--terminal-yellow);
+  margin: 4px 0;
+}
+
+.theme-terminal .error-usage {
+  color: var(--terminal-gray);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+/* JSON Syntax Highlighting */
+.theme-terminal .json-output {
+  color: var(--terminal-fg);
+  white-space: pre;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.4;
+  margin: 8px 0;
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-key {
+  color: var(--terminal-blue);
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-string {
+  color: var(--terminal-green);
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-number {
+  color: var(--terminal-purple);
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-boolean {
+  color: var(--terminal-red);
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-null {
+  color: var(--terminal-gray);
+  font-weight: normal;
+}
+
+.theme-terminal .json-output .json-brace {
+  color: var(--terminal-cyan);
+  font-weight: normal;
+}
+
+/* Tree Output Styling */
+.theme-terminal .tree-output {
+  color: var(--terminal-fg);
+  white-space: pre;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.4;
+  margin: 8px 0;
+}
+
+.theme-terminal .tree-dir {
+  color: var(--terminal-blue);
+  font-weight: bold;
+}
+
+.theme-terminal .tree-file {
+  color: var(--terminal-fg);
+}
+
+/* Enhanced Terminal Elements */
+.theme-terminal .command-output {
+  color: var(--terminal-fg);
+  margin: 4px 0;
+}
+
+.theme-terminal .system-info {
+  color: var(--terminal-cyan);
+  margin: 8px 0;
+}
+
+.theme-terminal .error-text {
+  color: var(--terminal-red);
+}
+
+.theme-terminal .success-text {
+  color: var(--terminal-green);
+}
+
+.theme-terminal .warning-text {
+  color: var(--terminal-yellow);
+}
+
+/* Markdown Output Styling */
+.theme-terminal .markdown-output {
+  color: var(--terminal-fg);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+  margin: 8px 0;
+  font-weight: normal;
+}
+
+.theme-terminal .md-header {
+  color: var(--terminal-cyan);
+  font-size: 14px;
+  font-weight: normal;
+  margin: 12px 0 8px 0;
+}
+
+.theme-terminal .md-subheader {
+  color: var(--terminal-purple);
+  font-size: 14px;
+  font-weight: normal;
+  margin: 10px 0 6px 0;
+}
+
+.theme-terminal .md-text {
+  color: var(--terminal-fg);
+  margin: 6px 0;
+  line-height: 1.4;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.theme-terminal .md-list-item {
+  color: var(--terminal-fg);
+  margin: 2px 0;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.theme-terminal .contact-link {
+  color: var(--terminal-green);
+  text-decoration: none;
+  font-weight: normal;
+}
+
+.theme-terminal .skill-section {
+  margin: 8px 0;
+}
+
+/* File listing styling */
+.theme-terminal .file-permissions {
+  color: var(--terminal-gray);
+}
+
+.theme-terminal .file-size {
+  color: var(--terminal-yellow);
+}
+
+.theme-terminal .file-date {
+  color: var(--terminal-blue);
+}
+
+.theme-terminal .file-name {
+  color: var(--terminal-fg);
+}
+
+.theme-terminal .directory-name {
+  color: var(--terminal-cyan);
+  font-weight: normal;
+}
+
+/* ls Output Syntax Highlighting */
+.theme-terminal .ls-output {
+  color: var(--terminal-fg);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.4;
+  margin: 8px 0;
+  font-weight: normal;
+  white-space: pre;
+}
+
+.theme-terminal .ls-permissions {
+  color: var(--terminal-yellow);
+}
+
+.theme-terminal .ls-links {
+  color: var(--terminal-purple);
+}
+
+.theme-terminal .ls-owner {
+  color: var(--terminal-blue);
+}
+
+.theme-terminal .ls-group {
+  color: var(--terminal-blue);
+}
+
+.theme-terminal .ls-size {
+  color: var(--terminal-green);
+}
+
+.theme-terminal .ls-date {
+  color: var(--terminal-cyan);
+}
+
+.theme-terminal .ls-time {
+  color: var(--terminal-cyan);
+}
+
+.theme-terminal .ls-filename {
+  color: var(--terminal-fg);
+}
+
+.theme-terminal .ls-directory {
+  color: var(--terminal-blue);
+}
+
+.theme-terminal .ls-executable {
+  color: var(--terminal-green);
+}
+
+.theme-terminal .ls-symlink {
+  color: var(--terminal-cyan);
+}
+
+/* Tree output file type styling */
+.theme-terminal .tree-js {
+  color: var(--terminal-yellow);
+}
+
+.theme-terminal .tree-python {
+  color: var(--terminal-blue);
+}
+
+.theme-terminal .tree-sql {
+  color: var(--terminal-purple);
+}
+
+.theme-terminal .tree-json {
+  color: var(--terminal-green);
+}
+
+.theme-terminal .tree-yaml {
+  color: var(--terminal-red);
+}
+
+.theme-terminal .tree-markdown {
+  color: var(--terminal-cyan);
+}
+
+.theme-terminal .tree-astro {
+  color: var(--terminal-purple);
+}
+
+.theme-terminal .tree-vue {
+  color: var(--terminal-green);
+}
+
+.theme-terminal .tree-config {
+  color: var(--terminal-gray);
+}
+
+.theme-terminal .tree-title {
+  color: var(--terminal-fg);
+  font-weight: normal;
+}
+
+.theme-terminal .tree-content {
+  white-space: pre;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.4;
+  margin: 8px 0;
+  font-weight: normal;
+}
+
+.theme-terminal .tree-summary {
+  color: var(--terminal-gray);
+  font-weight: normal;
+}

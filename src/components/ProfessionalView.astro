@@ -1,0 +1,187 @@
+---
+// Professional Theme View Component
+import ThemeSwitch from './ThemeSwitch.astro';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  projects?: any[];
+  skills?: {
+    [category: string]: string[];
+  };
+  contact?: {
+    email?: string;
+    github?: string;
+    linkedin?: string;
+    phone?: string;
+  };
+}
+
+const { 
+  title = "Amrithnath Vijayakumar", 
+  description = "Full-stack developer, gamer, and photographer",
+  projects = [],
+  skills = {
+    "Frontend": ["React", "Next.js", "TypeScript", "Astro"],
+    "Backend": ["Node.js", "Python", "Django", "Express"],
+    "Database": ["PostgreSQL", "MongoDB", "Redis"],
+    "DevOps": ["Docker", "AWS", "CI/CD"]
+  },
+  contact = {}
+} = Astro.props;
+---
+
+<div class="professional-view">
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <div class="logo">AV</div>
+        <ul class="nav-links">
+          <li><a href="/about" class="nav-link">About</a></li>
+          <li><a href="/projects" class="nav-link">Projects</a></li>
+          <li><a href="/resume" class="nav-link">Resume</a></li>
+          <li><a href="/blog" class="nav-link">Blog</a></li>
+          <li><a href="/contact" class="nav-link">Contact</a></li>
+        </ul>
+        <ThemeSwitch />
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-image">👨‍💻</div>
+      <h1 class="hero-title">{title}</h1>
+      <p class="hero-subtitle">{description}</p>
+      <a href="/contact" class="btn">Get In Touch</a>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">About Me</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3 class="card-title">💻 Developer</h3>
+          <p class="card-text">Passionate about creating clean, efficient code and beautiful user experiences.</p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">🎮 Gamer</h3>
+          <p class="card-text">Love exploring virtual worlds and the technology that brings them to life.</p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">📸 Photographer</h3>
+          <p class="card-text">Capturing moments and beauty through the lens, with an eye for composition.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Skills & Technologies</h2>
+      <div class="skills-grid">
+        {Object.entries(skills).map(([category, skillList]) => (
+          <div class="skill-category">
+            <h3 class="card-title">{category}</h3>
+            <ul class="skill-list">
+              {skillList.map(skill => (
+                <li>{skill}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Projects -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Featured Projects</h2>
+      <div class="card-grid">
+        {projects.slice(0, 3).map(project => (
+          <div class="project-card">
+            <div class="project-image">🚀</div>
+            <div class="project-content">
+              <h3 class="project-title">{project.frontmatter?.title || "Untitled Project"}</h3>
+              <p class="project-description">{project.frontmatter?.description || "No description available"}</p>
+              <div class="project-tech">
+                {project.frontmatter?.tags?.map(tag => (
+                  <span class="tech-tag">{tag}</span>
+                )) || []}
+              </div>
+              <div class="project-links">
+                {project.frontmatter?.demo && (
+                  <a href={project.frontmatter.demo} class="project-link">Live Demo</a>
+                )}
+                {project.frontmatter?.github && (
+                  <a href={project.frontmatter.github} class="project-link">GitHub</a>
+                )}
+                <a href={project.url} class="project-link">Learn More</a>
+              </div>
+            </div>
+          </div>
+        ))}
+        {projects.length === 0 && (
+          <div class="card">
+            <h3 class="card-title">Coming Soon</h3>
+            <p class="card-text">Exciting projects are in development. Check back soon!</p>
+          </div>
+        )}
+      </div>
+      {projects.length > 3 && (
+        <div style="text-align: center; margin-top: 2rem;">
+          <a href="/projects" class="btn">View All Projects</a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Let's Connect</h2>
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <h3 class="contact-title">Email</h3>
+          <p class="contact-text">
+            <a href={`mailto:${contact.email || 'hello@amrithnath.com'}`} class="contact-link">
+              {contact.email || 'hello@amrithnath.com'}
+            </a>
+          </p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">💼</div>
+          <h3 class="contact-title">LinkedIn</h3>
+          <p class="contact-text">
+            <a href={`https://${contact.linkedin || 'linkedin.com/in/amrithnath'}`} class="contact-link" target="_blank">
+              {contact.linkedin || 'linkedin.com/in/amrithnath'}
+            </a>
+          </p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🔗</div>
+          <h3 class="contact-title">GitHub</h3>
+          <p class="contact-text">
+            <a href={`https://${contact.github || 'github.com/amrithnath'}`} class="contact-link" target="_blank">
+              {contact.github || 'github.com/amrithnath'}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 {title}. Built with Astro and lots of ☕</p>
+    </div>
+  </footer>
+</div> 

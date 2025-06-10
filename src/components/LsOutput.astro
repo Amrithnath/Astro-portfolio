@@ -1,0 +1,71 @@
+---
+export interface LsItem {
+  name: string;
+  isDirectory: boolean;
+  isExecutable?: boolean;
+  isAccessible: boolean;
+  size: number;
+  date: string;
+  time: string;
+  href?: string;
+  isHidden?: boolean;
+}
+
+export interface Props {
+  items: LsItem[];
+  showTotal?: boolean;
+  totalSize?: number;
+}
+
+const { items, showTotal = true, totalSize = 42 } = Astro.props;
+
+function getPermissions(item: LsItem): string {
+  if (!item.isAccessible) {
+    // Future/unavailable items - only root can access
+    return item.isDirectory ? 'drwx------' : '-rw-------';
+  }
+  
+  if (item.isDirectory) {
+    // Accessible directories - readable by all, writable by owner
+    return 'drwxr-xr-x';
+  }
+  
+  if (item.isExecutable) {
+    // Executable files - executable by all
+    return '-rwxr-xr-x';
+  }
+  
+  // Regular files - readable by all, writable by owner
+  return '-rw-r--r--';
+}
+
+function formatSize(size: number): string {
+  return size.toString().padStart(4, ' ');
+}
+
+function getItemClass(item: LsItem): string {
+  if (!item.isAccessible) return 'ls-restricted';
+  if (item.isDirectory) return 'ls-dir';
+  if (item.isExecutable) return 'ls-exec';
+  return 'ls-name';
+}
+---
+
+<div class="ls-output">
+  {showTotal && `total ${totalSize}`}
+  {items.map(item => (
+    <div class="ls-line">
+      <span class="ls-permissions">{getPermissions(item)}</span>   
+      <span class="ls-links">{item.isDirectory ? '3' : '1'}</span> 
+      <span class="ls-owner">amrith</span>  
+      <span class="ls-group">staff</span>    
+      <span class="ls-size">{formatSize(item.size)}</span> 
+      <span class="ls-date">{item.date} {item.time}</span> 
+      {item.href ? (
+        <a href={item.href} class={getItemClass(item)}>{item.name}</a>
+      ) : (
+        <span class={getItemClass(item)}>{item.name}</span>
+      )}
+    </div>
+  ))}
+</div> 

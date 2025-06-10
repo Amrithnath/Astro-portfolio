@@ -1,0 +1,155 @@
+---
+// 3-Theme Switcher Component
+---
+
+<div class="theme-switcher">
+  <button class="theme-toggle-button" type="button" title="Switch Theme">
+    <span class="theme-icon">🎨</span>
+    <span class="theme-text">Switch Theme</span>
+  </button>
+</div>
+
+<style>
+  .theme-switcher {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+  }
+
+  .theme-toggle-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 30, 46, 0.9);
+    color: #cdd6f4;
+    border: 2px solid #585b70;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .theme-toggle-button:hover {
+    background: rgba(30, 30, 46, 1);
+    border-color: #cba6f7;
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .theme-toggle-button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Theme-specific styling */
+  .theme-terminal .theme-toggle-button {
+    background: var(--terminal-bg);
+    color: var(--terminal-green);
+    border-color: var(--terminal-gray);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .theme-terminal .theme-toggle-button:hover {
+    background: var(--terminal-bg);
+    border-color: var(--terminal-purple);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .theme-terminal .theme-toggle-button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .theme-professional .theme-toggle-button {
+    background: rgba(255, 255, 255, 0.9);
+    color: #374151;
+    border-color: #d1d5db;
+  }
+
+  .theme-personal .theme-toggle-button {
+    background: var(--t-bg);
+    color: var(--t-fg);
+    border-color: var(--t-subdue);
+  }
+</style>
+
+<script is:inline>
+  function initThemeSwitcher() {
+    const button = document.querySelector('.theme-toggle-button');
+    const textEl = document.querySelector('.theme-text');
+    
+    if (!button || !textEl) return;
+
+    const themeNames = {
+      terminal: 'Terminal',
+      professional: 'Personal', 
+      personal: 'Professional'
+    };
+
+    // Fixed theme order: terminal → professional → personal → terminal
+    function getNextTheme(current) {
+      switch(current) {
+        case 'terminal':
+          return 'professional';
+        case 'professional':
+          return 'personal';
+        case 'personal':
+          return 'terminal';
+        default:
+          return 'professional';
+      }
+    }
+
+    function updateButtonText() {
+      if (!window.getCurrentTheme) return;
+      
+      const currentTheme = window.getCurrentTheme();
+      const nextTheme = getNextTheme(currentTheme);
+      
+      textEl.textContent = `→ ${themeNames[nextTheme]}`;
+      button.title = `Current: ${themeNames[currentTheme]} | Click for ${themeNames[nextTheme]}`;
+    }
+
+    function handleThemeSwitch() {
+      if (!window.getCurrentTheme || !window.switchToTheme) return;
+      
+      const currentTheme = window.getCurrentTheme();
+      const nextTheme = getNextTheme(currentTheme);
+      
+      window.switchToTheme(nextTheme);
+    }
+
+    // Set up event listeners
+    button.addEventListener('click', handleThemeSwitch);
+    
+    // Listen for theme changes
+    window.addEventListener('themeChange', updateButtonText);
+    window.addEventListener('themeSystemReady', updateButtonText);
+    
+    // Initial update
+    updateButtonText();
+  }
+
+  // Use the theme system queue to ensure proper initialization order
+  function attemptInit() {
+    if (window.onThemeReady) {
+      window.onThemeReady(initThemeSwitcher);
+    } else {
+      // Fallback if theme system isn't ready yet
+      setTimeout(attemptInit, 50);
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attemptInit);
+  } else {
+    attemptInit();
+  }
+  
+  // Handle Astro navigation
+  document.addEventListener('astro:page-load', attemptInit);
+  document.addEventListener('astro:after-swap', attemptInit);
+</script> 

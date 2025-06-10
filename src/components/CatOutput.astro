@@ -1,0 +1,33 @@
+---
+export interface Props {
+  type: 'json' | 'markdown' | 'text' | 'config';
+  content: string;
+}
+
+const { type, content } = Astro.props;
+
+function formatContent(content: string, type: string) {
+  switch (type) {
+    case 'json':
+      return content; // Will be handled by JSON syntax highlighting in the calling component
+    case 'markdown':
+      return content; // Will be handled by markdown styling in the calling component  
+    case 'text':
+      return content;
+    case 'config':
+      return content;
+    default:
+      return content;
+  }
+}
+---
+
+<div class={`cat-output cat-${type}`}>
+  {type === 'json' ? (
+    <div class="json-output" set:html={content} />
+  ) : type === 'markdown' ? (
+    <div class="markdown-output" set:html={content} />
+  ) : (
+    <div class="text-output">{formatContent(content, type)}</div>
+  )}
+</div> 
