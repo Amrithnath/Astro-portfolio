@@ -1,10 +1,11 @@
 ---
 // Component Imports
 import MainHead from '../components/MainHead.astro';
-import Nav from '../components/Nav.astro';
-import Footer from '../components/Footer.astro';
-import PortfolioPreview from '../components/PortfolioPreview.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
+import ThemeProvider from '../components/ThemeProvider.astro';
+// import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+import TerminalView from '../components/TerminalView.astro';
+import ProfessionalView from '../components/ProfessionalView.astro';
+import PersonalView from '../components/PersonalView.astro';
 import {ViewTransitions} from "astro:transitions"
 import { Image } from "astro:assets"
 import heroImage from  "../assets/hero.jpg"
@@ -12,257 +13,71 @@ import heroImage2 from "../assets/hero-2.jpg"
 import { getImage } from "astro:assets";
 import myBackground from "../assets/mesh-gradient.jpg"
 const optimizedBackground = await getImage({src: myBackground, format: 'avif'})
+
 // Data Fetching: List all Markdown posts in the repo.
 const projects = await Astro.glob('./project/**/*.md');
-const featuredProject = projects[0];
-// Full Astro Component Syntax:
-// https://docs.astro.build/core-concepts/astro-components/
+
+// Portfolio data that can be passed to all themes
+const portfolioData = {
+  title: "Amrithnath Vijayakumar",
+  description: "Full-stack developer, gamer, and photographer",
+  projects: projects,
+  skills: ["React", "Node.js", "Python", "TypeScript", "Astro"],
+  contact: {
+    email: "hello@amrithnath.com",
+    github: "github.com/amrithnath", 
+    linkedin: "linkedin.com/in/amrithnath"
+  }
+};
+
+// CSS Imports
+import '../styles/theme-transitions.css';
+import '../styles/terminal-theme.css';
+import '../styles/professional-theme.css';
+import '../styles/personal-theme.css';
 ---
 
 <html lang="en">
 	<head>
+		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Amrith's portfolio landing page">
-        <ThemeSwitch/>
+        <ThemeProvider />
 		<MainHead
 			title="Amrithnath Vijayakumar - Website"
 			description="Amrith: Developer, Gamer, and all around cool person..."
 		/>
-		<style>
-			.wrapper {
-				margin-top: 2em;
-				margin-bottom: 2em;
-			}
-
-			.hero {
-				position: relative;
-				overflow: hidden;
-			}
-
-			@media (min-width: 750px) {
-				.hero {
-					height: 45vw;
-				}
-			}
-
-			.img {
-				display: block;
-				width: 100%;
-				height: auto;
-			}
-
-			.gradient,
-			.gradient2 {
-				background-size: cover;
-				pointer-events: none;
-				mix-blend-mode: screen;
-				width: 100%;
-				height: 100%;
-				position: absolute;
-				top: 0;
-				left: 0;
-				z-index: 2;
-			}
-
-			.gradient2 {
-				mix-blend-mode: multiply;
-				background-size: cover;
-			}
-
-			.overlay {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				z-index: 10;
-				display: flex;
-				flex-direction: column;
-				align-items: flex-start;
-				justify-content: center;
-				padding-left: 2rem;
-			}
-
-			@media (min-width: 750px) {
-				.overlay {
-					padding-left: 4rem;
-				}
-			}
-
-			.title {
-				font-weight: 900;
-				font-size: var(--f-u6);
-				margin-bottom: 0.5rem;
-				margin-top: 0;
-			}
-
-			@media (min-width: 750px) {
-				.title {
-					font-size: var(--f-u12);
-				}
-			}
-
-			.grid {
-				display: grid;
-				grid-gap: 2rem;
-			}
-
-			@media (min-width: 1200px) {
-				.grid {
-					grid-template-columns: 2fr 1fr;
-				}
-			}
-
-			.sectionTitle {
-				font-weight: 700;
-				font-size: var(--f-u8);
-				margin-top: 4rem;
-				margin-bottom: 2rem;
-			}
-
-			.roles {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 0.5em;
-				font-size: var(--f-d1);
-			}
-
-			.role {
-				position: relative;
-				display: inline-block;
-				white-space: nowrap;
-				font-weight: 900;
-				color: var(--t-bg);
-				background-color: var(--t-fg);
-				padding: 0.25em 0.5em;
-				z-index: 2;
-			}
-
-			@media (min-width: 750px) {
-				.role {
-					font-size: var(--f-u3);
-				}
-			}
-
-			.role:nth-of-type(1) .invert {
-				background-color: var(--c-pink);
-			}
-
-			.role:nth-of-type(2) .invert {
-				background-color: var(--c-blue);
-			}
-
-			.role:nth-of-type(3) .invert {
-				background-color: var(--c-green);
-			}
-
-			.role:hover .invert {
-				clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-			}
-
-			.invert {
-				position: absolute;
-				color: var(--t-fg);
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 100%;
-				height: 100%;
-				top: 0;
-				left: 0;
-				pointer-events: none;
-				clip-path: polygon(0% 100%, 100% 100%, 100% 200%, 0% 200%);
-				transition: clip-path cubic-bezier(0.4, 0, 0.5, 1) 150ms;
-			}
-
-			.desc {
-				font-size: var(--f-u1);
-				margin-top: 1.5rem;
-				margin-bottom: 0;
-			}
-
-			.subtitle {
-				display: block;
-				font-weight: 400;
-				font-size: var(--f-d6);
-				letter-spacing: -0.0625em;
-			}
-
-			.bio {
-				line-height: 2;
-				margin-bottom: 2rem;
-			}
-
-			.bio > span:first-of-type {
-				line-height: 1;
-				margin-bottom: 0.5em;
-				display: block;
-				font-weight: 700;
-				font-size: var(--f-u4);
-			}
-
-			.buttonContainer {
-				text-align: center;
-				margin-top: 2em;
-			}
-			.light-img{
-				display:var(--v-dis-light);
-			}
-			.dark-img{
-				display:var(--v-dis-dark);
-			}
-		</style>
+		<ViewTransitions/>
 	</head>
 	<body>
-		<Nav />
-		<header class="hero">
-			<Image
-				class="img light-img"
-				src={heroImage}
-                alt="beautiful sunset in the hills"
-			/>
-			<Image
-				class="img dark-img"
-				src={heroImage2}
-                alt="Beatiful day in the hills"
-			/>
-			<!-- <div class="gradient"></div> -->
-			<div class="gradient2" style={`background-image:url(${optimizedBackground.src});`}></div>
-			<div class="overlay">
-				<h1 class="title">
-					<small class="subtitle">The one and only site for </small>Amrithnath V
-				</h1>
-				<div class="roles">
-					<span class="role">💻 Developer <span class="invert">💻 Developer</span></span>
-					<span class="role">🎮 Gamer <span class="invert">🎮 Gamer</span></span>
-					<span class="role">📸 Photographer <span class="invert">📸 Photographer</span></span>
-				</div>
-				<p class="desc">Lover of dogs, cats, roadtrips, and planes.</p>
-			</div>
-            <ViewTransitions/>
-		</header>
-		<main class="wrapper">
-			<div class="grid">
-				<div class="section">
-					<h2 class="sectionTitle">About me</h3>
-					<p class="bio">
-						<span>Hello!</span> I'm Amrith, and this is my website. It was made using{' '}
-						<a href="https://astro.build" target="_blank" rel="nofollow"> Astro</a>,
-						a new way to build static sites. Astro was extremely easy to use, I built all this under 10mins.
-					</p>
-					<p>
-						<a href="/about">Read more</a>
-					</p>
-				</div>
-				<div class="section">
-					<h3 class="sectionTitle">Selected Work</h3>
-					<PortfolioPreview project={featuredProject} />
-					<div class="buttonContainer">
-						<a href="/projects/" class="button">View All</a>
-					</div>
-				</div>
-			</div>
-		</main>
-		<Footer />
+		<!-- <ThemeSwitcher /> -->
+		
+		<!-- Terminal Theme -->
+		<TerminalView 
+			title={portfolioData.title}
+			description={portfolioData.description}
+			projects={portfolioData.projects}
+			skills={portfolioData.skills}
+			contact={portfolioData.contact}
+		/>
+		
+		<!-- Professional Theme -->
+		<ProfessionalView 
+			title={portfolioData.title}
+			description={portfolioData.description}
+			projects={portfolioData.projects}
+			contact={portfolioData.contact}
+		/>
+		
+		<!-- Personal Theme (Original) -->
+		<PersonalView 
+			title="Amrithnath V"
+			subtitle="The one and only site for"
+			description="Lover of dogs, cats, roadtrips, and planes."
+			projects={portfolioData.projects}
+			heroImage={heroImage}
+			heroImage2={heroImage2}
+			backgroundImage={optimizedBackground.src}
+		/>
 	</body>
 </html>

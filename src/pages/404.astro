@@ -3,7 +3,7 @@ import MainHead from '../components/MainHead.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
-import {ViewTransitions} from "astro:transitions"
+import {ClientRouter} from "astro:transitions"
 ---
 
 <html lang="en">
@@ -18,7 +18,7 @@ import {ViewTransitions} from "astro:transitions"
 				margin-bottom: 2em;
 			}
 		</style>
-        <ViewTransitions/>
+        <ClientRouter/>
 	</head>
 	<body>
 		<Nav />

@@ -1,0 +1,70 @@
+---
+// Terminal-style navigation component
+export interface Props {
+  currentPage?: string;
+}
+
+const { currentPage = "/" } = Astro.props;
+
+// Helper function to determine if a tab is active
+function isActive(path: string) {
+  if (path === "/" && currentPage === "/") return true;
+  if (path !== "/" && currentPage.startsWith(path)) return true;
+  return false;
+}
+---
+
+<div class="terminal-nav">
+      <!-- Status Bar (like real terminals) -->
+    <div class="window-header">
+        <div class="window-controls">
+          <div class="control close"></div>
+          <div class="control minimize"></div>
+          <div class="control maximize"></div>
+        </div>
+        <div class="window-title">amrith@portfolio:~ — ghostty — 120×30</div>
+      </div>
+  
+  <!-- Tab Bar -->
+  <div class="terminal-tabs">
+    <a href="/" class={`tab ${isActive("/") ? "active" : ""}`}>
+      <span class="tab-icon">{isActive("/") ? "●" : "○"}</span>
+      <span class="tab-title">portfolio.sh</span>
+      <span class="tab-close">✕</span>
+    </a>
+    <a href="/about" class={`tab ${isActive("/about") ? "active" : ""}`}>
+      <span class="tab-icon">{isActive("/about") ? "●" : "○"}</span>
+      <span class="tab-title">about.md</span>
+      <span class="tab-close">✕</span>
+    </a>
+    <a href="/projects" class={`tab ${isActive("/projects") ? "active" : ""}`}>
+      <span class="tab-icon">{isActive("/projects") ? "●" : "○"}</span>
+      <span class="tab-title">projects.json</span>
+      <span class="tab-close">✕</span>
+    </a>
+    <a href="/resume" class={`tab ${isActive("/resume") ? "active" : ""}`}>
+      <span class="tab-icon">{isActive("/resume") ? "●" : "○"}</span>
+      <span class="tab-title">resume.py</span>
+      <span class="tab-close">✕</span>
+    </a>
+    <a href="/blog" class={`tab ${isActive("/blog") ? "active" : ""}`}>
+      <span class="tab-icon">{isActive("/blog") ? "●" : "○"}</span>
+      <span class="tab-title">blog.log</span>
+      <span class="tab-close">✕</span>
+    </a>
+    <div class="tab-add">+</div>
+  </div>
+  <div class="terminal-status">
+    <div class="status-left">
+      <span class="branch">📁 ~/portfolio</span>
+      <span class="git-branch">git:(main)</span>
+      <span class="status-indicator">✓</span>
+    </div>
+    <div class="status-right">
+      <span class="terminal-mode">INSERT</span>
+      <span class="position">Ln 1, Col 1</span>
+    </div>
+  </div>
+</div>
+
+ 

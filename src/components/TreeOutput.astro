@@ -1,0 +1,79 @@
+---
+export interface TreeItem {
+  name: string;
+  type: 'file' | 'directory';
+  extension?: string;
+  children?: TreeItem[];
+}
+
+export interface Props {
+  items: TreeItem[];
+  title?: string;
+  totalDirs?: number;
+  totalFiles?: number;
+}
+
+const { items, title = '', totalDirs = 0, totalFiles = 0 } = Astro.props;
+
+function getFileClass(item: TreeItem): string {
+  if (item.type === 'directory') return 'tree-dir';
+  
+  // File extension based coloring
+  const ext = item.extension?.toLowerCase();
+  switch (ext) {
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+      return 'tree-file tree-js';
+    case 'py':
+      return 'tree-file tree-python';
+    case 'sql':
+      return 'tree-file tree-sql';
+    case 'json':
+      return 'tree-file tree-json';
+    case 'yml':
+    case 'yaml':
+      return 'tree-file tree-yaml';
+    case 'md':
+      return 'tree-file tree-markdown';
+    case 'astro':
+      return 'tree-file tree-astro';
+    case 'vue':
+      return 'tree-file tree-vue';
+    case 'conf':
+    case 'config':
+      return 'tree-file tree-config';
+    default:
+      return 'tree-file';
+  }
+}
+
+function renderTreeLines(items: TreeItem[], prefix: string = '', isLast: boolean = true): string {
+  let output = '';
+  
+  items.forEach((item, index) => {
+    const isLastItem = index === items.length - 1;
+    const connector = isLastItem ? '└── ' : '├── ';
+    const childPrefix = prefix + (isLastItem ? '    ' : '│   ');
+    
+    output += `${prefix}${connector}<span class="${getFileClass(item)}">${item.name}</span>\n`;
+    
+    if (item.children && item.children.length > 0) {
+      output += renderTreeLines(item.children, childPrefix, isLastItem);
+    }
+  });
+  
+  return output;
+}
+---
+
+<div class="tree-output">
+  {title && <div class="tree-title">{title}</div>}
+  <div class="tree-content" set:html={renderTreeLines(items)} />
+  {(totalDirs > 0 || totalFiles > 0) && (
+    <div class="tree-summary">
+      <br/>{totalDirs} director{totalDirs === 1 ? 'y' : 'ies'}, {totalFiles} files
+    </div>
+  )}
+</div> 
