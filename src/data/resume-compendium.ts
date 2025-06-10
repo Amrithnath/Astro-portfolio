@@ -185,7 +185,7 @@ export const resumeCompendium: ResumeCompendium = {
     name: "Amrithnath Vijayakumar",
     title: "Product Development Engineer III | Solutions Engineer",
     email: "hello@amrithnath.dev",
-    phone: "+91 8147842231",
+    phone: "will share over DM",
     location: "Bangalore, India",
     website: "amrithnath.dev",
     linkedin: "linkedin.com/in/amrithnath",
