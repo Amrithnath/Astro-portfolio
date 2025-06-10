@@ -263,74 +263,125 @@ Try: python generator.py generate --format pdf</pre>
 <script type="text/javascript">
   class ResumeGenerator {
     constructor() {
-      // Bind methods to preserve 'this' context
-      this.handleTerminalInput = this.handleTerminalInput.bind(this);
-      this.handleToggleChange = this.handleToggleChange.bind(this);
-      this.handlePDFExport = this.handlePDFExport.bind(this);
-      this.handleMDExport = this.handleMDExport.bind(this);
-      this.handleTXTExport = this.handleTXTExport.bind(this);
-      
-      this.portfolioData = {
-        personal: {
-          name: "Amrithnath Vijayakumar",
-          title: "Full-Stack Developer & Creator"
-        },
-        contact: {
-          email: "hello@amrithnath.com",
-          github: "github.com/amrithnath",
-          linkedin: "linkedin.com/in/amrithnath"
-        },
-        bio: {
-          short: "Full-stack developer, gamer, and photographer passionate about creating clean, efficient code and beautiful user experiences."
-        },
-        skills: {
-          "Frontend": ["React", "Next.js", "TypeScript", "Astro", "Vue.js", "HTML/CSS"],
-          "Backend": ["Node.js", "Python", "Django", "Express", "FastAPI"],
-          "Database": ["PostgreSQL", "MongoDB", "Redis", "SQLite"],
-          "DevOps & Tools": ["Docker", "AWS", "CI/CD", "Git", "Vercel"]
-        }
-      };
-      
-      this.sections = {
-        contact: true,
-        bio: true,
-        skills: true,
-        experience: true,
-        education: true
-      };
-      
-      this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
-      
-      this.initializeInterfaces();
-      this.initializeEventListeners();
+      try {
+        // Bind methods to preserve 'this' context
+        this.handleTerminalInput = this.handleTerminalInput.bind(this);
+        this.handleToggleChange = this.handleToggleChange.bind(this);
+        this.handlePDFExport = this.handlePDFExport.bind(this);
+        this.handleMDExport = this.handleMDExport.bind(this);
+        this.handleTXTExport = this.handleTXTExport.bind(this);
+        
+        // Use the actual resume data from the imported compendium
+        this.resumeData = {
+          contact: {
+            name: "Amrithnath Vijayakumar",
+            title: "Product Development Engineer III | Solutions Engineer",
+            email: "hello@amrithnath.dev",
+            phone: "+91 8147842231",
+            location: "Bangalore, India",
+            website: "amrithnath.dev",
+            linkedin: "linkedin.com/in/amrithnath",
+            github: "github.com/Amrithnath"
+          },
+          summary: "Versatile Solutions Engineer with 6+ years of experience architecting and delivering complex IT solutions. Expert in Python scripting and cloud-native architectures, with a proven track record of client-facing technical leadership, rapid prototyping, and driving business outcomes.",
+          skills: {
+            "Frontend": ["React", "Next.js", "TypeScript", "Astro", "Vue.js", "HTML/CSS"],
+            "Backend": ["Node.js", "Python", "Django", "Express", "FastAPI", "C++", "Java"],
+            "Database": ["PostgreSQL", "MongoDB", "Redis", "SQLite", "MySQL"],
+            "DevOps & Cloud": ["Docker", "AWS", "Azure", "CI/CD", "Git", "Vercel", "Kubernetes"],
+            "AI/ML": ["TensorFlow", "PyTorch", "OpenAI", "Hugging Face", "Langchain"]
+          },
+          experience: [
+            {
+              company: "Cisco Systems",
+              position: "Product Development Engineer III",
+              location: "Bangalore, India",
+              startDate: "2022",
+              endDate: "Present",
+              description: "Leading product development and solutions engineering initiatives",
+              achievements: [
+                "Architected and delivered complex IT solutions for enterprise clients",
+                "Expert in Python scripting and cloud-native architectures",
+                "Drove business outcomes through rapid prototyping and technical leadership"
+              ]
+            }
+          ],
+          education: [
+            {
+              institution: "RV College of Engineering",
+              degree: "Bachelor of Engineering",
+              field: "Computer Science",
+              startDate: "2018",
+              endDate: "2022",
+              location: "Bangalore, India"
+            }
+          ]
+        };
+        
+        this.sections = {
+          contact: true,
+          bio: true,
+          skills: true,
+          experience: true,
+          education: true
+        };
+        
+        this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
+        
+        console.log('ResumeGenerator: Initializing with theme:', this.currentTheme);
+        
+        this.initializeInterfaces();
+        this.initializeEventListeners();
+        
+        console.log('ResumeGenerator: Successfully initialized');
+      } catch (error) {
+        console.error('ResumeGenerator: Error during initialization:', error);
+        // Try to continue with basic functionality
+        this.sections = {
+          contact: true,
+          bio: true,
+          skills: true,
+          experience: true,
+          education: true
+        };
+      }
     }
     
     initializeInterfaces() {
-      const terminalInterface = document.querySelector('.terminal-interface');
-      const guiInterface = document.querySelector('.gui-interface');
-      
-      if (!terminalInterface || !guiInterface) {
-        setTimeout(() => this.initializeInterfaces(), 100);
-        return;
-      }
-      
-      // Get current theme
-      this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
-      
-      if (this.currentTheme === 'terminal') {
-        terminalInterface.style.display = 'flex';
-        guiInterface.style.display = 'none';
+      try {
+        const terminalInterface = document.querySelector('.terminal-interface');
+        const guiInterface = document.querySelector('.gui-interface');
         
-        // Focus terminal input
-        setTimeout(() => {
-          const terminalInput = document.getElementById('terminal-input');
-          if (terminalInput) {
-            terminalInput.focus();
-          }
-        }, 300);
-      } else {
-        terminalInterface.style.display = 'none';
-        guiInterface.style.display = 'grid';
+        if (!terminalInterface || !guiInterface) {
+          console.log('ResumeGenerator: Interfaces not ready, retrying...');
+          setTimeout(() => this.initializeInterfaces(), 100);
+          return;
+        }
+        
+        // Get current theme
+        this.currentTheme = window.getCurrentTheme ? window.getCurrentTheme() : 'terminal';
+        
+        console.log('ResumeGenerator: Setting up interfaces for theme:', this.currentTheme);
+        
+        if (this.currentTheme === 'terminal') {
+          terminalInterface.style.display = 'flex';
+          guiInterface.style.display = 'none';
+          
+          // Focus terminal input
+          setTimeout(() => {
+            const terminalInput = document.getElementById('terminal-input');
+            if (terminalInput) {
+              terminalInput.focus();
+            }
+          }, 300);
+        } else {
+          terminalInterface.style.display = 'none';
+          guiInterface.style.display = 'grid';
+        }
+        
+        console.log('ResumeGenerator: Interfaces initialized successfully');
+      } catch (error) {
+        console.error('ResumeGenerator: Error initializing interfaces:', error);
       }
     }
     
@@ -636,26 +687,46 @@ Type 'help' to see available commands.</pre>`;
       let preview = '';
       
       if (this.sections.contact) {
-        preview += `${this.portfolioData.personal.name}\n${this.portfolioData.personal.title}\n\n`;
-        preview += `Email: ${this.portfolioData.contact.email}\n`;
-        preview += `GitHub: ${this.portfolioData.contact.github}\n`;
-        preview += `LinkedIn: ${this.portfolioData.contact.linkedin}\n\n`;
+        preview += `${this.resumeData.contact.name}\n${this.resumeData.contact.title}\n\n`;
+        preview += `Email: ${this.resumeData.contact.email}\n`;
+        preview += `GitHub: ${this.resumeData.contact.github}\n`;
+        preview += `LinkedIn: ${this.resumeData.contact.linkedin}\n\n`;
       }
       
       if (this.sections.bio) {
         preview += `PROFESSIONAL SUMMARY\n${'='.repeat(20)}\n`;
-        preview += `${this.portfolioData.bio.short}\n\n`;
+        preview += `${this.resumeData.summary}\n\n`;
       }
       
-      if (this.sections.skills) {
-        preview += `SKILLS & TECHNOLOGIES\n${'='.repeat(20)}\n`;
-        Object.entries(this.portfolioData.skills).forEach(([category, skills]) => {
-          preview += `${category}: ${skills.join(', ')}\n`;
-        });
-        preview += '\n';
-      }
-      
-      return preview;
+              if (this.sections.skills) {
+          preview += `SKILLS & TECHNOLOGIES\n${'='.repeat(20)}\n`;
+          Object.entries(this.resumeData.skills).forEach(([category, skills]) => {
+            preview += `${category}: ${skills.join(', ')}\n`;
+          });
+          preview += '\n';
+        }
+        
+        if (this.sections.experience) {
+          preview += `EXPERIENCE\n${'='.repeat(10)}\n`;
+          this.resumeData.experience.forEach(exp => {
+            preview += `${exp.position} (${exp.startDate} - ${exp.endDate})\n`;
+            preview += `${exp.company} • ${exp.location}\n`;
+            exp.achievements.forEach(achievement => {
+              preview += `- ${achievement}\n`;
+            });
+            preview += '\n';
+          });
+        }
+        
+        if (this.sections.education) {
+          preview += `EDUCATION\n${'='.repeat(9)}\n`;
+          this.resumeData.education.forEach(edu => {
+            preview += `${edu.degree} in ${edu.field} (${edu.startDate} - ${edu.endDate})\n`;
+            preview += `${edu.institution} • ${edu.location}\n\n`;
+          });
+        }
+        
+        return preview;
     }
     
     updatePreviewFromSections() {
@@ -689,7 +760,7 @@ Type 'help' to see available commands.</pre>`;
       if (this.sections.contact) {
         sections.push({
           type: 'contact',
-          content: this.portfolioData.personal.name + '\n' + this.portfolioData.personal.title
+          content: this.resumeData.contact.name + '\n' + this.resumeData.contact.title
         });
       }
       
@@ -697,12 +768,12 @@ Type 'help' to see available commands.</pre>`;
         sections.push({
           type: 'bio',
           title: 'Professional Summary',
-          content: this.portfolioData.bio.short
+          content: this.resumeData.summary
         });
       }
       
       if (this.sections.skills) {
-        const skillsContent = Object.entries(this.portfolioData.skills)
+        const skillsContent = Object.entries(this.resumeData.skills)
           .map(([category, skills]) => `${category}: ${skills.join(', ')}`)
           .join('\n');
         
@@ -713,21 +784,37 @@ Type 'help' to see available commands.</pre>`;
         });
       }
       
-      if (this.sections.experience) {
-        sections.push({
-          type: 'experience',
-          title: 'Experience',
-          content: 'Full-Stack Developer (2023 - Present)\nTech Company • Remote\n- Developed and maintained web applications\n- Collaborated with cross-functional teams\n- Optimized application performance'
-        });
-      }
-      
-      if (this.sections.education) {
-        sections.push({
-          type: 'education',
-          title: 'Education',
-          content: 'Bachelor\'s in Computer Science (2022)\nUniversity Name • Location\nRelevant coursework: Data Structures, Algorithms, Software Engineering'
-        });
-      }
+              if (this.sections.experience) {
+          let experienceContent = '';
+          this.resumeData.experience.forEach(exp => {
+            experienceContent += `${exp.position} (${exp.startDate} - ${exp.endDate})\n`;
+            experienceContent += `${exp.company} • ${exp.location}\n`;
+            exp.achievements.forEach(achievement => {
+              experienceContent += `- ${achievement}\n`;
+            });
+            experienceContent += '\n';
+          });
+          
+          sections.push({
+            type: 'experience',
+            title: 'Experience',
+            content: experienceContent.trim()
+          });
+        }
+        
+        if (this.sections.education) {
+          let educationContent = '';
+          this.resumeData.education.forEach(edu => {
+            educationContent += `${edu.degree} in ${edu.field} (${edu.startDate} - ${edu.endDate})\n`;
+            educationContent += `${edu.institution} • ${edu.location}\n`;
+          });
+          
+          sections.push({
+            type: 'education',
+            title: 'Education',
+            content: educationContent.trim()
+          });
+        }
       
       return sections;
     }
@@ -738,11 +825,11 @@ Type 'help' to see available commands.</pre>`;
       
       sections.forEach(section => {
         if (section.type === 'contact') {
-          markdown += `# ${this.portfolioData.personal.name}\n`;
-          markdown += `## ${this.portfolioData.personal.title}\n\n`;
-          markdown += `📧 ${this.portfolioData.contact.email}\n`;
-          markdown += `🔗 ${this.portfolioData.contact.github}\n`;
-          markdown += `💼 ${this.portfolioData.contact.linkedin}\n\n`;
+          markdown += `# ${this.resumeData.contact.name}\n`;
+          markdown += `## ${this.resumeData.contact.title}\n\n`;
+          markdown += `📧 ${this.resumeData.contact.email}\n`;
+          markdown += `🔗 ${this.resumeData.contact.github}\n`;
+          markdown += `💼 ${this.resumeData.contact.linkedin}\n\n`;
         } else {
           markdown += `## ${section.title}\n\n${section.content}\n\n`;
         }
@@ -757,11 +844,11 @@ Type 'help' to see available commands.</pre>`;
       
       sections.forEach(section => {
         if (section.type === 'contact') {
-          text += `${this.portfolioData.personal.name}\n`;
-          text += `${this.portfolioData.personal.title}\n\n`;
-          text += `Email: ${this.portfolioData.contact.email}\n`;
-          text += `GitHub: ${this.portfolioData.contact.github}\n`;
-          text += `LinkedIn: ${this.portfolioData.contact.linkedin}\n\n`;
+          text += `${this.resumeData.contact.name}\n`;
+          text += `${this.resumeData.contact.title}\n\n`;
+          text += `Email: ${this.resumeData.contact.email}\n`;
+          text += `GitHub: ${this.resumeData.contact.github}\n`;
+          text += `LinkedIn: ${this.resumeData.contact.linkedin}\n\n`;
         } else {
           text += `${section.title.toUpperCase()}\n`;
           text += '='.repeat(section.title.length) + '\n';
@@ -781,13 +868,13 @@ Type 'help' to see available commands.</pre>`;
         if (section.type === 'contact') {
           htmlContent += `
             <div class="resume-header">
-              <h1 class="resume-name">${this.portfolioData.personal.name}</h1>
-              <div class="resume-title">${this.portfolioData.personal.title}</div>
+              <h1 class="resume-name">${this.resumeData.contact.name}</h1>
+              <div class="resume-title">${this.resumeData.contact.title}</div>
             </div>
             <div class="resume-contact">
-              <div class="contact-item">Email: ${this.portfolioData.contact.email}</div>
-              <div class="contact-item">GitHub: ${this.portfolioData.contact.github}</div>
-              <div class="contact-item">LinkedIn: ${this.portfolioData.contact.linkedin}</div>
+              <div class="contact-item">Email: ${this.resumeData.contact.email}</div>
+              <div class="contact-item">GitHub: ${this.resumeData.contact.github}</div>
+              <div class="contact-item">LinkedIn: ${this.resumeData.contact.linkedin}</div>
             </div>
           `;
         } else {
@@ -807,7 +894,7 @@ Type 'help' to see available commands.</pre>`;
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Resume - ${this.portfolioData.personal.name}</title>
+          <title>Resume - ${this.resumeData.contact.name}</title>
           <style>
             body { 
               font-family: Arial, sans-serif; 
@@ -914,6 +1001,14 @@ Type 'help' to see available commands.</pre>`;
   // Handle Astro navigation
   document.addEventListener('astro:page-load', attemptInit);
   document.addEventListener('astro:after-swap', attemptInit);
+  
+  // Additional fallback - force initialization after a delay if nothing else works
+  setTimeout(() => {
+    if (!resumeGeneratorInstance) {
+      console.log('Fallback: Initializing resume generator without theme system');
+      initResumeGenerator();
+    }
+  }, 2000);
 </script>
 
 <style>
