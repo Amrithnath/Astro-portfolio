@@ -1,9 +1,11 @@
 ---
-import MainHead from '../components/MainHead.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import PortfolioPreview from '../components/PortfolioPreview.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
+import LsOutput from '../components/LsOutput.astro';
+import TerminalCommand from '../components/TerminalCommand.astro';
+import CatOutput from '../components/CatOutput.astro';
 
 const projects = (await Astro.glob('./project/**/*.md'))
 	.filter(({ frontmatter }) => !!frontmatter.publishDate)
@@ -11,34 +13,159 @@ const projects = (await Astro.glob('./project/**/*.md'))
 		(a, b) =>
 			new Date(b.frontmatter.publishDate).valueOf() - new Date(a.frontmatter.publishDate).valueOf()
 	);
+
+// Projects directory items for ls command
+const projectsDirectoryItems = [
+  {
+    name: '.',
+    isDirectory: true,
+    isAccessible: true,
+    size: 4096,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  {
+    name: '..',
+    isDirectory: true,
+    isAccessible: true,
+    size: 4096,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  {
+    name: 'README.md',
+    isDirectory: false,
+    isAccessible: true,
+    size: 2048,
+    date: 'Dec 12',
+    time: '04:20'
+  },
+  ...projects.map((project, index) => ({
+    name: `${project.frontmatter.title.toLowerCase().replace(/\s+/g, '-')}.md`,
+    isDirectory: false,
+    isAccessible: true,
+    size: 1024 + index * 256,
+    date: 'Dec 12',
+    time: '04:20',
+    href: project.url
+  }))
+];
+
+// Markdown content for cat README.md
+const projectsReadme = `
+<div class="md-header"># Projects Portfolio</div>
+
+<div class="md-subheader">## Overview</div>
+<div class="md-text">${projects.length} projects showcasing full-stack development, creative solutions, and modern web technologies.</div>
+
+<div class="md-subheader">## Featured Projects</div>
+${projects.slice(0, 3).map(project => `
+<div class="project-entry">
+  <div class="md-subheader">### ${project.frontmatter.title}</div>
+  <div class="md-text">${project.frontmatter.description}</div>
+  <div class="md-list-item">**Tech:** ${project.frontmatter.tags?.join(', ') || 'N/A'}</div>
+  <div class="md-list-item">**Date:** ${project.frontmatter.publishDate}</div>
+</div>
+`).join('')}
+
+<div class="md-subheader">## Statistics</div>
+<div class="md-list-item">- Total Projects: ${projects.length}</div>
+<div class="md-list-item">- Technologies Used: React, Next.js, Astro, Node.js, Python, and more</div>
+<div class="md-list-item">- Status: Actively maintained and continuously expanding</div>
+
+<div class="md-text">Use 'cat projects/&lt;project-name&gt;.md' to view individual project details.</div>
+`;
+
+
 ---
 
-<html lang="en">
-	<head>
-		<ThemeSwitch/>
-		<MainHead
-			title="All Projects | Amrith"
-			description="Learn about Amrith's most recent projects"
-		/>
-		<style>
-			.grid {
-				display: grid;
-				grid-gap: 3rem;
-			}
-			.title {
-				margin-top: 2rem;
-				margin-bottom: 2rem;
-			}
-		</style>
-	</head>
-	<body>
-		<Nav />
-		<div class="wrapper">
-			<h1 class="title">All Projects</h1>
-			<div class="grid">
-				{projects.map((project) => <PortfolioPreview project={project} />)}
-			</div>
-		</div>
-		<Footer />
-	</body>
-</html> 
+<BaseLayout title="All Projects | Amrith" description="Learn about Amrith's most recent projects" currentPage="/projects">
+  <!-- Terminal Theme View -->
+  <div class="terminal-view">
+    <div class="terminal-container">
+      <div class="terminal">
+          <TerminalCommand command="cat projects/README.md" />
+          <div class="output">
+            <CatOutput type="markdown" content={projectsReadme} />
+          </div>
+          
+          <TerminalCommand command="ls -la ~/projects/" />
+          <div class="output">
+            <LsOutput items={projectsDirectoryItems} totalSize={projects.length + 8} />
+          </div>
+          
+          <div class="prompt">
+            <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">_</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Professional Theme View -->
+  <div class="professional-view">
+    <Nav />
+    <main class="container">
+      <h1 class="title">All Projects</h1>
+      <div class="projects-grid">
+        {projects.map((project) => <PortfolioPreview project={project} />)}
+      </div>
+    </main>
+    <Footer />
+  </div>
+
+  <!-- Personal Theme View -->
+  <div class="personal-view">
+    <Nav />
+    <div class="wrapper">
+      <h1 class="title">All Projects</h1>
+      <div class="grid">
+        {projects.map((project) => <PortfolioPreview project={project} />)}
+      </div>
+    </div>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Professional Theme Styles */
+  .theme-professional .professional-view .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .theme-professional .professional-view .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .theme-professional .professional-view .title {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: var(--pro-accent);
+  }
+
+  /* Personal Theme Styles */
+  .theme-personal .personal-view .grid {
+    display: grid;
+    grid-gap: 3rem;
+  }
+  
+  .theme-personal .personal-view .title {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Terminal Theme - Hide in other themes */
+  .theme-professional .terminal-view,
+  .theme-personal .terminal-view {
+    display: none !important;
+  }
+  
+  .theme-terminal .professional-view,
+  .theme-terminal .personal-view {
+    display: none !important;
+  }
+</style> 

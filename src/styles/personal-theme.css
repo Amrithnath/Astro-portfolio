@@ -1,0 +1,542 @@
+/* Personal Theme - Original Portfolio Design */
+
+.theme-personal .personal-view {
+  display: block;
+}
+
+.theme-personal .terminal-view,
+.theme-personal .professional-view {
+  display: none !important;
+}
+
+/* Original variables preserved */
+.theme-personal {
+  --c-black: #05091e;
+  --c-blue: #46b4ff;
+  --c-gray: #90aab7;
+  --c-green: #9ef2cb;
+  --c-pink: #ffb8d9;
+  --c-orange: #ffb7a3;
+  --c-yellow: #ffdace;
+  --c-white: #fff;
+  --c-truew: #fff;
+  --card-bg: #05091e;
+  --c-tw-blue: #1DA1F2;
+  --c-li-blue: #0077b5;
+  --slider-bg: #dddddd;
+  --slider-bg-before: #fff;
+  --slider-input-bg: #8758ff;
+
+  --f-u18: 11.390625em;
+  --f-u17: 9.950627481136905em;
+  --f-u16: 8.692673779389363em;
+  --f-u15: 7.59375em;
+  --f-u14: 6.63375165409127em;
+  --f-u13: 5.795115852926242em;
+  --f-u12: 5.0625em;
+  --f-u11: 4.422501102727513em;
+  --f-u10: 3.8634105686174953em;
+  --f-u9: 3.375em;
+  --f-u8: 2.9483340684850083em;
+  --f-u7: 2.575607045744997em;
+  --f-u6: 2.25em;
+  --f-u5: 1.9655560456566725em;
+  --f-u4: 1.7170713638299977em;
+  --f-u3: 1.5em;
+  --f-u2: 1.3103706971044482em;
+  --f-u1: 1.1447142425533319em;
+  --f-d1: 0.8735804647362989em;
+  --f-d2: 0.7631428283688879em;
+  --f-d3: 0.6666666666666666em;
+  --f-d4: 0.5823869764908659em;
+  --f-d5: 0.5087618855792586em;
+  --f-d6: 0.4444444444444444em;
+  --f-d7: 0.3882579843272439em;
+  --f-d8: 0.3391745903861724em;
+  --f-d9: 0.2962962962962963em;
+  --f-d10: 0.2588386562181626em;
+  --f-d11: 0.22611639359078162em;
+  --f-d12: 0.19753086419753085em;
+  --f-d13: 0.17255910414544176em;
+  --f-d14: 0.15074426239385438em;
+  --f-d15: 0.13168724279835392em;
+  --f-d16: 0.11503940276362785em;
+  --f-d17: 0.10049617492923625em;
+  --f-d18: 0.0877914951989026em;
+
+  --t-fg: var(--c-black);
+  --t-bg: var(--c-white);
+  --t-subdue: var(--c-gray);
+  --t-active: var(--c-blue);
+  --t-twactive: var(--c-tw-blue);
+  --t-liactive: var(--c-li-blue);
+  --t-giactive: var(--c-black);
+  --t-inactive: #C13584;
+
+  --v-dis-dark: none;
+  --v-dis-light: block;
+}
+
+/* Dark mode for personal theme */
+.theme-personal[data-theme="dark"] {
+  --c-black: #fff;
+  --c-blue: #195d8a;
+  --c-gray: #434e53;
+  --c-green: #2d9c69;
+  --c-pink: #862a55;
+  --c-orange: #b14426;
+  --c-yellow: #dad736;
+  --c-white: #05091e;
+  --c-tw-blue: #1DA1F2;
+  --c-li-blue: #0077b5;
+  --card-bg: #202644;
+  --slider-bg: #dddddd;
+  --slider-bg-before: #05091e;
+  --slider-input-bg: #8758ff;
+
+  --t-fg: var(--c-black);
+  --t-bg: var(--c-white);
+  --t-subdue: var(--c-gray);
+  --t-active: var(--c-blue);
+  --t-twactive: var(--c-tw-blue);
+  --t-liactive: var(--c-li-blue);
+  --t-giactive: var(--c-black);
+
+  --v-dis-dark: block;
+  --v-dis-light: none;
+}
+
+/* Dark mode navigation */
+.theme-personal[data-theme="dark"] nav {
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.theme-personal body,
+.theme-personal .personal-view {
+  margin: 0;
+  padding: 0;
+  color: var(--t-fg);
+  background-color: var(--t-bg);
+  font-family: 'Inter', 'system-ui', sans-serif;
+  min-height: 100vh;
+}
+
+/* Remove any default margins/padding that might cause white borders */
+.theme-personal .personal-view {
+  padding: 0;
+  margin: 0;
+}
+
+.theme-personal * {
+  box-sizing: border-box; /* Change to border-box for better layout */
+}
+
+/* Specific resets for common elements that cause spacing */
+.theme-personal .hero h1,
+.theme-personal .hero h2,
+.theme-personal .hero h3,
+.theme-personal .hero p {
+  margin: 0;
+}
+
+/* Restore margins for content areas */
+.theme-personal .wrapper {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.theme-personal .wrapper * {
+  margin: revert;
+  padding: revert;
+}
+
+.theme-personal img {
+  max-width: 100%;
+  height: auto;
+}
+
+.theme-personal a {
+  color: var(--t-active);
+}
+
+.theme-personal h1 {
+  font-size: var(--f-u8);
+  font-family: 'Inter', 'system-ui', sans-serif;
+}
+
+/* Navigation */
+.theme-personal nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(5, 9, 30, 0.8); /* Semi-transparent background for readability */
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-personal .link {
+  color: var(--t-subdue);
+  display: block;
+  text-decoration: none;
+  font-size: var(--f-d1);
+  text-transform: uppercase;
+  padding-top: 0.75em;
+  padding-bottom: 0.75em;
+}
+
+.theme-personal .link:hover,
+.theme-personal .link:focus {
+  color: var(--t-active);
+}
+
+.theme-personal .monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  margin-right: 0.5rem;
+  color: var(--c-black);
+  font-weight: 900;
+  letter-spacing: -0.125rem;
+  border: 3px solid currentColor;
+  border-radius: 50%;
+}
+
+.theme-personal .socials {
+  display: flex;
+  gap: 0.75em;
+  margin-left: auto;
+}
+
+.theme-personal .social {
+  display: block;
+}
+
+.theme-personal .socialIcon {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: var(--t-subdue);
+  transition: fill linear 150ms;
+}
+
+.theme-personal .socialIcontw:hover {
+  fill: var(--t-twactive);
+}
+.theme-personal .socialIconli:hover {
+  fill: var(--t-liactive);
+}
+.theme-personal .socialIcongi:hover {
+  fill: var(--t-giactive);
+}
+.theme-personal .socialIconin:hover {
+  fill: var(--t-inactive);
+}
+
+/* Hero section */
+.theme-personal .hero {
+  padding: 8rem;
+  display: flex;
+  background-color: var(--t-fg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh; /* Take full viewport height */
+  height: 100vh; /* Ensure full height */
+  color: white;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-position: center;
+  background-attachment: fixed; /* Make background fixed for parallax effect */
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-personal .hero .img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.theme-personal .hero .light-img {
+  display: var(--v-dis-light);
+}
+
+.theme-personal .hero .dark-img {
+  display: var(--v-dis-dark);
+}
+
+.theme-personal .hero .gradient2 {
+  background-size: cover;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.theme-personal .hero .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-left: 2rem;
+}
+
+.theme-personal .hero .title {
+  font-weight: 900;
+  font-size: var(--f-u6);
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.theme-personal .hero .subtitle {
+  display: block;
+  font-weight: 400;
+  font-size: var(--f-d6);
+  letter-spacing: -0.0625em;
+}
+
+.theme-personal .hero .roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  font-size: var(--f-d1);
+}
+
+.theme-personal .hero .role {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: 900;
+  color: var(--t-bg);
+  background-color: var(--t-fg);
+  padding: 0.25em 0.5em;
+  z-index: 2;
+}
+
+.theme-personal .hero .role:nth-of-type(1) .invert {
+  background-color: var(--c-pink);
+}
+
+.theme-personal .hero .role:nth-of-type(2) .invert {
+  background-color: var(--c-blue);
+}
+
+.theme-personal .hero .role:nth-of-type(3) .invert {
+  background-color: var(--c-green);
+}
+
+.theme-personal .hero .role:hover .invert {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+.theme-personal .hero .invert {
+  position: absolute;
+  color: var(--t-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  clip-path: polygon(0% 100%, 100% 100%, 100% 200%, 0% 200%);
+  transition: clip-path cubic-bezier(0.4, 0, 0.5, 1) 150ms;
+}
+
+.theme-personal .hero .desc {
+  font-size: var(--f-u1);
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+
+/* Content sections */
+.theme-personal .wrapper {
+  max-width: 80em;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 4em;
+  margin-bottom: 4em;
+}
+
+.theme-personal .grid {
+  display: grid;
+  grid-gap: 2rem;
+}
+
+.theme-personal .section {
+  margin-bottom: 2rem;
+}
+
+.theme-personal .sectionTitle {
+  font-weight: 700;
+  font-size: var(--f-u8);
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+}
+
+.theme-personal .bio {
+  line-height: 2;
+  margin-bottom: 2rem;
+}
+
+.theme-personal .bio > span:first-of-type {
+  line-height: 1;
+  margin-bottom: 0.5em;
+  display: block;
+  font-weight: 700;
+  font-size: var(--f-u4);
+}
+
+.theme-personal .buttonContainer {
+  text-align: center;
+  margin-top: 2em;
+}
+
+.theme-personal .button {
+  display: inline-block;
+  border: 3px solid currentColor;
+  padding: 0.5em 1em;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+/* Theme switcher positioning for personal theme */
+.theme-personal .theme-switcher {
+  position: fixed;
+  top: 80px; /* Below navigation */
+  right: 20px;
+  z-index: 1001; /* Higher than navigation */
+}
+
+/* No need to adjust navigation padding now */
+
+/* Responsive for personal theme */
+@media (min-width: 750px) {
+  .theme-personal .hero {
+    height: 100vh; /* Keep full height on larger screens */
+  }
+  
+  .theme-personal .hero .overlay {
+    padding-left: 4rem;
+  }
+  
+  .theme-personal .hero .title {
+    font-size: var(--f-u12);
+  }
+  
+  .theme-personal .hero .role {
+    font-size: var(--f-u3);
+  }
+}
+
+@media (min-width: 1200px) {
+  .theme-personal .grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {  
+  .theme-personal .hero {
+    padding: 4rem 2rem;
+    height: 100vh; /* Keep full height on mobile */
+    background-attachment: scroll; /* Better performance on mobile */
+  }
+  
+  .theme-personal .hero .title {
+    font-size: 2.5em;
+  }
+  
+
+}
+
+/* Resume Generator Styles for Personal Theme */
+.theme-personal .resume-generator {
+  --control-bg: var(--c-bg-secondary);
+  --border-color: var(--c-border);
+  --heading-color: var(--c-text);
+  --hover-bg: rgba(72, 134, 255, 0.1);
+}
+
+.theme-personal .resume-generator .resume-controls {
+  background: var(--c-bg-secondary);
+  border: 1px solid var(--c-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-personal .resume-generator .resume-controls h2 {
+  color: var(--c-blue);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.theme-personal .resume-generator .resume-controls h3 {
+  color: var(--c-text);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.theme-personal .resume-generator .toggle-item {
+  color: var(--c-text);
+  transition: background-color 0.2s;
+}
+
+.theme-personal .resume-generator .toggle-item:hover {
+  background-color: rgba(72, 134, 255, 0.05);
+}
+
+.theme-personal .resume-generator .export-btn {
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.theme-personal .resume-generator .export-btn:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-personal .resume-generator .resume-preview {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--c-border);
+}
+
+/* Mobile adjustments for personal theme */
+@media (max-width: 1024px) {
+  .theme-personal .resume-generator {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .theme-personal .resume-generator .resume-controls {
+    padding: 1rem;
+  }
+  
+  .theme-personal .resume-generator .resume-document {
+    padding: 1rem;
+  }
+} 

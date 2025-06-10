@@ -1,0 +1,109 @@
+---
+import ThemeProvider from '../components/ThemeProvider.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+import TerminalNav from '../components/TerminalNav.astro';
+import { ViewTransitions } from 'astro:transitions';
+import '../styles/terminal-theme.css';
+import '../styles/professional-theme.css';
+import '../styles/personal-theme.css';
+import '../styles/theme-transitions.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  currentPage?: string;
+}
+
+const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="terminal">
+  <head>
+    <ThemeProvider />
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <ViewTransitions />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  
+  <body>
+    <!-- Page Transition Loader -->
+    <div id="page-transition" class="page-transition">
+      <div class="page-transition-loader"></div>
+    </div>
+    
+    <ThemeSwitcher />
+    
+    <!-- Terminal Navigation (only visible in terminal theme) -->
+    <TerminalNav currentPage={currentPage} />
+    
+    <!-- Page Content -->
+    <slot />
+  </body>
+</html>
+
+<script is:inline>
+  // Page transition handler
+  function initPageTransitions() {
+    const loader = document.getElementById('page-transition');
+    if (!loader) return;
+    
+    // Show loader on navigation start
+    document.addEventListener('astro:before-preparation', () => {
+      loader.classList.add('active');
+    });
+    
+    // Hide loader when page is ready
+    document.addEventListener('astro:page-load', () => {
+      setTimeout(() => {
+        loader.classList.remove('active');
+      }, 200);
+    });
+    
+    // Handle navigation errors
+    document.addEventListener('astro:after-swap', () => {
+      setTimeout(() => {
+        loader.classList.remove('active');
+      }, 100);
+    });
+  }
+  
+  // Initialize transitions
+  initPageTransitions();
+</script>
+
+<style>
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  
+  /* Remove any default margins that might cause black bars */
+  .terminal-nav {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Terminal nav visibility is handled by theme switching JS */
+  .theme-terminal .terminal-nav {
+    display: block;
+  }
+  
+  .theme-professional .terminal-nav,
+  .theme-personal .terminal-nav {
+    display: none;
+  }
+</style> 
