@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Work in Progress - Amrithnath Vijayakumar" currentPage="/work-in-progress">
+  <div class="work-in-progress">
+    <div class="wip-container">
+      <div class="wip-content">
+        <div class="wip-icon">🚧</div>
+        <h1 class="wip-title">Work in Progress</h1>
+        <p class="wip-description">
+          This section is currently under construction. I'm working hard to bring you something amazing!
+        </p>
+        <p class="wip-subtitle">
+          Check back soon for updates, or explore other sections of my portfolio.
+        </p>
+        <div class="wip-actions">
+          <a href="/" class="wip-btn primary">← Go Home</a>
+          <a href="/about" class="wip-btn secondary">About Me</a>
+          <a href="/projects" class="wip-btn secondary">Projects</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .work-in-progress {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg-color, #0a0e1a);
+    color: var(--text-color, #e0e6ed);
+  }
+
+  .wip-container {
+    max-width: 600px;
+    text-align: center;
+    background: var(--surface-color, rgba(255, 255, 255, 0.02));
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  }
+
+  .wip-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+
+  .wip-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color, #00ff9f);
+    font-weight: 600;
+  }
+
+  .wip-description {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
+  .wip-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+
+  .wip-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .wip-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .wip-btn.primary {
+    background: var(--accent-color, #00ff9f);
+    color: var(--bg-color, #0a0e1a);
+  }
+
+  .wip-btn.primary:hover {
+    background: var(--accent-hover, #00e68c);
+    transform: translateY(-2px);
+  }
+
+  .wip-btn.secondary {
+    background: transparent;
+    color: var(--text-color, #e0e6ed);
+    border-color: var(--border-color, rgba(255, 255, 255, 0.2));
+  }
+
+  .wip-btn.secondary:hover {
+    background: var(--surface-hover, rgba(255, 255, 255, 0.05));
+    border-color: var(--accent-color, #00ff9f);
+    transform: translateY(-2px);
+  }
+
+  /* Terminal theme styles */
+  .theme-terminal .work-in-progress {
+    background: #0a0e1a;
+    color: #e0e6ed;
+  }
+
+  .theme-terminal .wip-container {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: #1a2332;
+  }
+
+  .theme-terminal .wip-title {
+    color: #00ff9f;
+  }
+
+  /* Professional theme styles */
+  .theme-professional .work-in-progress {
+    background: #f8f9fa;
+    color: #2c3e50;
+  }
+
+  .theme-professional .wip-container {
+    background: white;
+    border-color: #e9ecef;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-professional .wip-title {
+    color: #3498db;
+  }
+
+  .theme-professional .wip-btn.primary {
+    background: #3498db;
+    color: white;
+  }
+
+  .theme-professional .wip-btn.primary:hover {
+    background: #2980b9;
+  }
+
+  .theme-professional .wip-btn.secondary {
+    color: #2c3e50;
+    border-color: #bdc3c7;
+  }
+
+  .theme-professional .wip-btn.secondary:hover {
+    background: #ecf0f1;
+    border-color: #3498db;
+  }
+
+  /* Personal theme styles */
+  .theme-personal .work-in-progress {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .theme-personal .wip-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+  }
+
+  .theme-personal .wip-title {
+    color: #ffd700;
+  }
+
+  .theme-personal .wip-btn.primary {
+    background: #ffd700;
+    color: #333;
+  }
+
+  .theme-personal .wip-btn.primary:hover {
+    background: #ffed4e;
+  }
+
+  .theme-personal .wip-btn.secondary {
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .theme-personal .wip-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffd700;
+  }
+
+  @media (max-width: 768px) {
+    .wip-container {
+      padding: 2rem 1.5rem;
+    }
+
+    .wip-title {
+      font-size: 2rem;
+    }
+
+    .wip-description {
+      font-size: 1.1rem;
+    }
+
+    .wip-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wip-btn {
+      min-width: 200px;
+    }
+  }
+</style> 
