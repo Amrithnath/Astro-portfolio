@@ -1,4 +1,3 @@
-
 name: Build and deploy site to various hosting providers
 on:
   workflow_dispatch:
@@ -28,7 +27,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-depop
+          key: ${{ runner.os }}-node-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -39,7 +40,7 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
       - name: install deps
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: build astro
         run: pnpm build
       - name: Archive build artifacts
@@ -49,7 +50,7 @@ jobs:
           path: |
             dist
       - name: Install dependencies and build your site
-        uses: withastro/action@v0
+        uses: withastro/action@v3
         with:
              node-version: 22 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
              package-manager: pnpm # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
@@ -63,7 +64,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
   deploy-gcloud-storage:
     needs: build
     runs-on: ubuntu-latest
@@ -74,12 +75,12 @@ jobs:
           name: ${{github.sha}}-dist
           path: './dist'
       - name: 'auth'
-        uses: 'google-github-actions/auth@v1'
+        uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: ${{vars.GCP_WORKFLOW_ID_PROVIDER_ID}}
           service_account: ${{vars.GOOGLE_SERVICE_ACCOUNT_EMAIL}}
       - name: 'upload-folder'
-        uses: 'google-github-actions/upload-cloud-storage@v1'
+        uses: 'google-github-actions/upload-cloud-storage@v2'
         with:
           path: './dist'
           destination: ${{vars.GCLOUD_BUCKET}}
