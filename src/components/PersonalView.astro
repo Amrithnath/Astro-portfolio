@@ -14,6 +14,8 @@ export interface Props {
   heroImage?: any;
   heroImage2?: any;
   backgroundImage?: any;
+  achievements?: string[];
+  interests?: string[];
 }
 
 const { 
@@ -23,10 +25,13 @@ const {
   projects = [],
   heroImage,
   heroImage2, 
-  backgroundImage
+  backgroundImage,
+  achievements = [],
+  interests = []
 } = Astro.props;
 
 const featuredProject = projects[0];
+const randomInterest = interests.length > 0 ? interests[Math.floor(Math.random() * interests.length)] : "💻 Coding";
 ---
 
 <div class="personal-view">
@@ -56,8 +61,8 @@ const featuredProject = projects[0];
       </h1>
       <div class="roles">
         <span class="role">💻 Developer <span class="invert">💻 Developer</span></span>
-        <span class="role">🎮 Gamer <span class="invert">🎮 Gamer</span></span>
-        <span class="role">📸 Photographer <span class="invert">📸 Photographer</span></span>
+        <span class="role">{randomInterest} <span class="invert">{randomInterest}</span></span>
+        <span class="role">{interests.length > 1 ? interests[1] : "📸 Photographer"} <span class="invert">{interests.length > 1 ? interests[1] : "📸 Photographer"}</span></span>
       </div>
       <p class="desc">{description}</p>
     </div>
@@ -67,9 +72,9 @@ const featuredProject = projects[0];
       <div class="section">
         <h2 class="sectionTitle">About me</h2>
         <p class="bio">
-          <span>Hello!</span> I'm Amrith, and this is my website. It was made using{' '}
+          <span>Hello!</span> I'm Amrith, and this is my website. {achievements.length > 0 ? achievements[Math.floor(Math.random() * achievements.length)] : "I'm passionate about building innovative solutions and creating amazing user experiences."} It was made using{' '}
           <a href="https://astro.build" target="_blank" rel="nofollow"> Astro</a>,
-          a new way to build static sites. Astro was extremely easy to use, I built all this under 10mins.
+          a modern framework for building fast, optimized websites.
         </p>
         <p>
           <a href="/about">Read more about me</a>

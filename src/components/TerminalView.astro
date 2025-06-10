@@ -1,5 +1,6 @@
 ---
 import LsOutput from './LsOutput.astro';
+import TreeOutput from './TreeOutput.astro';
 import TerminalNav from './TerminalNav.astro';
 import { homeDirectoryItems, getProjectItems } from '../data/navigation.ts';
 
@@ -9,10 +10,27 @@ export interface Props {
   description?: string;
   projects?: any[];
   skills?: string[];
+  techStack?: { [category: string]: string[] };
   contact?: {
     email?: string;
     github?: string;
     linkedin?: string;
+  };
+  achievements?: string[];
+  terminal?: {
+    recentCommands?: string[];
+    systemInfo?: {
+      uptime?: string;
+      load?: string;
+      processes?: number;
+    };
+  };
+  stats?: {
+    projectsCompleted?: number;
+    technologiesUsed?: number;
+    yearsOfExperience?: number;
+    certifications?: number;
+    awards?: number;
   };
 }
 
@@ -21,10 +39,98 @@ const {
   description = "Full-stack developer, gamer, and photographer",
   projects = [],
   skills = [],
-  contact = {}
+  techStack = {},
+  contact = {},
+  achievements = [],
+  terminal = {},
+  stats = {}
 } = Astro.props;
 
 const projectItems = getProjectItems(projects);
+const randomAchievement = achievements.length > 0 ? achievements[Math.floor(Math.random() * achievements.length)] : "Building innovative solutions";
+
+// Helper function to convert techStack object to TreeOutput format
+function convertTechStackToTreeItems(techStack: { [category: string]: string[] }) {
+  if (Object.keys(techStack).length === 0) {
+    // Default skills tree structure
+    return [
+      {
+        name: 'frontend/',
+        type: 'directory' as const,
+        children: [
+          { name: 'javascript.js', type: 'file' as const, extension: 'js' },
+          { name: 'typescript.ts', type: 'file' as const, extension: 'ts' },
+          { name: 'react.jsx', type: 'file' as const, extension: 'jsx' },
+          { name: 'nextjs.js', type: 'file' as const, extension: 'js' },
+          { name: 'astro.astro', type: 'file' as const, extension: 'astro' },
+          { name: 'vue.vue', type: 'file' as const, extension: 'vue' }
+        ]
+      },
+      {
+        name: 'backend/',
+        type: 'directory' as const,
+        children: [
+          { name: 'nodejs.js', type: 'file' as const, extension: 'js' },
+          { name: 'python.py', type: 'file' as const, extension: 'py' },
+          { name: 'django.py', type: 'file' as const, extension: 'py' },
+          { name: 'express.js', type: 'file' as const, extension: 'js' },
+          { name: 'fastapi.py', type: 'file' as const, extension: 'py' }
+        ]
+      },
+      {
+        name: 'database/',
+        type: 'directory' as const,
+        children: [
+          { name: 'postgresql.sql', type: 'file' as const, extension: 'sql' },
+          { name: 'mongodb.js', type: 'file' as const, extension: 'js' },
+          { name: 'redis.conf', type: 'file' as const, extension: 'conf' },
+          { name: 'sqlite.db', type: 'file' as const, extension: 'db' }
+        ]
+      },
+      {
+        name: 'devops/',
+        type: 'directory' as const,
+        children: [
+          { name: 'docker.yml', type: 'file' as const, extension: 'yml' },
+          { name: 'aws.tf', type: 'file' as const, extension: 'tf' },
+          { name: 'cicd.yml', type: 'file' as const, extension: 'yml' },
+          { name: 'git.config', type: 'file' as const, extension: 'config' },
+          { name: 'vercel.json', type: 'file' as const, extension: 'json' }
+        ]
+      }
+    ];
+  }
+
+  // Convert dynamic techStack to tree format
+  return Object.entries(techStack).map(([category, skillList]) => ({
+    name: `${category.toLowerCase().replace(/\s+/g, '-')}/`,
+    type: 'directory' as const,
+    children: skillList.map(skill => ({
+      name: `${skill.toLowerCase().replace(/\s+/g, '-')}.${getSkillExtension(skill)}`,
+      type: 'file' as const,
+      extension: getSkillExtension(skill)
+    }))
+  }));
+}
+
+// Helper function to determine file extension based on skill name
+function getSkillExtension(skill: string): string {
+  const skillLower = skill.toLowerCase();
+  if (skillLower.includes('javascript') || skillLower.includes('js') || skillLower.includes('react') || skillLower.includes('vue') || skillLower.includes('angular')) return 'js';
+  if (skillLower.includes('typescript') || skillLower.includes('ts')) return 'ts';
+  if (skillLower.includes('python') || skillLower.includes('django') || skillLower.includes('fastapi')) return 'py';
+  if (skillLower.includes('sql') || skillLower.includes('postgres') || skillLower.includes('mysql')) return 'sql';
+  if (skillLower.includes('json')) return 'json';
+  if (skillLower.includes('yaml') || skillLower.includes('yml')) return 'yml';
+  if (skillLower.includes('markdown') || skillLower.includes('md')) return 'md';
+  if (skillLower.includes('astro')) return 'astro';
+  if (skillLower.includes('vue')) return 'vue';
+  return 'conf';
+}
+
+const skillsTreeItems = convertTechStackToTreeItems(techStack);
+const totalDirs = skillsTreeItems.length;
+const totalFiles = skillsTreeItems.reduce((total, dir) => total + (dir.children?.length || 0), 0);
 ---
 
 <div class="terminal-view">
@@ -73,7 +179,8 @@ const projectItems = getProjectItems(projects);
   <span class="json-key">"name"</span>: <span class="json-string">"{title}"</span>,
   <span class="json-key">"role"</span>: <span class="json-string">"Full-Stack Developer"</span>,
   <span class="json-key">"description"</span>: <span class="json-string">"{description}"</span>,
-  <span class="json-key">"interests"</span>: [<span class="json-string">"💻 Coding"</span>, <span class="json-string">"🎮 Gaming"</span>, <span class="json-string">"📸 Photography"</span>, <span class="json-string">"✈️ Travel"</span>],
+  <span class="json-key">"achievements"</span>: <span class="json-string">"{randomAchievement}"</span>,
+  <span class="json-key">"experience"</span>: <span class="json-string">"{stats.yearsOfExperience || 6}+ years"</span>,
   <span class="json-key">"status"</span>: <span class="json-string">"Available for new opportunities"</span>
 <span class="json-brace">&#125;</span>
           </div>
@@ -87,38 +194,17 @@ const projectItems = getProjectItems(projects);
           <LsOutput items={homeDirectoryItems} />
         </div>
 
-        <!-- Skills Section -->
+        <!-- Dynamic Skills Section with TreeOutput Component -->
         <div class="prompt">
           <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">tree skills/</span>
         </div>
         <div class="output">
-          <div class="tree-output">skills/
-├── <span class="tree-dir">frontend/</span>
-│   ├── <span class="tree-file">javascript.js</span>
-│   ├── <span class="tree-file">typescript.ts</span>
-│   ├── <span class="tree-file">react.jsx</span>
-│   ├── <span class="tree-file">nextjs.js</span>
-│   ├── <span class="tree-file">astro.astro</span>
-│   └── <span class="tree-file">vue.vue</span>
-├── <span class="tree-dir">backend/</span>
-│   ├── <span class="tree-file">nodejs.js</span>
-│   ├── <span class="tree-file">python.py</span>
-│   ├── <span class="tree-file">django.py</span>
-│   ├── <span class="tree-file">express.js</span>
-│   └── <span class="tree-file">fastapi.py</span>
-├── <span class="tree-dir">database/</span>
-│   ├── <span class="tree-file">postgresql.sql</span>
-│   ├── <span class="tree-file">mongodb.js</span>
-│   ├── <span class="tree-file">redis.conf</span>
-│   └── <span class="tree-file">sqlite.db</span>
-└── <span class="tree-dir">devops/</span>
-    ├── <span class="tree-file">docker.yml</span>
-    ├── <span class="tree-file">aws.tf</span>
-    ├── <span class="tree-file">cicd.yml</span>
-    ├── <span class="tree-file">git.config</span>
-    └── <span class="tree-file">vercel.json</span>
-
-4 directories, 20 files</div>
+          <TreeOutput 
+            items={skillsTreeItems} 
+            title="skills/"
+            totalDirs={totalDirs}
+            totalFiles={totalFiles}
+          />
         </div>
 
         <!-- Projects Section -->
@@ -126,7 +212,23 @@ const projectItems = getProjectItems(projects);
           <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~/projects</span><span class="symbol">$</span><span class="command">ls -lta</span>
         </div>
         <div class="output">
-          <LsOutput items={projectItems} totalSize={24} />
+          <LsOutput items={projectItems} totalSize={stats.projectsCompleted || 24} />
+        </div>
+
+        <!-- Stats Section -->
+        <div class="prompt">
+          <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">cat stats.json</span>
+        </div>
+        <div class="output">
+          <div class="json-output">
+<span class="json-brace">&#123;</span>
+  <span class="json-key">"projects_completed"</span>: <span class="json-number">{stats.projectsCompleted || 25}</span>,
+  <span class="json-key">"technologies_used"</span>: <span class="json-number">{stats.technologiesUsed || 30}</span>,
+  <span class="json-key">"years_experience"</span>: <span class="json-number">{stats.yearsOfExperience || 6}</span>,
+  <span class="json-key">"certifications"</span>: <span class="json-number">{stats.certifications || 2}</span>,
+  <span class="json-key">"awards"</span>: <span class="json-number">{stats.awards || 4}</span>
+<span class="json-brace">&#125;</span>
+          </div>
         </div>
 
         <!-- Contact Section -->
@@ -149,7 +251,7 @@ const projectItems = getProjectItems(projects);
           <span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">uptime</span>
         </div>
         <div class="output">
-          <div class="command-output">14:30  up 365 days, 12:45, 1 user, load averages: 0.52 0.48 0.51</div>
+          <div class="command-output">14:30  up {terminal.systemInfo?.uptime || '365 days'}, 12:45, 1 user, load averages: {terminal.systemInfo?.load || '0.52 0.48 0.51'}</div>
         </div>
 
         <!-- System Information -->
