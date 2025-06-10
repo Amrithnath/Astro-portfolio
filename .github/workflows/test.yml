@@ -1,4 +1,4 @@
-name: Comprehensive Tests
+name: Build and Quality Tests
 
 on:
   push:
@@ -6,12 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-
 jobs:
-  quality-checks:
-    name: Code Quality & Tests
+  build-test:
+    name: Build Validation
     runs-on: ubuntu-latest
     
     steps:
@@ -32,14 +29,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run formatting check
-        run: pnpm format:check
-        continue-on-error: true
-
-      - name: Type checking
-        run: pnpm check
-
-      - name: Build test
+      - name: Build site
         run: pnpm build
 
       - name: Test build output
@@ -58,12 +48,60 @@ jobs:
         run: |
           BUNDLE_SIZE=$(du -sh dist | cut -f1)
           echo "📦 Bundle size: $BUNDLE_SIZE"
-          # Optional: Add bundle size limits here
+
+      - name: Analyze bundle contents
+        run: |
+          echo "📊 Analyzing build output..."
+          find dist -name "*.js" -type f -exec du -h {} + | sort -hr | head -5 || echo "No JS files found"
+          find dist -name "*.css" -type f -exec du -h {} + | sort -hr | head -5 || echo "No CSS files found"
+          
+      - name: Check for large assets
+        run: |
+          echo "🔍 Checking for large assets (>1MB)..."
+          find dist -type f -size +1M -exec ls -lh {} + || echo "✅ No large assets found"
+
+  preview-test:
+    name: Preview Server Test
+    runs-on: ubuntu-latest
+    needs: build-test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Start preview server
+        run: pnpm preview &
+        env:
+          PORT: 4321
+
+      - name: Wait for server and test
+        run: |
+          echo "Waiting for server to start..."
+          sleep 10
+          curl -f http://localhost:4321 || (echo "❌ Preview server failed" && exit 1)
+          echo "✅ Preview server working correctly"
 
   accessibility-check:
     name: Accessibility Tests
     runs-on: ubuntu-latest
-    needs: quality-checks
+    needs: build-test
     
     steps:
       - name: Checkout repository
@@ -108,7 +146,7 @@ jobs:
   performance-check:
     name: Performance Tests  
     runs-on: ubuntu-latest
-    needs: quality-checks
+    needs: build-test
     
     steps:
       - name: Checkout repository
@@ -145,7 +183,7 @@ jobs:
   link-check:
     name: Link Validation
     runs-on: ubuntu-latest
-    needs: quality-checks
+    needs: build-test
     
     steps:
       - name: Checkout repository

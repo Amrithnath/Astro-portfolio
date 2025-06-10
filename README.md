@@ -2,7 +2,7 @@
 
 ![Deploy Status](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/deploy.yml?branch=main&label=deploy)
 ![Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/lint.yml?branch=main&label=tests)
-![Comprehensive Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/test.yml?branch=main&label=quality)
+![Quality Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/test.yml?branch=main&label=quality)
 ![GitHub](https://img.shields.io/github/license/Amrithnath/Astro-portfolio)
 ![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![Package Manager](https://img.shields.io/badge/package%20manager-pnpm-orange)
@@ -64,13 +64,6 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 | `pnpm dev` | Start development server |
 | `pnpm build` | Build for production |
 | `pnpm preview` | Preview production build locally |
-| `pnpm check` | Run TypeScript and Astro checks |
-| `pnpm test` | Run all tests (type check + build) |
-| `pnpm lint` | Run linting checks |
-| `pnpm format` | Format code with Prettier |
-| `pnpm format:check` | Check code formatting |
-| `pnpm clean` | Clean build artifacts |
-| `pnpm audit` | Run security audit |
 
 ## 📁 Project Structure
 
@@ -92,18 +85,16 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 This project includes comprehensive testing and quality checks:
 
 ### Automated Tests
-- **Type Safety**: TypeScript compilation checks
 - **Build Validation**: Ensures successful builds
-- **Code Formatting**: Prettier formatting validation
 - **Security Audits**: Dependency vulnerability scanning
-- **Accessibility**: axe-core accessibility testing
 - **Performance**: Bundle size analysis
+- **Accessibility**: axe-core accessibility testing
 - **Link Validation**: Broken link detection
 
 ### CI/CD Workflows
-- **Lint and Test**: Basic quality checks on every push/PR
-- **Comprehensive Tests**: Full test suite including accessibility and performance
-- **Deploy**: Automated deployment after successful tests
+- **Lint and Test**: Basic build and security checks on every push/PR
+- **Build and Quality Tests**: Comprehensive build validation and performance analysis
+- **Deploy**: Automated deployment to GitHub Pages and GCP
 - **Badge Updates**: Status badge maintenance
 
 ## 🚢 Deployment
@@ -133,12 +124,11 @@ You can manually trigger deployments using the GitHub Actions interface.
 
 1. Create a feature branch from `main`
 2. Make your changes
-3. Run tests locally: `pnpm test`
-4. Format code: `pnpm format`
-5. Commit and push your changes
-6. Create a Pull Request
-7. Automated tests will run
-8. Merge after approval and passing tests
+3. Test locally: `pnpm build` and `pnpm preview`
+4. Commit and push your changes
+5. Create a Pull Request
+6. Automated tests will run
+7. Merge after approval and passing tests
 
 ## 📄 License
 

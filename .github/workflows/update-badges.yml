@@ -5,7 +5,7 @@ permissions:
 
 on:
   workflow_run:
-    workflows: ["Lint and Test", "Comprehensive Tests", "Build and Deploy"]
+    workflows: ["Lint and Test", "Build and Quality Tests", "Build and deploy site to various hosting providers"]
     types: [ completed ]
   schedule:
     # Update badges daily at 00:00 UTC
