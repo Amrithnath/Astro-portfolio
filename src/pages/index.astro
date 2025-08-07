@@ -3,6 +3,10 @@
 import MainHead from '../components/MainHead.astro';
 import TerminalView from '../components/TerminalView.astro';
 import '../styles/global.css';
+// Resolve built CSS asset URLs so the browser gets proper text/css (avoid MIME errors)
+import personalThemeHref from '../styles/personal-theme.css?url';
+import professionalThemeHref from '../styles/professional-theme.css?url';
+import transitionsHref from '../styles/theme-transitions.css?url';
 
 // Dynamic data service
 import { generateSeededLandingData } from '../data/landing-data-service';
@@ -115,11 +119,11 @@ import '../styles/terminal-theme.css';
                     el.textContent = pool[(seed + idx*3) % pool.length];
                   });
                 })();
-                // Load non-critical CSS lazily
+                // Load non-critical CSS lazily (use built asset URLs to avoid MIME/type issues)
                 const styles = [
-                  '/_astro/theme-transitions.css',
-                  '/_astro/professional-theme.css',
-                  '/_astro/personal-theme.css'
+                  '${transitionsHref}',
+                  '${professionalThemeHref}',
+                  '${personalThemeHref}'
                 ];
                 styles.forEach(href => {
                   const link = document.createElement('link');
