@@ -428,6 +428,16 @@ export const resumeCompendium: ResumeCompendium = {
         { name: "SonarQube", level: "intermediate", yearsOfExperience: 2, lastUsed: "2023-12" },
         { name: "OWASP ZAP", level: "intermediate", yearsOfExperience: 2, lastUsed: "2023-11" }
       ]
+    },
+    {
+      category: "AI & Machine Learning",
+      priority: 8,
+      skills: [
+        { name: "OpenAI", level: "expert", yearsOfExperience: 2, lastUsed: "2025-08" },
+        { name: "Google Gemini", level: "intermediate", yearsOfExperience: 1, lastUsed: "2025-08" },
+        { name: "Model Context Protocol (MCP)", level: "intermediate", yearsOfExperience: 0.5, lastUsed: "2025-08" },
+        { name: "LangChain", level: "intermediate", yearsOfExperience: 0, lastUsed: "2025-08" },
+      ]
     }
   ],
   

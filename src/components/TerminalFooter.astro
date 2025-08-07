@@ -1,0 +1,37 @@
+---
+export interface Props {
+  showCursor?: boolean;
+}
+
+const { showCursor = true } = Astro.props;
+---
+
+<div class="terminal-footer">
+  <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">printf "Thanks for visiting!\n"</span></div>
+  <div class="output"><div class="command-output">Thanks for visiting!</div></div>
+
+  <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">uname -srv</span></div>
+  <div class="output"><div class="command-output">Astro/Terminal v1.0 — © {new Date().getFullYear()} Amrith — All rights reserved</div></div>
+
+  <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">echo "Made with ❤  using Astro"</span></div>
+  <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>
+
+  {showCursor && (
+    <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">█</span></div>
+  )}
+</div>
+
+<style>
+  .terminal-footer {
+    margin: 16px 0 0 0;
+    padding: 0 16px;
+    width: 100%;
+  }
+  .theme-terminal .terminal .terminal-footer {
+    margin-top: 16px;
+    padding: 0;
+    width: auto;
+  }
+</style>
+
+

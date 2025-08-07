@@ -106,7 +106,7 @@ const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription} currentPage="/about">
-  <!-- Terminal Theme View -->
+  <!-- Terminal Theme View (includes its own TerminalNav) -->
   <TerminalView 
     title={aboutData.title}
     description={aboutData.description}
@@ -117,6 +117,7 @@ const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary
     achievements={aboutData.achievements}
     terminal={aboutData.terminal}
     stats={aboutData.stats}
+    showFinalCursor={false}
   />
   
   <!-- Professional Theme View -->
