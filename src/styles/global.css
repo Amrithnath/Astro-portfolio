@@ -96,6 +96,15 @@
 	--v-dis-light: block;
 }
 
+/* Fix upcoming Chrome change for h1 inside sectioning content */
+section h1,
+article h1,
+nav h1,
+aside h1 {
+  font-size: 2rem; /* 32px baseline; adjust to your design system */
+  line-height: 1.2;
+}
+
 [data-theme="dark"]{
 	/* Colors */
 	--c-black: #fff;
