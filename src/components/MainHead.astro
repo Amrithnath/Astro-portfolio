@@ -1,6 +1,5 @@
 ---
-import '../styles/global.css';
-import '@fontsource/fira-code';
+// Keep head minimal for first paint on homepage
 const {
 	title = 'Amrithnath Vijayakumar: Personal Site',
 	description = 'The personal site of Amrithnath Vijayakumar',
@@ -17,44 +16,5 @@ const {
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
 <link rel="manifest" href="/favicon/site.webmanifest">
 <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-	href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700;900&display=swap"
-	rel="stylesheet"
-/>
-<script>
-	// Get the theme toggle input
-	const themeToggle = document.querySelector(
-	  '.theme-switch input[type="checkbox"]'
-	);
-
-	// Get the current theme from local storage
-	const currentTheme = localStorage.getItem("theme");
-
-	// If the current local storage item can be found
-	if (currentTheme) {
-	  // Set the body data-theme attribute to match the local storage item
-	  document.documentElement.setAttribute("data-theme", currentTheme);
-
-	  // If the current theme is dark, check the theme toggle
-	  if (currentTheme === "dark") {
-		themeToggle.checked = true;
-	  }
-	}
-
-	// Function that will switch the theme based on the if the theme toggle is checked or not
-	function switchTheme(e) {
-	  if (e.target.checked) {
-		document.documentElement.setAttribute("data-theme", "dark");
-		localStorage.setItem("theme", "dark");
-	  } else {
-		document.documentElement.setAttribute("data-theme", "light");
-		localStorage.setItem("theme", "light");
-	  }
-	}
-
-	// Add an event listener to the theme toggle, which will switch the theme
-	themeToggle.addEventListener("change", switchTheme, false);
-
-</script>
+<!-- Fonts will be loaded after onload by the page script if needed -->
+<!-- No JS in head on index to minimize first packet -->

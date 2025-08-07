@@ -2,11 +2,11 @@
 import ThemeProvider from '../components/ThemeProvider.astro';
 // import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 import TerminalNav from '../components/TerminalNav.astro';
-import { ViewTransitions } from 'astro:transitions';
+import TerminalWip from '../components/TerminalWip.astro';
+import TerminalFooter from '../components/TerminalFooter.astro';
+import { isWip } from '../data/wip';
+// Keep only terminal CSS on critical path
 import '../styles/terminal-theme.css';
-import '../styles/professional-theme.css';
-import '../styles/personal-theme.css';
-import '../styles/theme-transitions.css';
 
 export interface Props {
   title: string;
@@ -15,6 +15,7 @@ export interface Props {
 }
 
 const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } = Astro.props;
+const wip = isWip(currentPage);
 ---
 
 <!DOCTYPE html>
@@ -26,12 +27,12 @@ const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
-    <ViewTransitions />
-    
-    <!-- Fonts -->
+    <!-- Fonts (deferred on home, but OK here) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Defer heavy fonts to after load -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
   </head>
   
   <body>
@@ -42,11 +43,18 @@ const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } 
     
     <!-- <ThemeSwitcher /> -->
     
-    <!-- Terminal Navigation (only visible in terminal theme) -->
+    <!-- Terminal Navigation (interior pages only; homepage does not use BaseLayout) -->
     <TerminalNav currentPage={currentPage} />
-    
+
     <!-- Page Content -->
-    <slot />
+    {wip ? (
+      <TerminalWip title={wip.title} note={wip.note} />
+    ) : (
+      <slot />
+    )}
+
+    <!-- Global Terminal Footer for all pages using BaseLayout -->
+    <TerminalFooter />
   </body>
 </html>
 

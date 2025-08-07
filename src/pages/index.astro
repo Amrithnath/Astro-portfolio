@@ -1,22 +1,11 @@
 ---
 // Component Imports
 import MainHead from '../components/MainHead.astro';
-import ThemeProvider from '../components/ThemeProvider.astro';
-// import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 import TerminalView from '../components/TerminalView.astro';
-import ProfessionalView from '../components/ProfessionalView.astro';
-import PersonalView from '../components/PersonalView.astro';
-import {ViewTransitions} from "astro:transitions"
-import { Image } from "astro:assets"
-import heroImage from  "../assets/hero.jpg"
-import heroImage2 from "../assets/hero-2.jpg"
-import { getImage } from "astro:assets";
-import myBackground from "../assets/mesh-gradient.jpg"
+import '../styles/global.css';
 
 // Dynamic data service
 import { generateSeededLandingData } from '../data/landing-data-service';
-
-const optimizedBackground = await getImage({src: myBackground, format: 'avif'})
 
 // Data Fetching: List all Markdown posts in the repo.
 const projects = await Astro.glob('./project/**/*.md');
@@ -57,29 +46,40 @@ const portfolioData = {
   currentRole: dynamicData.currentRole
 };
 
-// CSS Imports
-import '../styles/theme-transitions.css';
+// CSS Imports (critical path only)
 import '../styles/terminal-theme.css';
-import '../styles/professional-theme.css';
-import '../styles/personal-theme.css';
 ---
 
-<html lang="en">
+<html lang="en" class="theme-terminal">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content={`${dynamicData.name}'s portfolio - ${dynamicData.description}`}>
-        <ThemeProvider />
 		<MainHead
 			title={`${dynamicData.name} - ${dynamicData.title}`}
 			description={dynamicData.description}
 		/>
-		<ViewTransitions/>
 	</head>
-	<body>
-		<!-- <ThemeSwitcher /> -->
-		
-		<!-- Terminal Theme -->
+    <body class="theme-terminal">
+        <!-- Terminal Theme: minimal first paint -->
+        <div class="terminal-nav">
+          <div class="window-header">
+            <div class="window-controls"><div class="control close"></div><div class="control minimize"></div><div class="control maximize"></div></div>
+            <div class="window-title">amrith@portfolio:~ — ghostty — 120×30</div>
+          </div>
+          <div class="terminal-tabs">
+            <a href="/" class="tab active" aria-current="page"><span class="tab-icon">●</span><span class="tab-title">portfolio.sh</span><span class="tab-close">✕</span></a>
+            <a href="/about" class="tab"><span class="tab-icon">○</span><span class="tab-title">about.md</span><span class="tab-close">✕</span></a>
+            <a href="/projects" class="tab"><span class="tab-icon">○</span><span class="tab-title">projects.json</span><span class="tab-close">✕</span></a>
+            <a href="/resume" class="tab"><span class="tab-icon">○</span><span class="tab-title">resume.py</span><span class="tab-close">✕</span></a>
+            <a href="/blog" class="tab"><span class="tab-icon">○</span><span class="tab-title">blog.log</span><span class="tab-close">✕</span></a>
+            <div class="tab-add">+</div>
+          </div>
+          <div class="terminal-status">
+            <div class="status-left"><span class="branch">📁 ~/portfolio</span><span class="git-branch">git:(main)</span><span class="status-indicator">✓</span></div>
+            <div class="status-right"><span class="terminal-mode">INSERT</span><span class="position">Ln 1, Col 1</span></div>
+          </div>
+        </div>
 		<TerminalView 
 			title={portfolioData.title}
 			description={portfolioData.description}
@@ -90,31 +90,72 @@ import '../styles/personal-theme.css';
 			achievements={portfolioData.achievements}
 			terminal={portfolioData.terminal}
 			stats={portfolioData.stats}
-		/>
-		
-		<!-- Professional Theme -->
-		<ProfessionalView 
-			title={portfolioData.title}
-			description={portfolioData.description}
-			projects={portfolioData.projects}
-			skills={portfolioData.techStack}
-			contact={portfolioData.contact}
-			achievements={portfolioData.achievements}
-			stats={portfolioData.stats}
-			currentRole={portfolioData.currentRole}
-		/>
-		
-		<!-- Personal Theme (Original) -->
-		<PersonalView 
-			title={portfolioData.title}
-			subtitle="The one and only site for"
-			description={`${dynamicData.currentRole?.position} with ${dynamicData.yearsOfExperience}+ years of experience. ${dynamicData.interests.slice(0, 3).join(', ')}.`}
-			projects={portfolioData.projects}
-			heroImage={heroImage}
-			heroImage2={heroImage2}
-			backgroundImage={optimizedBackground.src}
-			achievements={portfolioData.achievements}
-			interests={portfolioData.interests}
-		/>
+            renderMode="minimal"
+            suppressHeader={true}
+            suppressAbout={true}
+            suppressBanner={true}
+            showFinalCursor={false}
+            includeFooter={true}
+        />
+
+
+        <!-- Defer non-critical themes and full terminal content until after load -->
+        <script is:inline>
+          window.addEventListener('load', () => {
+            const hydrate = async () => {
+              try {
+                // Randomize ASCII symbols per page view
+                (function randomizeAscii(){
+                  const grid = document.querySelector('.nf-grid');
+                  if (!grid) return;
+                  const symbols = ['#','●','■','◆','▣','▤','✶','▓','@','%','&'];
+                  const seed = (performance.now()|0) % symbols.length;
+                  const pool = symbols.slice(seed).concat(symbols.slice(0, seed));
+                  grid.querySelectorAll('.px:not(.bg)').forEach((el, idx) => {
+                    el.textContent = pool[(seed + idx*3) % pool.length];
+                  });
+                })();
+                // Load non-critical CSS lazily
+                const styles = [
+                  '/_astro/theme-transitions.css',
+                  '/_astro/professional-theme.css',
+                  '/_astro/personal-theme.css'
+                ];
+                styles.forEach(href => {
+                  const link = document.createElement('link');
+                  link.rel = 'stylesheet';
+                  link.href = href;
+                  link.media = 'print';
+                  link.onload = () => { link.media = 'all'; };
+                  document.head.appendChild(link);
+                });
+
+                // Fetch full terminal HTML fragment and replace minimal content
+                const res = await fetch('/terminal-full/?suppressHeader=1&suppressAbout=1', { credentials: 'same-origin' });
+                if (res.ok) {
+                  const html = await res.text();
+                  const container = document.querySelector('.terminal');
+                  if (container) {
+                    // Keep the first few lines already present, append the rest
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = html;
+                    const fragment = wrapper.querySelector('[data-terminal-fragment]');
+                    if (fragment) container.appendChild(fragment);
+                  }
+                }
+
+                // Load preferred font (Fira Code) after first paint to unify typography
+                const fira = document.createElement('link');
+                fira.rel = 'stylesheet';
+                fira.href = 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap';
+                document.head.appendChild(fira);
+              } catch (e) {
+                console.warn('Deferred hydration failed', e);
+              }
+            };
+            // Slight delay to not compete with LCP
+            setTimeout(hydrate, 50);
+          });
+        </script>
 	</body>
 </html>

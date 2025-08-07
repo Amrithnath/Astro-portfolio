@@ -1,0 +1,42 @@
+---
+export interface Props {
+  title?: string;
+  note?: string;
+}
+const { title = 'Work In Progress', note = 'This page is under active development. Check back soon.' } = Astro.props;
+---
+
+<div class="terminal-view">
+  <div class="terminal-container">
+    <div class="window">
+      <div class="terminal">
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">echo "{title}"</span></div>
+        <div class="output"><div class="command-output">{title}</div></div>
+
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">cat WIP.md</span></div>
+        <div class="output"><div class="json-output">{note}</div></div>
+
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">ls -la tasks/</span></div>
+        <div class="output"><div class="command-output">total 4
+drwxr-xr-x  2 amrith staff   64 Dec 12 04:20 .
+drwxr-xr-x  7 amrith staff  224 Dec 12 04:20 ..
+-rw-r--r--  1 amrith staff  256 Dec 12 04:20 backlog.txt
+-rw-r--r--  1 amrith staff  128 Dec 12 04:20 todo.md</div></div>
+
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">tail -n 5 tasks/todo.md</span></div>
+        <div class="output"><div class="command-output">- refine copy
+- add screenshots
+- verify accessibility
+- optimize images
+- publish</div></div>
+
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="command">echo "Follow progress on /blog"</span></div>
+        <div class="output"><div class="command-output">Follow progress on /blog</div></div>
+
+        <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">█</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

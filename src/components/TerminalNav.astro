@@ -27,27 +27,27 @@ function isActive(path: string) {
   
   <!-- Tab Bar -->
   <div class="terminal-tabs">
-    <a href="/" class={`tab ${isActive("/") ? "active" : ""}`}>
+    <a href="/" class={`tab ${isActive("/") ? "active" : ""}`} aria-current={isActive("/") ? "page" : undefined}>
       <span class="tab-icon">{isActive("/") ? "●" : "○"}</span>
       <span class="tab-title">portfolio.sh</span>
       <span class="tab-close">✕</span>
     </a>
-    <a href="/about" class={`tab ${isActive("/about") ? "active" : ""}`}>
+    <a href="/about" class={`tab ${isActive("/about") ? "active" : ""}`} aria-current={isActive("/about") ? "page" : undefined}>
       <span class="tab-icon">{isActive("/about") ? "●" : "○"}</span>
       <span class="tab-title">about.md</span>
       <span class="tab-close">✕</span>
     </a>
-    <a href="/projects" class={`tab ${isActive("/projects") ? "active" : ""}`}>
+    <a href="/projects" class={`tab ${isActive("/projects") ? "active" : ""}`} aria-current={isActive("/projects") ? "page" : undefined}>
       <span class="tab-icon">{isActive("/projects") ? "●" : "○"}</span>
       <span class="tab-title">projects.json</span>
       <span class="tab-close">✕</span>
     </a>
-    <a href="/resume" class={`tab ${isActive("/resume") ? "active" : ""}`}>
+    <a href="/resume" class={`tab ${isActive("/resume") ? "active" : ""}`} aria-current={isActive("/resume") ? "page" : undefined}>
       <span class="tab-icon">{isActive("/resume") ? "●" : "○"}</span>
       <span class="tab-title">resume.py</span>
       <span class="tab-close">✕</span>
     </a>
-    <a href="/blog" class={`tab ${isActive("/blog") ? "active" : ""}`}>
+    <a href="/blog" class={`tab ${isActive("/blog") ? "active" : ""}`} aria-current={isActive("/blog") ? "page" : undefined}>
       <span class="tab-icon">{isActive("/blog") ? "●" : "○"}</span>
       <span class="tab-title">blog.log</span>
       <span class="tab-close">✕</span>

@@ -3,15 +3,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ResumeGenerator from '../components/ResumeGenerator.astro';
-import { portfolioData } from '../data/portfolio';
-
-
 ---
 
 <BaseLayout title="Resume Generator | Amrith Shanbhag" description="Generate and download custom resumes in multiple formats" currentPage="/resume">
   <!-- Terminal Theme View -->
   <div class="terminal-view">
-    <ResumeGenerator theme="terminal" />
+    <div class="terminal-container">
+      <div class="window">
+        <div class="terminal">
+          <ResumeGenerator theme="terminal" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Professional Theme View -->
@@ -91,10 +94,7 @@ import { portfolioData } from '../data/portfolio';
   }
   
   /* Terminal Theme - Full screen */
-  .theme-terminal .terminal-view {
-    height: 100vh;
-    width: 100%;
-  }
+  .theme-terminal .terminal-view { min-height: 100vh; width: 100%; }
 
   /* Terminal Theme - Hide in other themes */
   .theme-professional .terminal-view,

@@ -1,0 +1,61 @@
+---
+// Generates the deferred terminal content fragment for the homepage
+import TerminalView from '../components/TerminalView.astro';
+import { generateSeededLandingData } from '../data/landing-data-service';
+
+// Data Fetching: List all Markdown posts
+const projects = await Astro.glob('./project/**/*.md');
+const dynamicData = generateSeededLandingData();
+
+const portfolioData = {
+  title: dynamicData.name,
+  description: dynamicData.description,
+  projects: [
+    ...projects,
+    ...dynamicData.projects.map(project => ({
+      frontmatter: {
+        title: project.name,
+        description: project.description,
+        tags: project.technologies,
+        demo: project.demo,
+        github: project.github,
+        type: project.type,
+        status: project.status,
+      },
+      url: `/project/${project.id}`,
+      title: project.name,
+    }))
+  ],
+  skills: dynamicData.skills,
+  techStack: dynamicData.techStack,
+  contact: dynamicData.contact,
+  achievements: dynamicData.achievements,
+  interests: dynamicData.interests,
+  stats: dynamicData.stats,
+  terminal: dynamicData.terminal,
+  currentRole: dynamicData.currentRole,
+};
+
+Astro.response.headers.set('Content-Type', 'text/html; charset=utf-8');
+---
+
+<div data-terminal-fragment>
+  <TerminalView
+    title={portfolioData.title}
+    description={portfolioData.description}
+    projects={portfolioData.projects}
+    skills={portfolioData.skills}
+    techStack={portfolioData.techStack}
+    contact={portfolioData.contact}
+    achievements={portfolioData.achievements}
+    terminal={portfolioData.terminal}
+    stats={portfolioData.stats}
+    renderMode="full"
+    suppressHeader={true}
+    suppressAbout={true}
+    suppressBanner={true}
+    showFinalCursor={false}
+  />
+</div>
+
+
