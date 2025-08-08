@@ -6,12 +6,13 @@
 ![GitHub](https://img.shields.io/github/license/Amrithnath/Astro-portfolio)
 ![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![Package Manager](https://img.shields.io/badge/package%20manager-pnpm-orange)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-4×100-brightgreen)
 
 A modern, responsive portfolio website built with [Astro](https://astro.build/). This portfolio showcases projects, skills, and experience with excellent performance and SEO optimization.
 
 ## ✨ Features
 
-- ⚡ **Lightning Fast**: Built with Astro for optimal performance
+- ⚡ **Lightning Fast**: Built with Astro for optimal performance (4×100 Lighthouse locally)
 - 📱 **Responsive Design**: Looks great on all devices
 - 🎨 **Modern UI**: Clean and professional design
 - 🔍 **SEO Optimized**: Built-in SEO best practices
