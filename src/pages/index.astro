@@ -121,9 +121,9 @@ import '../styles/terminal-theme.css';
                 })();
                 // Load non-critical CSS lazily (use built asset URLs to avoid MIME/type issues)
                 const styles = [
-                  '${transitionsHref}',
-                  '${professionalThemeHref}',
-                  '${personalThemeHref}'
+                  ${JSON.stringify(transitionsHref)},
+                  ${JSON.stringify(professionalThemeHref)},
+                  ${JSON.stringify(personalThemeHref)}
                 ];
                 styles.forEach(href => {
                   const link = document.createElement('link');
