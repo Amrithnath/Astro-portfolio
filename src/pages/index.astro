@@ -104,7 +104,7 @@ import '../styles/terminal-theme.css';
 
 
         <!-- Defer non-critical themes and full terminal content until after load -->
-        <script is:inline>
+        <script is:inline data-transitions-url={transitionsHref} data-prof-url={professionalThemeHref} data-pers-url={personalThemeHref}>
           window.addEventListener('load', () => {
             const hydrate = async () => {
               try {
@@ -120,11 +120,8 @@ import '../styles/terminal-theme.css';
                   });
                 })();
                 // Load non-critical CSS lazily (use built asset URLs to avoid MIME/type issues)
-                const styles = [
-                  ${JSON.stringify(transitionsHref)},
-                  ${JSON.stringify(professionalThemeHref)},
-                  ${JSON.stringify(personalThemeHref)}
-                ];
+                const ds = (document.currentScript && document.currentScript.dataset) || {};
+                const styles = [ds.transitionsUrl, ds.profUrl, ds.persUrl].filter(Boolean);
                 styles.forEach(href => {
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
