@@ -1,0 +1,16 @@
+version: v2
+managed:
+  enabled: true
+plugins:
+  - local: protoc-gen-go
+    out: wedding-api/internal/gen
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: wedding-api/internal/gen
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-grpc-gateway
+    out: wedding-api/internal/gen
+    opt:
+      - paths=source_relative

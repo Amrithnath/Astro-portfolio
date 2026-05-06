@@ -1,9 +1,13 @@
 # build output
 dist/
 .astro/
+admin-ui/dist/
+admin-ui/.astro/
 
 # dependencies
 node_modules/
+admin-ui/node_modules/
+wedding-api/bin/
 
 # logs
 npm-debug.log*
@@ -30,6 +34,12 @@ pnpm-debug.log*
 wedding-upload-server/.env
 wedding-upload-server/*.service-account.json
 wedding-upload-server/*.credentials.json
+wedding-api/.env
+wedding-api/*.service-account.json
+wedding-api/*.credentials.json
+
+# generated code
+wedding-api/internal/gen/
 
 # macOS-specific files
 .DS_Store

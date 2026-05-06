@@ -10,7 +10,15 @@
     "preview": "astro preview",
     "astro": "astro",
     "wedding:api": "node wedding-upload-server/server.js",
-    "wedding:api:dev": "node --watch wedding-upload-server/server.js"
+    "wedding:api:dev": "node --watch wedding-upload-server/server.js",
+    "api:go": "go run ./cmd/wedding-api",
+    "api:go:test": "go test ./...",
+    "api:go:lint": "golangci-lint run ./...",
+    "proto:generate": "PATH=$(go env GOPATH)/bin:$PATH buf generate",
+    "proto:lint": "PATH=$(go env GOPATH)/bin:$PATH buf lint",
+    "admin:dev": "pnpm --dir admin-ui dev",
+    "admin:build": "pnpm --dir admin-ui build",
+    "admin:preview": "pnpm --dir admin-ui preview"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.2.6",

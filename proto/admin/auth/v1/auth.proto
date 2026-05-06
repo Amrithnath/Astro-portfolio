@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package admin.auth.v1;
+
+option go_package = "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/gen/admin/auth/v1;adminauthv1";
+
+service AdminAuthService {
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  rpc BeginPasskeyRegistration(BeginPasskeyRegistrationRequest) returns (BeginPasskeyRegistrationResponse);
+  rpc FinishPasskeyRegistration(FinishPasskeyRegistrationRequest) returns (FinishPasskeyRegistrationResponse);
+  rpc BeginPasskeyLogin(BeginPasskeyLoginRequest) returns (BeginPasskeyLoginResponse);
+  rpc FinishPasskeyLogin(FinishPasskeyLoginRequest) returns (FinishPasskeyLoginResponse);
+  rpc ListPasskeys(ListPasskeysRequest) returns (ListPasskeysResponse);
+  rpc DeletePasskey(DeletePasskeyRequest) returns (DeletePasskeyResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+message AdminIdentity {
+  string id = 1;
+  string email = 2;
+  string display_name = 3;
+}
+
+message AdminSession {
+  string id = 1;
+  AdminIdentity admin = 2;
+  string access_email = 3;
+  int64 expires_at_unix = 4;
+  bool requires_step_up = 5;
+}
+
+message PasskeyCredential {
+  string id = 1;
+  string friendly_name = 2;
+  repeated string transports = 3;
+  int64 created_at_unix = 4;
+  int64 last_used_at_unix = 5;
+}
+
+message GetSessionRequest {}
+
+message GetSessionResponse {
+  AdminSession session = 1;
+}
+
+message BeginPasskeyRegistrationRequest {}
+
+message BeginPasskeyRegistrationResponse {
+  bytes options_json = 1;
+}
+
+message FinishPasskeyRegistrationRequest {
+  bytes credential_json = 1;
+  string friendly_name = 2;
+}
+
+message FinishPasskeyRegistrationResponse {
+  PasskeyCredential credential = 1;
+}
+
+message BeginPasskeyLoginRequest {}
+
+message BeginPasskeyLoginResponse {
+  bytes options_json = 1;
+}
+
+message FinishPasskeyLoginRequest {
+  bytes assertion_json = 1;
+}
+
+message FinishPasskeyLoginResponse {
+  AdminSession session = 1;
+}
+
+message ListPasskeysRequest {}
+
+message ListPasskeysResponse {
+  repeated PasskeyCredential credentials = 1;
+}
+
+message DeletePasskeyRequest {
+  string passkey_id = 1;
+}
+
+message DeletePasskeyResponse {}
+
+message LogoutRequest {}
+
+message LogoutResponse {}

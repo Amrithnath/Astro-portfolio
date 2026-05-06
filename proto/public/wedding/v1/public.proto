@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package public.wedding.v1;
+
+option go_package = "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/gen/public/wedding/v1;publicweddingv1";
+
+service PublicWeddingService {
+  rpc GetWeddingConfig(GetWeddingConfigRequest) returns (GetWeddingConfigResponse);
+}
+
+message WeddingThemeTokens {
+  string preset = 1;
+  string primary_accent = 2;
+  string secondary_accent = 3;
+  string surface_style = 4;
+  string button_style = 5;
+  string typography_preset = 6;
+  string hero_image_url = 7;
+  string texture_image_url = 8;
+}
+
+message WeddingPublicData {
+  bool enabled = 1;
+  string names = 2;
+  string eyebrow = 3;
+  string headline = 4;
+  string subheadline = 5;
+  string dropzone_copy = 6;
+  string supporting_copy = 7;
+  string success_title = 8;
+  string success_message = 9;
+  string closed_message = 10;
+}
+
+message WeddingUploadPolicy {
+  bool uploads_enabled = 1;
+  int64 max_file_bytes = 2;
+  repeated string allowed_mime_types = 3;
+  string maintenance_message = 4;
+}
+
+message GetWeddingConfigRequest {}
+
+message GetWeddingConfigResponse {
+  WeddingPublicData public_data = 1;
+  WeddingThemeTokens theme = 2;
+  WeddingUploadPolicy upload_policy = 3;
+}

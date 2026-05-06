@@ -1,0 +1,17 @@
+{
+  "name": "admin-ui",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.13.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

@@ -17,25 +17,31 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
 
       <section class="portal-frame">
         <header class="hero">
-          <p class="eyebrow">wedding.media://dropbox</p>
-          <h1>Share the moments you caught.</h1>
-          <p class="lede">
+          <p id="eyebrow" class="eyebrow">wedding.media://dropbox</p>
+          <h1 id="headline">Share the moments you caught.</h1>
+          <p id="lede" class="lede">
             Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.
           </p>
         </header>
 
+        <div id="closed-state" class="closed-state" hidden>
+          <p class="success-kicker">Uploads unavailable</p>
+          <h2 id="closed-title">We’re not collecting uploads right now.</h2>
+          <p id="closed-message" class="success-copy">Please check back later.</p>
+        </div>
+
         <div id="composer" class="composer">
           <label id="dropzone" class="dropzone" for="file-input">
             <input id="file-input" type="file" multiple accept="image/*,video/*" hidden />
-            <span class="dropzone-badge">Tap to choose files</span>
-            <strong>Photos, Live Photos, HEIC, MOV, and large videos are all welcome.</strong>
-            <span>Keep this page open until the progress bar reaches 100%.</span>
+            <span id="dropzone-badge" class="dropzone-badge">Tap to choose files</span>
+            <strong id="dropzone-copy">Photos, Live Photos, HEIC, MOV, and large videos are all welcome.</strong>
+            <span id="dropzone-hint">Keep this page open until the progress bar reaches 100%.</span>
           </label>
 
           <div class="actions-row">
             <div>
               <p id="selection-summary" class="selection-summary">No files selected yet.</p>
-              <p class="supporting-copy">Uploads run one file at a time for better reliability on mobile networks.</p>
+              <p id="supporting-copy" class="supporting-copy">Uploads run one file at a time for better reliability on mobile networks.</p>
             </div>
 
             <div class="button-row">
@@ -62,7 +68,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
 
         <div id="success-state" class="success-state" hidden>
           <p class="success-kicker">Upload complete</p>
-          <h2>Everything landed safely.</h2>
+          <h2 id="success-title">Everything landed safely.</h2>
           <p id="success-message" class="success-copy"></p>
           <div class="button-row success-buttons">
             <button id="upload-more-button" class="primary-button" type="button">Upload more</button>
@@ -74,6 +80,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
 
     <script is:inline>
       const API_ROOT = '/api/upload';
+      const PUBLIC_CONFIG_URL = '/api/public/wedding-config';
       const CHUNK_SIZE = 5 * 1024 * 1024;
       const MAX_RETRIES = 4;
       const BASE_RETRY_DELAY_MS = 1200;
@@ -91,8 +98,19 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
         progressText: document.getElementById('progress-text'),
         progressBar: document.getElementById('progress-bar'),
         errorBanner: document.getElementById('error-banner'),
+        eyebrow: document.getElementById('eyebrow'),
+        headline: document.getElementById('headline'),
+        lede: document.getElementById('lede'),
+        closedState: document.getElementById('closed-state'),
+        closedTitle: document.getElementById('closed-title'),
+        closedMessage: document.getElementById('closed-message'),
+        dropzoneBadge: document.getElementById('dropzone-badge'),
+        dropzoneCopy: document.getElementById('dropzone-copy'),
+        dropzoneHint: document.getElementById('dropzone-hint'),
+        supportingCopy: document.getElementById('supporting-copy'),
         composer: document.getElementById('composer'),
         successState: document.getElementById('success-state'),
+        successTitle: document.getElementById('success-title'),
         successMessage: document.getElementById('success-message'),
         uploadMoreButton: document.getElementById('upload-more-button'),
       };
@@ -100,6 +118,35 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
       let selectedFiles = [];
       let previewUrls = [];
       let isUploading = false;
+      let runtimeConfig = null;
+
+      const DEFAULT_CONFIG = {
+        publicData: {
+          enabled: true,
+          names: '',
+          eyebrow: 'wedding.media://dropbox',
+          headline: 'Share the moments you caught.',
+          subheadline: 'Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.',
+          dropzoneCopy: 'Photos, Live Photos, HEIC, MOV, and large videos are all welcome.',
+          supportingCopy: 'Uploads run one file at a time for better reliability on mobile networks.',
+          successTitle: 'Everything landed safely.',
+          successMessage: 'Thank you for sharing your view of the day.',
+          closedMessage: 'Uploads are paused right now. Please try again later.',
+        },
+        theme: {
+          primaryAccent: '#63f0b6',
+          secondaryAccent: '#7dd3fc',
+          surfaceStyle: 'glass-dark',
+          heroImageUrl: '',
+          textureImageUrl: '',
+        },
+        uploadPolicy: {
+          uploadsEnabled: true,
+          maxFileBytes: 10 * 1024 * 1024 * 1024,
+          allowedMimeTypes: [],
+          maintenanceMessage: 'Uploads are paused right now. Please try again later.',
+        },
+      };
 
       function formatBytes(bytes) {
         if (!Number.isFinite(bytes) || bytes <= 0) {
@@ -114,6 +161,79 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
 
       function sleep(ms) {
         return new Promise((resolve) => window.setTimeout(resolve, ms));
+      }
+
+      function applyTheme(theme) {
+        if (!theme) {
+          return;
+        }
+
+        if (theme.primaryAccent) {
+          document.documentElement.style.setProperty('--wedding-primary', theme.primaryAccent);
+        }
+
+        if (theme.secondaryAccent) {
+          document.documentElement.style.setProperty('--wedding-secondary', theme.secondaryAccent);
+        }
+
+        if (theme.heroImageUrl) {
+          document.documentElement.style.setProperty('--wedding-hero-image', `url("${theme.heroImageUrl}")`);
+        }
+
+        if (theme.textureImageUrl) {
+          document.documentElement.style.setProperty('--wedding-texture-image', `url("${theme.textureImageUrl}")`);
+        }
+      }
+
+      function applyPublicConfig(config) {
+        const publicData = config.publicData || DEFAULT_CONFIG.publicData;
+        const uploadPolicy = config.uploadPolicy || DEFAULT_CONFIG.uploadPolicy;
+
+        elements.eyebrow.textContent = publicData.eyebrow || DEFAULT_CONFIG.publicData.eyebrow;
+        elements.headline.textContent = publicData.headline || DEFAULT_CONFIG.publicData.headline;
+        elements.lede.textContent = publicData.subheadline || DEFAULT_CONFIG.publicData.subheadline;
+        elements.dropzoneCopy.textContent = publicData.dropzoneCopy || DEFAULT_CONFIG.publicData.dropzoneCopy;
+        elements.supportingCopy.textContent = publicData.supportingCopy || DEFAULT_CONFIG.publicData.supportingCopy;
+        elements.successTitle.textContent = publicData.successTitle || DEFAULT_CONFIG.publicData.successTitle;
+        elements.successMessage.textContent = publicData.successMessage || DEFAULT_CONFIG.publicData.successMessage;
+        elements.closedMessage.textContent = uploadPolicy.maintenanceMessage || publicData.closedMessage || DEFAULT_CONFIG.publicData.closedMessage;
+
+        const uploadsOpen = Boolean(publicData.enabled) && Boolean(uploadPolicy.uploadsEnabled);
+        elements.closedState.hidden = uploadsOpen;
+        elements.composer.hidden = !uploadsOpen;
+      }
+
+      async function loadRuntimeConfig() {
+        try {
+          const response = await fetch(PUBLIC_CONFIG_URL, { method: 'GET' });
+          if (!response.ok) {
+            throw new Error(`Config request failed with status ${response.status}`);
+          }
+
+          const payload = await response.json();
+          runtimeConfig = {
+            ...DEFAULT_CONFIG,
+            ...payload,
+            publicData: {
+              ...DEFAULT_CONFIG.publicData,
+              ...(payload.publicData || {}),
+            },
+            theme: {
+              ...DEFAULT_CONFIG.theme,
+              ...(payload.theme || {}),
+            },
+            uploadPolicy: {
+              ...DEFAULT_CONFIG.uploadPolicy,
+              ...(payload.uploadPolicy || {}),
+            },
+          };
+        } catch (error) {
+          runtimeConfig = DEFAULT_CONFIG;
+          setError('Using built-in wedding page defaults because live configuration is unavailable right now.');
+        }
+
+        applyTheme(runtimeConfig.theme);
+        applyPublicConfig(runtimeConfig);
       }
 
       function getRetryDelay(response, attempt) {
@@ -341,6 +461,11 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
             const file = selectedFiles[fileIndex];
             const mimeType = file.type || guessMimeTypeFromName(file.name);
 
+            const maxFileBytes = Number(runtimeConfig?.uploadPolicy?.maxFileBytes || DEFAULT_CONFIG.uploadPolicy.maxFileBytes);
+            if (file.size > maxFileBytes) {
+              throw new Error(`${file.name} is larger than the current upload limit.`);
+            }
+
             if (!mimeType.startsWith('image/') && !mimeType.startsWith('video/')) {
               throw new Error(`${file.name} is not a supported image or video file.`);
             }
@@ -441,11 +566,19 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
 
       window.addEventListener('pagehide', clearPreviews);
       updateSelectionState();
+      loadRuntimeConfig();
     </script>
   </body>
 </html>
 
 <style>
+  :global(:root) {
+    --wedding-primary: #63f0b6;
+    --wedding-secondary: #7dd3fc;
+    --wedding-hero-image: none;
+    --wedding-texture-image: none;
+  }
+
   :global(html) {
     box-sizing: border-box;
   }
@@ -466,6 +599,8 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
     min-height: 100svh;
     overflow-x: hidden;
     background:
+      var(--wedding-texture-image),
+      var(--wedding-hero-image),
       radial-gradient(circle at top, rgba(0, 255, 163, 0.18), transparent 26%),
       linear-gradient(180deg, #08111f 0%, #050811 46%, #03050a 100%);
     color: #f4f8ff;
@@ -512,7 +647,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
   .eyebrow,
   .success-kicker {
     margin: 0;
-    color: #63f0b6;
+    color: var(--wedding-primary);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     font-size: 0.78rem;
@@ -565,7 +700,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
     width: fit-content;
     padding: 0.32rem 0.75rem;
     border-radius: 999px;
-    background: rgba(99, 240, 182, 0.12);
+    background: color-mix(in srgb, var(--wedding-primary) 16%, transparent);
     color: #9cebc6;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -576,7 +711,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
   .dropzone:focus-visible,
   .dropzone.is-hovering {
     transform: translateY(-1px);
-    border-color: rgba(99, 240, 182, 0.9);
+    border-color: color-mix(in srgb, var(--wedding-primary) 80%, white);
     background: linear-gradient(180deg, rgba(16, 33, 49, 0.98), rgba(8, 18, 31, 0.98));
   }
 
@@ -615,7 +750,7 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
   }
 
   .primary-button {
-    background: linear-gradient(135deg, #63f0b6 0%, #86ffe0 100%);
+    background: linear-gradient(135deg, var(--wedding-primary) 0%, var(--wedding-secondary) 100%);
     color: #03120c;
     font-weight: 700;
   }
@@ -681,8 +816,14 @@ const pageDescription = 'Upload wedding photos and videos directly from your pho
     width: 0%;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #63f0b6 0%, #7dd3fc 100%);
+    background: linear-gradient(90deg, var(--wedding-primary) 0%, var(--wedding-secondary) 100%);
     transition: width 0.2s ease;
+  }
+
+  .closed-state {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 0 0.25rem;
   }
 
   .preview-gallery {

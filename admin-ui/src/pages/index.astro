@@ -1,0 +1,322 @@
+---
+const title = 'Wedding Admin';
+
+const sections = [
+  {
+    title: 'Dashboard',
+    description: 'See admin access, storage provider state, and rollout readiness at a glance.',
+  },
+  {
+    title: 'Wedding Copy',
+    description: 'Edit names, headline, supporting copy, success copy, and closed-state messaging.',
+  },
+  {
+    title: 'Wedding Theme',
+    description: 'Manage presets, palette tokens, and the live preview surface for guest-facing styling.',
+  },
+  {
+    title: 'Assets',
+    description: 'Upload and select R2-backed hero images, textures, and future decorative assets.',
+  },
+  {
+    title: 'Upload Settings',
+    description: 'Control upload availability, limits, MIME policy, and the active storage provider.',
+  },
+  {
+    title: 'Passkeys & Audit',
+    description: 'Review seeded admins, passkey registrations, and sensitive changes with step-up auth.',
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="app-shell">
+        <aside class="sidebar">
+          <div>
+            <div class="eyebrow">admin.amrithnath.dev</div>
+            <h1>Wedding Admin</h1>
+            <p class="lede">Control room for wedding uploads, provider configuration, passkeys, and styling.</p>
+          </div>
+
+          <nav class="nav-stack" aria-label="Admin sections">
+            {sections.map((section, index) => (
+              <a href={`#section-${index + 1}`} class={`nav-link ${index === 0 ? 'is-active' : ''}`}>{section.title}</a>
+            ))}
+          </nav>
+        </aside>
+
+        <section class="workspace">
+          <header class="topbar">
+            <div>
+              <div class="status-label">Phase rollout</div>
+              <strong>Foundations in progress</strong>
+            </div>
+            <span class="badge">Config-driven wedding experience</span>
+          </header>
+
+          <div class="content-grid">
+            <section class="panel panel-stack">
+              {sections.map((section, index) => (
+                <article id={`section-${index + 1}`} class="section-card">
+                  <div class="section-index">0{index + 1}</div>
+                  <div>
+                    <h2>{section.title}</h2>
+                    <p>{section.description}</p>
+                  </div>
+                </article>
+              ))}
+            </section>
+
+            <aside class="panel preview-panel">
+              <div class="preview-header">
+                <span class="status-label">Live Preview</span>
+                <span class="preview-chip">mobile</span>
+              </div>
+              <div class="preview-phone">
+                <div class="preview-screen">
+                  <p class="preview-eyebrow">wedding.media://dropbox</p>
+                  <h2 class="preview-title">Share the moments you caught.</h2>
+                  <p class="preview-copy">Wedding copy, theme presets, and selected imagery will render here as the admin config grows.</p>
+                  <div class="preview-dropzone">
+                    <span>Tap to choose files</span>
+                    <strong>Photos, HEIC, MOV, and large videos are all welcome.</strong>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  :global(html),
+  :global(body) {
+    margin: 0;
+    min-height: 100%;
+    background: #0a0d14;
+    color: #edf2f7;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .shell {
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .app-shell {
+    display: grid;
+    gap: 20px;
+  }
+
+  .sidebar,
+  .panel {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.9);
+  }
+
+  .sidebar {
+    padding: 32px;
+  }
+
+  .eyebrow {
+    color: #7dd3fc;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 12px 0;
+    font-size: clamp(2rem, 6vw, 3rem);
+  }
+
+  .lede,
+  p {
+    margin: 0;
+    color: #cbd5e1;
+    line-height: 1.7;
+  }
+
+  .nav-stack {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .nav-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.45);
+    border: 1px solid transparent;
+  }
+
+  .nav-link.is-active,
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    border-color: rgba(125, 211, 252, 0.4);
+    color: #f8fafc;
+  }
+
+  .workspace {
+    display: grid;
+    gap: 20px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .status-label {
+    display: block;
+    color: #7dd3fc;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .badge,
+  .preview-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    background: rgba(125, 211, 252, 0.12);
+    color: #7dd3fc;
+  }
+
+  .content-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .panel-stack {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .section-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.45);
+  }
+
+  .section-index {
+    color: #7dd3fc;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-top: 4px;
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+  }
+
+  .preview-panel {
+    padding: 20px;
+  }
+
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .preview-phone {
+    width: min(100%, 320px);
+    margin: 0 auto;
+    border-radius: 28px;
+    padding: 12px;
+    background: linear-gradient(180deg, #0f172a, #020617);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+  }
+
+  .preview-screen {
+    border-radius: 22px;
+    padding: 18px;
+    background:
+      radial-gradient(circle at top, rgba(99, 240, 182, 0.18), transparent 24%),
+      linear-gradient(180deg, #08111f 0%, #050811 48%, #03050a 100%);
+    min-height: 520px;
+  }
+
+  .preview-eyebrow {
+    color: #63f0b6;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+  }
+
+  .preview-title {
+    margin: 10px 0;
+    font-size: 1.8rem;
+    line-height: 1.1;
+  }
+
+  .preview-copy {
+    color: #cbd5e1;
+  }
+
+  .preview-dropzone {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px dashed rgba(99, 240, 182, 0.38);
+    background: rgba(15, 23, 42, 0.72);
+  }
+
+  .preview-dropzone span {
+    color: #63f0b6;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .preview-dropzone strong {
+    line-height: 1.5;
+  }
+
+  @media (min-width: 72rem) {
+    .app-shell {
+      grid-template-columns: 280px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+    }
+
+    .content-grid {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      align-items: start;
+    }
+  }
+</style>

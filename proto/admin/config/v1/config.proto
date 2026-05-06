@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package admin.config.v1;
+
+option go_package = "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/gen/admin/config/v1;adminconfigv1";
+
+service AdminConfigService {
+  rpc GetWeddingPublicConfig(GetWeddingPublicConfigRequest) returns (GetWeddingPublicConfigResponse);
+  rpc UpdateWeddingPublicConfig(UpdateWeddingPublicConfigRequest) returns (UpdateWeddingPublicConfigResponse);
+  rpc GetWeddingThemeConfig(GetWeddingThemeConfigRequest) returns (GetWeddingThemeConfigResponse);
+  rpc UpdateWeddingThemeConfig(UpdateWeddingThemeConfigRequest) returns (UpdateWeddingThemeConfigResponse);
+  rpc GetUploadPolicyConfig(GetUploadPolicyConfigRequest) returns (GetUploadPolicyConfigResponse);
+  rpc UpdateUploadPolicyConfig(UpdateUploadPolicyConfigRequest) returns (UpdateUploadPolicyConfigResponse);
+  rpc GetStorageProviderConfig(GetStorageProviderConfigRequest) returns (GetStorageProviderConfigResponse);
+  rpc UpdateStorageProviderConfig(UpdateStorageProviderConfigRequest) returns (UpdateStorageProviderConfigResponse);
+  rpc ValidateStorageProvider(ValidateStorageProviderRequest) returns (ValidateStorageProviderResponse);
+}
+
+enum StorageProviderKind {
+  STORAGE_PROVIDER_KIND_UNSPECIFIED = 0;
+  STORAGE_PROVIDER_KIND_GOOGLE_DRIVE = 1;
+  STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS = 2;
+}
+
+message WeddingPublicConfig {
+  bool enabled = 1;
+  string names = 2;
+  string eyebrow = 3;
+  string headline = 4;
+  string subheadline = 5;
+  string dropzone_copy = 6;
+  string supporting_copy = 7;
+  string success_title = 8;
+  string success_message = 9;
+  string closed_message = 10;
+}
+
+message WeddingThemeConfig {
+  string preset = 1;
+  string typography_preset = 2;
+  string primary_accent = 3;
+  string secondary_accent = 4;
+  string surface_style = 5;
+  string hero_asset_id = 6;
+  string texture_asset_id = 7;
+  string button_style = 8;
+}
+
+message UploadPolicyConfig {
+  bool uploads_enabled = 1;
+  int64 max_file_bytes = 2;
+  int64 max_active_uploads_per_ip = 3;
+  int64 upload_session_ttl_ms = 4;
+  repeated string allowed_mime_types = 5;
+  string maintenance_message = 6;
+}
+
+message StorageProviderConfig {
+  StorageProviderKind provider = 1;
+  string drive_folder_id = 2;
+  string drive_folder_label = 3;
+  bool photos_enabled = 4;
+  string photos_album_id = 5;
+  string photos_album_title = 6;
+  int64 validated_at_unix = 7;
+  string last_validation_error = 8;
+}
+
+message GetWeddingPublicConfigRequest {}
+message GetWeddingPublicConfigResponse { WeddingPublicConfig config = 1; }
+message UpdateWeddingPublicConfigRequest { WeddingPublicConfig config = 1; }
+message UpdateWeddingPublicConfigResponse { WeddingPublicConfig config = 1; }
+message GetWeddingThemeConfigRequest {}
+message GetWeddingThemeConfigResponse { WeddingThemeConfig config = 1; }
+message UpdateWeddingThemeConfigRequest { WeddingThemeConfig config = 1; }
+message UpdateWeddingThemeConfigResponse { WeddingThemeConfig config = 1; }
+message GetUploadPolicyConfigRequest {}
+message GetUploadPolicyConfigResponse { UploadPolicyConfig config = 1; }
+message UpdateUploadPolicyConfigRequest { UploadPolicyConfig config = 1; }
+message UpdateUploadPolicyConfigResponse { UploadPolicyConfig config = 1; }
+message GetStorageProviderConfigRequest {}
+message GetStorageProviderConfigResponse { StorageProviderConfig config = 1; }
+message UpdateStorageProviderConfigRequest { StorageProviderConfig config = 1; }
+message UpdateStorageProviderConfigResponse { StorageProviderConfig config = 1; }
+message ValidateStorageProviderRequest { StorageProviderConfig config = 1; }
+message ValidateStorageProviderResponse {
+  bool valid = 1;
+  string validation_message = 2;
+}

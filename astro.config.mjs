@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 
-const weddingApiTarget = process.env.WEDDING_UPLOAD_SERVER_URL || 'http://127.0.0.1:8787';
+const weddingApiTarget = process.env.WEDDING_API_URL || 'http://127.0.0.1:8787';
 
 // https://astro.build/config
 export default defineConfig({
