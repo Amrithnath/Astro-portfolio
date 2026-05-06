@@ -19,7 +19,7 @@ const wip = isWip(currentPage);
 ---
 
 <!DOCTYPE html>
-<html lang="en" data-theme="terminal">
+<html lang="en" class="theme-terminal" data-theme="terminal">
   <head>
     <ThemeProvider />
     <meta charset="UTF-8" />
@@ -39,7 +39,7 @@ const wip = isWip(currentPage);
     <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
   </head>
   
-  <body>
+  <body class="theme-terminal">
     <!-- Page Transition Loader -->
     <div id="page-transition" class="page-transition">
       <div class="page-transition-loader"></div>
@@ -51,11 +51,13 @@ const wip = isWip(currentPage);
     <TerminalNav currentPage={currentPage} />
 
     <!-- Page Content -->
-    {wip ? (
-      <TerminalWip title={wip.title} note={wip.note} />
-    ) : (
-      <slot />
-    )}
+    <main id="main-content">
+      {wip ? (
+        <TerminalWip title={wip.title} note={wip.note} />
+      ) : (
+        <slot />
+      )}
+    </main>
 
     <!-- Global Terminal Footer for all pages using BaseLayout -->
     <TerminalFooter />
@@ -101,6 +103,10 @@ const wip = isWip(currentPage);
     margin: 0;
     padding: 0;
     min-height: 100vh;
+  }
+
+  main {
+    display: block;
   }
   
   /* Remove any default margins that might cause black bars */

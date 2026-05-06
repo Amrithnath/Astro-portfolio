@@ -1,30 +1,102 @@
 ---
-import MainHead from '../components/MainHead.astro';
-import Footer from '../components/Footer.astro';
-import Nav from '../components/Nav.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
-import { ViewTransitions } from "astro:transitions";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TerminalCommand from '../components/TerminalCommand.astro';
+import { resumeCompendium } from '../data/resume-compendium';
 
+const contact = resumeCompendium.contact;
+const channels = [
+  {
+    label: 'email',
+    value: contact.email,
+    href: `mailto:${contact.email}`,
+  },
+  {
+    label: 'linkedin',
+    value: contact.linkedin || 'linkedin.com/in/amrithnath',
+    href: `https://${contact.linkedin || 'linkedin.com/in/amrithnath'}`,
+  },
+  {
+    label: 'github',
+    value: contact.github || 'github.com/Amrithnath',
+    href: `https://${contact.github || 'github.com/Amrithnath'}`,
+  },
+  {
+    label: 'website',
+    value: contact.website || 'amrithnath.dev',
+    href: `https://${contact.website || 'amrithnath.dev'}`,
+  },
+];
 ---
 
-<html lang="en">
-	<head>
-		<ThemeSwitch/>
-		<MainHead title="Contact | Amrithnath Vijayakumar" description="Contact Amrithnath Vijayakumar" />
-		<style>
-			.wrapper {
-				margin-top: 2em;
-				margin-bottom: 2em;
-			}
-		</style>
-		<ViewTransitions />
-	</head>
-	<body>
-		<Nav />
-		<div class="wrapper">
-			<h1>Contact</h1>
-			<p>Contact information coming soon...</p>
-		</div>
-		<Footer />
-	</body>
-</html>
+<BaseLayout
+  title={`Contact | ${contact.name}`}
+  description={`Reach ${contact.name} through email or social links.`}
+  currentPage="/contact"
+>
+  <div class="terminal-view">
+    <div class="terminal-container">
+      <div class="window">
+        <div class="terminal">
+          <div class="command-output">Open channels for project work, collaborations, or just saying hi.</div>
+
+          <TerminalCommand command="cat contact.json" />
+          <div class="output">
+            <div class="contact-grid">
+              {channels.map((channel) => (
+                <a class="contact-card" href={channel.href} target="_blank" rel="noreferrer">
+                  <span class="contact-label">{channel.label}</span>
+                  <strong>{channel.value}</strong>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <TerminalCommand command="echo contact.ready" />
+          <div class="output">
+            <div class="command-output">Let’s build something solid.</div>
+          </div>
+
+          <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">█</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .theme-terminal .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .theme-terminal .contact-card {
+    display: grid;
+    gap: 6px;
+    padding: 14px;
+    border: 1px solid rgba(148, 226, 213, 0.16);
+    border-radius: 12px;
+    background: rgba(49, 50, 68, 0.35);
+    color: var(--terminal-fg);
+    text-decoration: none;
+  }
+
+  .theme-terminal .contact-card:hover,
+  .theme-terminal .contact-card:focus-visible {
+    border-color: rgba(166, 227, 161, 0.55);
+    color: var(--terminal-green);
+  }
+
+  .theme-terminal .contact-label {
+    color: var(--terminal-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+  }
+
+  .theme-terminal .contact-card strong {
+    font-size: 14px;
+    word-break: break-word;
+  }
+</style>

@@ -1,31 +1,47 @@
 ---
-import MainHead from '../components/MainHead.astro';
-import Footer from '../components/Footer.astro';
-import Nav from '../components/Nav.astro';
-import ThemeSwitch from '../components/ThemeSwitch.astro';
-import {ClientRouter} from "astro:transitions"
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TerminalCommand from '../components/TerminalCommand.astro';
 ---
 
-<html lang="en">
-	<head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="this is a default page rendered when page is not found">
-		<ThemeSwitch/>
-		<MainHead title="Not Found" />
-		<style>
-			.wrapper {
-				margin-top: 2em;
-				margin-bottom: 2em;
-			}
-		</style>
-        <ClientRouter/>
-	</head>
-	<body>
-		<Nav />
-		<div class="wrapper">
-			<h1>Page Not Found</h1>
-			<p>Not found</p>
-		</div>
-		<Footer />
-	</body>
-</html>
+<BaseLayout title="Not Found | Amrith" description="The requested page does not exist." currentPage="/404">
+  <div class="terminal-view">
+    <div class="terminal-container">
+      <div class="window">
+        <div class="terminal">
+          <TerminalCommand command="ls /requested/path" />
+          <div class="output">
+            <div class="command-output">ls: cannot access '/requested/path': No such file or directory</div>
+          </div>
+
+          <TerminalCommand command="echo fallback.paths" />
+          <div class="output not-found-links">
+            <a href="/">/</a>
+            <a href="/about">/about</a>
+            <a href="/projects">/projects</a>
+            <a href="/contact">/contact</a>
+          </div>
+
+          <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">█</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .theme-terminal .not-found-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .theme-terminal .not-found-links a {
+    color: var(--terminal-cyan);
+    text-decoration: none;
+  }
+
+  .theme-terminal .not-found-links a:hover,
+  .theme-terminal .not-found-links a:focus-visible {
+    color: var(--terminal-green);
+  }
+</style>

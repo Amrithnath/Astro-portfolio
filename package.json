@@ -8,7 +8,9 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "wedding:api": "node wedding-upload-server/server.js",
+    "wedding:api:dev": "node --watch wedding-upload-server/server.js"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.2.6",

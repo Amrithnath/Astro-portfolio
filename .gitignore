@@ -11,10 +11,25 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# browser automation artifacts
+.playwright-mcp/
+/console-errors.txt
+/*-inspect*.json
+/about.png
+/contact.png
+/home.png
+/project-detail.png
+/projects.png
+/resume.png
+/wip.png
+
 
 # environment variables
 .env
 .env.production
+wedding-upload-server/.env
+wedding-upload-server/*.service-account.json
+wedding-upload-server/*.credentials.json
 
 # macOS-specific files
 .DS_Store

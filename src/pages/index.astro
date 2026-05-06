@@ -84,23 +84,25 @@ import '../styles/terminal-theme.css';
             <div class="status-right"><span class="terminal-mode">INSERT</span><span class="position">Ln 1, Col 1</span></div>
           </div>
         </div>
-		<TerminalView 
-			title={portfolioData.title}
-			description={portfolioData.description}
-			projects={portfolioData.projects}
-			skills={portfolioData.skills}
-			techStack={portfolioData.techStack}
-			contact={portfolioData.contact}
-			achievements={portfolioData.achievements}
-			terminal={portfolioData.terminal}
-			stats={portfolioData.stats}
-            renderMode="minimal"
-            suppressHeader={true}
-            suppressAbout={true}
-            suppressBanner={true}
-            showFinalCursor={false}
-            includeFooter={true}
-        />
+        <main id="main-content">
+		  <TerminalView 
+			  title={portfolioData.title}
+			  description={portfolioData.description}
+			  projects={portfolioData.projects}
+			  skills={portfolioData.skills}
+			  techStack={portfolioData.techStack}
+			  contact={portfolioData.contact}
+			  achievements={portfolioData.achievements}
+			  terminal={portfolioData.terminal}
+			  stats={portfolioData.stats}
+              renderMode="minimal"
+              suppressHeader={true}
+              suppressAbout={true}
+              suppressBanner={true}
+              showFinalCursor={false}
+              includeFooter={true}
+          />
+        </main>
 
 
         <!-- Defer non-critical themes and full terminal content until after load -->
@@ -144,12 +146,6 @@ import '../styles/terminal-theme.css';
                     if (fragment) container.appendChild(fragment);
                   }
                 }
-
-                // Load preferred font (Fira Code) after first paint to unify typography
-                const fira = document.createElement('link');
-                fira.rel = 'stylesheet';
-                fira.href = 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap';
-                document.head.appendChild(fira);
               } catch (e) {
                 console.warn('Deferred hydration failed', e);
               }
