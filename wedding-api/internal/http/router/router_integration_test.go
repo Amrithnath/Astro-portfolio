@@ -914,6 +914,78 @@ func TestAdminAssetsLifecycle(t *testing.T) {
   }
 }
 
+func TestAdminAssetsDeleteRejectsThemeReferencedAsset(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+  env.R2AccountID = "account-id"
+  env.R2BucketName = "bucket-name"
+  env.R2AccessKeyID = "access-key"
+  env.R2SecretAccessKey = "secret-key"
+  env.R2PublicBaseURL = "https://assets.example.com"
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  store := &fakeObjectStore{}
+  provider := &fakeUploadProvider{}
+  assetService := adminassetsservice.New(env, db, store)
+  handler := NewWithServices(env, db, uploadservice.New(env, db, provider), provider, assetService)
+
+  createRequest := httptest.NewRequest(http.MethodPost, "/api/admin/assets/uploads", strings.NewReader(`{"fileName":"hero-shot.png","contentType":"image/png","kind":"theme-hero"}`))
+  createRequest.Header.Set("Content-Type", "application/json")
+  createRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  createRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(createRecorder, createRequest)
+
+  var createPayload struct {
+    AssetId string `json:"assetId"`
+  }
+  if err := json.Unmarshal(createRecorder.Body.Bytes(), &createPayload); err != nil {
+    t.Fatalf("decode create asset payload: %v", err)
+  }
+
+  if err := db.UpdateDocument(t.Context(), "wedding.theme", models.WeddingThemeConfig{
+    Preset:           "terminal-romance",
+    TypographyPreset: "mono-editorial",
+    PrimaryAccent:    "#63f0b6",
+    SecondaryAccent:  "#7dd3fc",
+    SurfaceStyle:     "glass-dark",
+    HeroAssetID:      createPayload.AssetId,
+    TextureAssetID:   "",
+    ButtonStyle:      "pill",
+  }); err != nil {
+    t.Fatalf("set wedding theme asset reference: %v", err)
+  }
+
+  deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/admin/assets/"+createPayload.AssetId, nil)
+  deleteRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  deleteRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(deleteRecorder, deleteRequest)
+
+  if deleteRecorder.Code != http.StatusConflict {
+    t.Fatalf("expected 409 from delete asset, got %d", deleteRecorder.Code)
+  }
+
+  var deletePayload struct {
+    Error string `json:"error"`
+  }
+  if err := json.Unmarshal(deleteRecorder.Body.Bytes(), &deletePayload); err != nil {
+    t.Fatalf("decode delete asset payload: %v", err)
+  }
+
+  if !strings.Contains(deletePayload.Error, "still referenced by the live wedding theme") {
+    t.Fatalf("unexpected delete protection error: %q", deletePayload.Error)
+  }
+
+  if len(store.deleteCalls) != 0 {
+    t.Fatalf("expected no object-store delete when asset is referenced, got %d", len(store.deleteCalls))
+  }
+}
+
 type fakeUploadProvider struct {
   sessionRef    string
   chunkResults  []uploadservice.ChunkResult

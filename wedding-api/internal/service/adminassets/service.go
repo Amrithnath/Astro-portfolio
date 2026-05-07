@@ -161,12 +161,29 @@ func (s *Service) DeleteAsset(ctx context.Context, assetID string) (*adminassets
     return nil, err
   }
 
-  asset, err := s.db.GetAssetByID(ctx, strings.TrimSpace(assetID))
+  assetID = strings.TrimSpace(assetID)
+  asset, err := s.db.GetAssetByID(ctx, assetID)
   if err != nil {
     if err == postgres.ErrAssetNotFound {
       return nil, &StatusError{Status: 404, Message: "Asset not found."}
     }
     return nil, err
+  }
+
+  bundle, err := s.db.LoadWeddingConfig(ctx)
+  if err != nil {
+    return nil, err
+  }
+
+  referencedSlots := []string{}
+  if bundle.Theme.HeroAssetID == assetID {
+    referencedSlots = append(referencedSlots, "hero")
+  }
+  if bundle.Theme.TextureAssetID == assetID {
+    referencedSlots = append(referencedSlots, "texture")
+  }
+  if len(referencedSlots) > 0 {
+    return nil, &StatusError{Status: 409, Message: fmt.Sprintf("Asset is still referenced by the live wedding theme (%s). Reassign the theme before deleting it.", strings.Join(referencedSlots, " and "))}
   }
 
   if err := s.store.DeleteObject(ctx, asset.StorageKey); err != nil {
