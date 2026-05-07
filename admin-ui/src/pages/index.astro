@@ -1,32 +1,8 @@
 ---
 const title = 'Wedding Admin';
 
-const sections = [
-  {
-    title: 'Dashboard',
-    description: 'See admin access, storage provider state, and rollout readiness at a glance.',
-  },
-  {
-    title: 'Wedding Copy',
-    description: 'Edit names, headline, supporting copy, success copy, and closed-state messaging.',
-  },
-  {
-    title: 'Wedding Theme',
-    description: 'Manage presets, palette tokens, and the live preview surface for guest-facing styling.',
-  },
-  {
-    title: 'Assets',
-    description: 'Upload and select R2-backed hero images, textures, and future decorative assets.',
-  },
-  {
-    title: 'Upload Settings',
-    description: 'Control upload availability, limits, MIME policy, and the active storage provider.',
-  },
-  {
-    title: 'Passkeys & Audit',
-    description: 'Review seeded admins, passkey registrations, and sensitive changes with step-up auth.',
-  },
-];
+const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://127.0.0.1:8787';
+const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 ---
 
 <html lang="en">
@@ -43,51 +19,176 @@ const sections = [
           <div>
             <div class="eyebrow">admin.amrithnath.dev</div>
             <h1>Wedding Admin</h1>
-            <p class="lede">Control room for wedding uploads, provider configuration, passkeys, and styling.</p>
+            <p class="lede">Live control room for wedding copy, rollout state, provider config, and preview verification.</p>
           </div>
 
           <nav class="nav-stack" aria-label="Admin sections">
-            {sections.map((section, index) => (
-              <a href={`#section-${index + 1}`} class={`nav-link ${index === 0 ? 'is-active' : ''}`}>{section.title}</a>
-            ))}
+            <a href="#overview" class="nav-link is-active">Overview</a>
+            <a href="#wedding-copy" class="nav-link">Wedding Copy</a>
+            <a href="#theme" class="nav-link">Theme Snapshot</a>
+            <a href="#uploads" class="nav-link">Upload Policy</a>
+            <a href="#storage" class="nav-link">Storage Provider</a>
           </nav>
         </aside>
 
         <section class="workspace">
           <header class="topbar">
             <div>
-              <div class="status-label">Phase rollout</div>
-              <strong>Foundations in progress</strong>
+              <div class="status-label">API target</div>
+              <strong id="api-target">{apiBaseUrl}</strong>
             </div>
-            <span class="badge">Config-driven wedding experience</span>
+            <span id="top-status" class="badge">Loading live config</span>
           </header>
+
+          <div id="error-banner" class="banner banner-error" hidden></div>
+          <div id="success-banner" class="banner banner-success" hidden></div>
 
           <div class="content-grid">
             <section class="panel panel-stack">
-              {sections.map((section, index) => (
-                <article id={`section-${index + 1}`} class="section-card">
-                  <div class="section-index">0{index + 1}</div>
-                  <div>
-                    <h2>{section.title}</h2>
-                    <p>{section.description}</p>
+              <article id="overview" class="section-card section-card-wide">
+                <div class="section-index">01</div>
+                <div class="section-body">
+                  <div class="section-heading-row">
+                    <div>
+                      <h2>Overview</h2>
+                      <p>Current admin session and rollout state from the Go API.</p>
+                    </div>
+                    <button id="refresh-button" class="secondary-button" type="button">Refresh</button>
                   </div>
-                </article>
-              ))}
+
+                  <div class="stats-grid">
+                    <section class="mini-panel">
+                      <span class="status-label">Admin session</span>
+                      <strong id="session-name">Checking access</strong>
+                      <p id="session-detail">Waiting for `/api/admin/session`.</p>
+                    </section>
+
+                    <section class="mini-panel">
+                      <span class="status-label">Wedding route</span>
+                      <strong id="rollout-state">Loading</strong>
+                      <p id="rollout-detail">Reading enabled state from wedding public config.</p>
+                    </section>
+
+                    <section class="mini-panel">
+                      <span class="status-label">Storage validation</span>
+                      <strong id="storage-state">Loading</strong>
+                      <p id="storage-detail">Reading provider validation snapshot.</p>
+                    </section>
+                  </div>
+                </div>
+              </article>
+
+              <article id="wedding-copy" class="section-card section-card-wide">
+                <div class="section-index">02</div>
+                <div class="section-body">
+                  <div class="section-heading-row">
+                    <div>
+                      <h2>Wedding Copy</h2>
+                      <p>Edit the guest-facing copy that powers `/wedding` right now.</p>
+                    </div>
+                    <button id="save-button" class="primary-button" type="button">Save wedding copy</button>
+                  </div>
+
+                  <form id="wedding-copy-form" class="form-grid">
+                    <label class="checkbox-row">
+                      <input id="enabled" name="enabled" type="checkbox" />
+                      <span>Wedding uploads enabled</span>
+                    </label>
+
+                    <label>
+                      <span>Names</span>
+                      <input id="names" name="names" type="text" placeholder="Amrith & Arjun" />
+                    </label>
+
+                    <label>
+                      <span>Eyebrow</span>
+                      <input id="eyebrow" name="eyebrow" type="text" placeholder="wedding.media://dropbox" />
+                    </label>
+
+                    <label>
+                      <span>Headline</span>
+                      <input id="headline" name="headline" type="text" placeholder="Share the moments you caught." />
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Subheadline</span>
+                      <textarea id="subheadline" name="subheadline" rows="3"></textarea>
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Dropzone copy</span>
+                      <textarea id="dropzoneCopy" name="dropzoneCopy" rows="3"></textarea>
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Supporting copy</span>
+                      <textarea id="supportingCopy" name="supportingCopy" rows="3"></textarea>
+                    </label>
+
+                    <label>
+                      <span>Success title</span>
+                      <input id="successTitle" name="successTitle" type="text" />
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Success message</span>
+                      <textarea id="successMessage" name="successMessage" rows="3"></textarea>
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Closed message</span>
+                      <textarea id="closedMessage" name="closedMessage" rows="3"></textarea>
+                    </label>
+                  </form>
+                </div>
+              </article>
+
+              <article id="theme" class="section-card">
+                <div class="section-index">03</div>
+                <div class="section-body">
+                  <h2>Theme Snapshot</h2>
+                  <p>Current read-only theme values from the admin config service.</p>
+                  <dl id="theme-list" class="detail-list"></dl>
+                </div>
+              </article>
+
+              <article id="uploads" class="section-card">
+                <div class="section-index">04</div>
+                <div class="section-body">
+                  <h2>Upload Policy</h2>
+                  <p>Live limits and maintenance message currently backing the guest upload flow.</p>
+                  <dl id="upload-policy-list" class="detail-list"></dl>
+                </div>
+              </article>
+
+              <article id="storage" class="section-card">
+                <div class="section-index">05</div>
+                <div class="section-body">
+                  <h2>Storage Provider</h2>
+                  <p>Current provider selection and validation status. Write flow lands next.</p>
+                  <dl id="storage-list" class="detail-list"></dl>
+                </div>
+              </article>
             </section>
 
             <aside class="panel preview-panel">
               <div class="preview-header">
                 <span class="status-label">Live Preview</span>
-                <span class="preview-chip">mobile</span>
+                <span id="preview-chip" class="preview-chip">mobile</span>
               </div>
               <div class="preview-phone">
                 <div class="preview-screen">
-                  <p class="preview-eyebrow">wedding.media://dropbox</p>
-                  <h2 class="preview-title">Share the moments you caught.</h2>
-                  <p class="preview-copy">Wedding copy, theme presets, and selected imagery will render here as the admin config grows.</p>
+                  <p id="preview-eyebrow" class="preview-eyebrow">wedding.media://dropbox</p>
+                  <h2 id="preview-title" class="preview-title">Share the moments you caught.</h2>
+                  <p id="preview-copy" class="preview-copy">Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.</p>
                   <div class="preview-dropzone">
                     <span>Tap to choose files</span>
-                    <strong>Photos, HEIC, MOV, and large videos are all welcome.</strong>
+                    <strong id="preview-dropzone-copy">Photos, HEIC, MOV, and large videos are all welcome.</strong>
+                  </div>
+                  <p id="preview-supporting-copy" class="preview-supporting-copy">Uploads run one file at a time for better reliability on mobile networks.</p>
+                  <div id="preview-closed" class="preview-closed" hidden>
+                    <span>Uploads unavailable</span>
+                    <strong id="preview-closed-message">Uploads are paused right now. Please try again later.</strong>
                   </div>
                 </div>
               </div>
@@ -96,6 +197,356 @@ const sections = [
         </section>
       </section>
     </main>
+
+    <script is:inline define:vars={{ apiBaseUrl, adminDebugEmail }}>
+      const state = {
+        session: null,
+        weddingPublic: null,
+        theme: null,
+        uploadPolicy: null,
+        storage: null,
+        isSaving: false,
+      };
+
+      const elements = {
+        topStatus: document.getElementById('top-status'),
+        refreshButton: document.getElementById('refresh-button'),
+        saveButton: document.getElementById('save-button'),
+        errorBanner: document.getElementById('error-banner'),
+        successBanner: document.getElementById('success-banner'),
+        sessionName: document.getElementById('session-name'),
+        sessionDetail: document.getElementById('session-detail'),
+        rolloutState: document.getElementById('rollout-state'),
+        rolloutDetail: document.getElementById('rollout-detail'),
+        storageState: document.getElementById('storage-state'),
+        storageDetail: document.getElementById('storage-detail'),
+        themeList: document.getElementById('theme-list'),
+        uploadPolicyList: document.getElementById('upload-policy-list'),
+        storageList: document.getElementById('storage-list'),
+        previewEyebrow: document.getElementById('preview-eyebrow'),
+        previewTitle: document.getElementById('preview-title'),
+        previewCopy: document.getElementById('preview-copy'),
+        previewDropzoneCopy: document.getElementById('preview-dropzone-copy'),
+        previewSupportingCopy: document.getElementById('preview-supporting-copy'),
+        previewClosed: document.getElementById('preview-closed'),
+        previewClosedMessage: document.getElementById('preview-closed-message'),
+      };
+
+      const form = document.getElementById('wedding-copy-form');
+      const fields = {
+        enabled: document.getElementById('enabled'),
+        names: document.getElementById('names'),
+        eyebrow: document.getElementById('eyebrow'),
+        headline: document.getElementById('headline'),
+        subheadline: document.getElementById('subheadline'),
+        dropzoneCopy: document.getElementById('dropzoneCopy'),
+        supportingCopy: document.getElementById('supportingCopy'),
+        successTitle: document.getElementById('successTitle'),
+        successMessage: document.getElementById('successMessage'),
+        closedMessage: document.getElementById('closedMessage'),
+      };
+
+      function getHeaders() {
+        const headers = { Accept: 'application/json' };
+        if (adminDebugEmail) {
+          headers['X-Admin-Debug-Email'] = adminDebugEmail;
+        }
+        return headers;
+      }
+
+      async function apiFetch(path, init = {}) {
+        const response = await fetch(`${apiBaseUrl}${path}`, {
+          ...init,
+          credentials: 'include',
+          headers: {
+            ...getHeaders(),
+            ...(init.headers || {}),
+          },
+        });
+
+        const isJSON = response.headers.get('content-type')?.includes('application/json');
+        const payload = isJSON ? await response.json() : null;
+
+        if (!response.ok) {
+          const errorMessage = payload?.error || `Request failed with status ${response.status}`;
+          throw new Error(errorMessage);
+        }
+
+        return payload;
+      }
+
+      function setBanner(element, message) {
+        if (!message) {
+          element.hidden = true;
+          element.textContent = '';
+          return;
+        }
+
+        element.hidden = false;
+        element.textContent = message;
+      }
+
+      function formatUnixTimestamp(value) {
+        const unix = Number(value);
+        if (!Number.isFinite(unix) || unix <= 0) {
+          return 'Not available';
+        }
+
+        return new Date(unix * 1000).toLocaleString();
+      }
+
+      function formatBytes(value) {
+        const bytes = Number(value);
+        if (!Number.isFinite(bytes) || bytes <= 0) {
+          return '0 B';
+        }
+
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const scaled = bytes / Math.pow(1024, exponent);
+        return `${scaled >= 10 || exponent === 0 ? scaled.toFixed(0) : scaled.toFixed(1)} ${units[exponent]}`;
+      }
+
+      function formatValue(value) {
+        if (Array.isArray(value)) {
+          return value.length > 0 ? value.join(', ') : 'None';
+        }
+
+        if (typeof value === 'boolean') {
+          return value ? 'Enabled' : 'Disabled';
+        }
+
+        if (value === '' || value === null || value === undefined) {
+          return 'Not set';
+        }
+
+        return String(value);
+      }
+
+      function renderDetailList(container, items) {
+        container.replaceChildren(
+          ...items.flatMap((item) => {
+            const term = document.createElement('dt');
+            term.textContent = item.label;
+            const detail = document.createElement('dd');
+            detail.textContent = item.value;
+            return [term, detail];
+          }),
+        );
+      }
+
+      function applyForm(config) {
+        fields.enabled.checked = Boolean(config.enabled);
+        fields.names.value = config.names || '';
+        fields.eyebrow.value = config.eyebrow || '';
+        fields.headline.value = config.headline || '';
+        fields.subheadline.value = config.subheadline || '';
+        fields.dropzoneCopy.value = config.dropzoneCopy || '';
+        fields.supportingCopy.value = config.supportingCopy || '';
+        fields.successTitle.value = config.successTitle || '';
+        fields.successMessage.value = config.successMessage || '';
+        fields.closedMessage.value = config.closedMessage || '';
+      }
+
+      function readForm() {
+        return {
+          enabled: fields.enabled.checked,
+          names: fields.names.value.trim(),
+          eyebrow: fields.eyebrow.value.trim(),
+          headline: fields.headline.value.trim(),
+          subheadline: fields.subheadline.value.trim(),
+          dropzoneCopy: fields.dropzoneCopy.value.trim(),
+          supportingCopy: fields.supportingCopy.value.trim(),
+          successTitle: fields.successTitle.value.trim(),
+          successMessage: fields.successMessage.value.trim(),
+          closedMessage: fields.closedMessage.value.trim(),
+        };
+      }
+
+      function renderSession() {
+        if (!state.session) {
+          elements.sessionName.textContent = 'No admin session';
+          elements.sessionDetail.textContent = 'Cloudflare Access or local debug auth is required before config calls can succeed.';
+          return;
+        }
+
+        elements.sessionName.textContent = state.session.admin?.displayName || state.session.admin?.email || 'Signed in';
+        elements.sessionDetail.textContent = `${state.session.accessEmail} · step-up ${state.session.requiresStepUp ? 'required' : 'not required'} · expires ${formatUnixTimestamp(state.session.expiresAtUnix)}`;
+      }
+
+      function renderWeddingPublic() {
+        if (!state.weddingPublic) {
+          elements.rolloutState.textContent = 'Unavailable';
+          elements.rolloutDetail.textContent = 'Wedding public config could not be loaded.';
+          return;
+        }
+
+        applyForm(state.weddingPublic);
+        syncPreview();
+
+        const uploadsOpen = Boolean(state.weddingPublic.enabled) && Boolean(state.uploadPolicy?.uploadsEnabled);
+        elements.rolloutState.textContent = uploadsOpen ? 'Open for uploads' : 'Closed to guests';
+        elements.rolloutDetail.textContent = uploadsOpen
+          ? 'Guests currently see the upload composer on `/wedding`.'
+          : (state.uploadPolicy?.maintenanceMessage || state.weddingPublic.closedMessage || 'Uploads are unavailable right now.');
+      }
+
+      function renderTheme() {
+        if (!state.theme) {
+          renderDetailList(elements.themeList, [{ label: 'Status', value: 'Unavailable' }]);
+          return;
+        }
+
+        renderDetailList(elements.themeList, [
+          { label: 'Preset', value: formatValue(state.theme.preset) },
+          { label: 'Typography', value: formatValue(state.theme.typographyPreset) },
+          { label: 'Primary accent', value: formatValue(state.theme.primaryAccent) },
+          { label: 'Secondary accent', value: formatValue(state.theme.secondaryAccent) },
+          { label: 'Surface style', value: formatValue(state.theme.surfaceStyle) },
+          { label: 'Button style', value: formatValue(state.theme.buttonStyle) },
+          { label: 'Hero asset', value: formatValue(state.theme.heroAssetId) },
+          { label: 'Texture asset', value: formatValue(state.theme.textureAssetId) },
+        ]);
+      }
+
+      function renderUploadPolicy() {
+        if (!state.uploadPolicy) {
+          renderDetailList(elements.uploadPolicyList, [{ label: 'Status', value: 'Unavailable' }]);
+          return;
+        }
+
+        renderDetailList(elements.uploadPolicyList, [
+          { label: 'Uploads', value: formatValue(state.uploadPolicy.uploadsEnabled) },
+          { label: 'Max file size', value: formatBytes(state.uploadPolicy.maxFileBytes) },
+          { label: 'Concurrent uploads/IP', value: formatValue(state.uploadPolicy.maxActiveUploadsPerIp) },
+          { label: 'Session TTL', value: `${formatValue(state.uploadPolicy.uploadSessionTtlMs)} ms` },
+          { label: 'Allowed MIME types', value: formatValue(state.uploadPolicy.allowedMimeTypes) },
+          { label: 'Maintenance message', value: formatValue(state.uploadPolicy.maintenanceMessage) },
+        ]);
+      }
+
+      function renderStorage() {
+        if (!state.storage) {
+          elements.storageState.textContent = 'Unavailable';
+          elements.storageDetail.textContent = 'Storage provider config could not be loaded.';
+          renderDetailList(elements.storageList, [{ label: 'Status', value: 'Unavailable' }]);
+          return;
+        }
+
+        const providerLabel = state.storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS'
+          ? 'Google Photos'
+          : state.storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_DRIVE'
+            ? 'Google Drive'
+            : 'Not set';
+
+        const validationState = state.storage.lastValidationError ? 'Needs attention' : 'Ready for validation';
+        elements.storageState.textContent = validationState;
+        elements.storageDetail.textContent = state.storage.lastValidationError || `${providerLabel} is the currently selected provider.`;
+
+        renderDetailList(elements.storageList, [
+          { label: 'Provider', value: providerLabel },
+          { label: 'Drive folder ID', value: formatValue(state.storage.driveFolderId) },
+          { label: 'Drive label', value: formatValue(state.storage.driveFolderLabel) },
+          { label: 'Photos enabled', value: formatValue(state.storage.photosEnabled) },
+          { label: 'Photos album ID', value: formatValue(state.storage.photosAlbumId) },
+          { label: 'Photos album title', value: formatValue(state.storage.photosAlbumTitle) },
+          { label: 'Validated at', value: formatUnixTimestamp(state.storage.validatedAtUnix) },
+          { label: 'Validation error', value: formatValue(state.storage.lastValidationError) },
+        ]);
+      }
+
+      function syncPreview() {
+        const config = readForm();
+        elements.previewEyebrow.textContent = config.eyebrow || 'wedding.media://dropbox';
+        elements.previewTitle.textContent = config.headline || 'Share the moments you caught.';
+        elements.previewCopy.textContent = config.subheadline || 'Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.';
+        elements.previewDropzoneCopy.textContent = config.dropzoneCopy || 'Photos, HEIC, MOV, and large videos are all welcome.';
+        elements.previewSupportingCopy.textContent = config.supportingCopy || 'Uploads run one file at a time for better reliability on mobile networks.';
+
+        const uploadsOpen = Boolean(config.enabled) && Boolean(state.uploadPolicy?.uploadsEnabled);
+        elements.previewClosed.hidden = uploadsOpen;
+        elements.previewClosedMessage.textContent = state.uploadPolicy?.maintenanceMessage || config.closedMessage || 'Uploads are paused right now. Please try again later.';
+      }
+
+      function renderAll() {
+        renderSession();
+        renderWeddingPublic();
+        renderTheme();
+        renderUploadPolicy();
+        renderStorage();
+      }
+
+      async function loadDashboard() {
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+        elements.topStatus.textContent = 'Loading live config';
+
+        try {
+          const [sessionPayload, weddingPayload, themePayload, uploadPolicyPayload, storagePayload] = await Promise.all([
+            apiFetch('/api/admin/session'),
+            apiFetch('/api/admin/config/wedding-public'),
+            apiFetch('/api/admin/config/wedding-theme'),
+            apiFetch('/api/admin/config/upload-policy'),
+            apiFetch('/api/admin/config/storage-provider'),
+          ]);
+
+          state.session = sessionPayload.session;
+          state.weddingPublic = weddingPayload.config;
+          state.theme = themePayload.config;
+          state.uploadPolicy = uploadPolicyPayload.config;
+          state.storage = storagePayload.config;
+          renderAll();
+          elements.topStatus.textContent = 'Live config connected';
+        } catch (error) {
+          state.session = null;
+          state.weddingPublic = null;
+          state.theme = null;
+          state.uploadPolicy = null;
+          state.storage = null;
+          renderAll();
+          elements.topStatus.textContent = 'Live config unavailable';
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Dashboard load failed.');
+        }
+      }
+
+      async function saveWeddingCopy() {
+        if (state.isSaving) {
+          return;
+        }
+
+        state.isSaving = true;
+        elements.saveButton.disabled = true;
+        elements.saveButton.textContent = 'Saving...';
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+
+        try {
+          const payload = await apiFetch('/api/admin/config/wedding-public', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ config: readForm() }),
+          });
+
+          state.weddingPublic = payload.config;
+          renderWeddingPublic();
+          elements.topStatus.textContent = 'Wedding copy saved';
+          setBanner(elements.successBanner, 'Wedding public config saved to the API.');
+        } catch (error) {
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Save failed.');
+        } finally {
+          state.isSaving = false;
+          elements.saveButton.disabled = false;
+          elements.saveButton.textContent = 'Save wedding copy';
+        }
+      }
+
+      form.addEventListener('input', syncPreview);
+      elements.refreshButton.addEventListener('click', loadDashboard);
+      elements.saveButton.addEventListener('click', saveWeddingCopy);
+      loadDashboard();
+    </script>
   </body>
 </html>
 
@@ -107,6 +558,10 @@ const sections = [
     background: #0a0d14;
     color: #edf2f7;
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  :global(*) {
+    box-sizing: border-box;
   }
 
   .shell {
@@ -143,7 +598,8 @@ const sections = [
   }
 
   .lede,
-  p {
+  p,
+  dd {
     margin: 0;
     color: #cbd5e1;
     line-height: 1.7;
@@ -203,6 +659,24 @@ const sections = [
     color: #7dd3fc;
   }
 
+  .banner {
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+  }
+
+  .banner-error {
+    background: rgba(127, 29, 29, 0.3);
+    border-color: rgba(248, 113, 113, 0.35);
+    color: #fecaca;
+  }
+
+  .banner-success {
+    background: rgba(20, 83, 45, 0.32);
+    border-color: rgba(74, 222, 128, 0.35);
+    color: #bbf7d0;
+  }
+
   .content-grid {
     display: grid;
     gap: 20px;
@@ -223,6 +697,16 @@ const sections = [
     background: rgba(30, 41, 59, 0.45);
   }
 
+  .section-card-wide {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .section-body {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+  }
+
   .section-index {
     color: #7dd3fc;
     font-size: 13px;
@@ -231,9 +715,134 @@ const sections = [
     padding-top: 4px;
   }
 
+  .section-heading-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+
   h2 {
     margin: 0 0 8px;
     font-size: 1.15rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .mini-panel {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.66);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+  }
+
+  .mini-panel strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  label {
+    display: grid;
+    gap: 8px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+  }
+
+  label span {
+    color: #cbd5e1;
+  }
+
+  input,
+  textarea,
+  button {
+    font: inherit;
+  }
+
+  input[type='text'],
+  textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.82);
+    color: #f8fafc;
+    padding: 12px 14px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 96px;
+  }
+
+  input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    accent-color: #7dd3fc;
+  }
+
+  .checkbox-row {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .primary-button,
+  .secondary-button {
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color 120ms ease, transform 120ms ease, opacity 120ms ease;
+  }
+
+  .primary-button {
+    background: linear-gradient(135deg, #7dd3fc, #63f0b6);
+    color: #03111c;
+    font-weight: 700;
+  }
+
+  .secondary-button {
+    background: rgba(15, 23, 42, 0.82);
+    color: #edf2f7;
+    border-color: rgba(148, 163, 184, 0.22);
+  }
+
+  .primary-button:hover,
+  .secondary-button:hover,
+  .primary-button:focus-visible,
+  .secondary-button:focus-visible {
+    transform: translateY(-1px);
+  }
+
+  .primary-button:disabled,
+  .secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+  }
+
+  .detail-list {
+    display: grid;
+    grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+    gap: 8px 14px;
+    margin: 0;
+  }
+
+  dt {
+    color: #7dd3fc;
+    font-size: 0.9rem;
   }
 
   .preview-panel {
@@ -278,7 +887,8 @@ const sections = [
     line-height: 1.1;
   }
 
-  .preview-copy {
+  .preview-copy,
+  .preview-supporting-copy {
     color: #cbd5e1;
   }
 
@@ -292,15 +902,34 @@ const sections = [
     background: rgba(15, 23, 42, 0.72);
   }
 
-  .preview-dropzone span {
+  .preview-dropzone span,
+  .preview-closed span {
     color: #63f0b6;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
 
-  .preview-dropzone strong {
+  .preview-dropzone strong,
+  .preview-closed strong {
     line-height: 1.5;
+  }
+
+  .preview-closed {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(127, 29, 29, 0.22);
+    border: 1px solid rgba(248, 113, 113, 0.24);
+  }
+
+  @media (min-width: 52rem) {
+    .stats-grid,
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (min-width: 72rem) {
@@ -317,6 +946,17 @@ const sections = [
     .content-grid {
       grid-template-columns: minmax(0, 1fr) 360px;
       align-items: start;
+    }
+  }
+
+  @media (max-width: 51.99rem) {
+    .topbar,
+    .section-heading-row {
+      flex-direction: column;
+    }
+
+    .detail-list {
+      grid-template-columns: 1fr;
     }
   }
 </style>

@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host 127.0.0.1 --port 4323",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview --host 127.0.0.1 --port 4323"
   },
   "dependencies": {
     "astro": "^5.13.1"
