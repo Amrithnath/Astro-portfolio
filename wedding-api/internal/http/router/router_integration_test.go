@@ -1,7 +1,10 @@
 package router
 
 import (
+  "bytes"
+  "context"
   "encoding/json"
+  "mime/multipart"
   "net/http"
   "net/http/httptest"
   "strconv"
@@ -10,6 +13,9 @@ import (
   "time"
 
   appconfig "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/config"
+  "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/models"
+  "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/repo/postgres"
+  uploadservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/upload"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/testutil"
 )
 
@@ -498,6 +504,246 @@ func TestAdminStorageProviderConfigCanBeUpdatedBySeededAdmin(t *testing.T) {
       t.Fatalf("expected validatedAtUnix to be omitted for an unvalidated provider, got %q", payload.Config.ValidatedAtUnix)
     }
   })
+}
+
+func TestUploadEndpointsMatchWeddingClientContract(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+  seedUploadReadyStorageConfig(t, db)
+  jpegChunkA := []byte{0xff, 0xd8, 0xff, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x02}
+  jpegChunkB := []byte{0xaa, 0xbb, 0xcc}
+  provider := &fakeUploadProvider{
+    sessionRef: "drive-session-1",
+    chunkResults: []uploadservice.ChunkResult{
+      {NextOffset: 12, Complete: false},
+      {NextOffset: 15, Complete: true, ProviderResourceID: "drive-file-123"},
+    },
+  }
+
+  handler := NewWithUploadService(env, db, uploadservice.New(env, db, provider))
+
+  initBody := strings.NewReader(`{"filename":"toast.jpg","mimeType":"image/jpeg","fileSize":15}`)
+  initRequest := httptest.NewRequest(http.MethodPost, "/api/upload/init", initBody)
+  initRequest.Header.Set("Content-Type", "application/json")
+  initRequest.RemoteAddr = "127.0.0.1:12345"
+  initRecorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(initRecorder, initRequest)
+
+  if initRecorder.Code != http.StatusCreated {
+    t.Fatalf("expected 201 from init, got %d", initRecorder.Code)
+  }
+
+  var initPayload struct {
+    UploadID   string   `json:"uploadId"`
+    ChunkBytes int64    `json:"chunkBytes"`
+    ExpiresAt  int64    `json:"expiresAt"`
+    Types      []string `json:"acceptedTypes"`
+  }
+  if err := json.Unmarshal(initRecorder.Body.Bytes(), &initPayload); err != nil {
+    t.Fatalf("decode init payload: %v", err)
+  }
+
+  if initPayload.UploadID == "" {
+    t.Fatalf("expected upload id in init payload")
+  }
+
+  if initPayload.ChunkBytes != uploadservice.MaxChunkBytes {
+    t.Fatalf("expected chunk bytes %d, got %d", uploadservice.MaxChunkBytes, initPayload.ChunkBytes)
+  }
+
+  if initPayload.ExpiresAt <= time.Now().UnixMilli() {
+    t.Fatalf("expected future expiry, got %d", initPayload.ExpiresAt)
+  }
+
+  if len(initPayload.Types) == 0 {
+    t.Fatalf("expected accepted types in init payload")
+  }
+
+  firstChunkRequest := newChunkRequest(t, initPayload.UploadID, 0, "bytes 0-11/15", jpegChunkA, "toast.jpg")
+  firstChunkRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(firstChunkRecorder, firstChunkRequest)
+
+  if firstChunkRecorder.Code != http.StatusOK {
+    t.Fatalf("expected 200 from first chunk, got %d", firstChunkRecorder.Code)
+  }
+
+  var firstChunkPayload struct {
+    NextOffset int64 `json:"nextOffset"`
+    Complete   bool  `json:"complete"`
+  }
+  if err := json.Unmarshal(firstChunkRecorder.Body.Bytes(), &firstChunkPayload); err != nil {
+    t.Fatalf("decode first chunk payload: %v", err)
+  }
+
+  if firstChunkPayload.NextOffset != 12 {
+    t.Fatalf("expected nextOffset 12 after first chunk, got %d", firstChunkPayload.NextOffset)
+  }
+
+  if firstChunkPayload.Complete {
+    t.Fatalf("expected first chunk to remain incomplete")
+  }
+
+  secondChunkRequest := newChunkRequest(t, initPayload.UploadID, 12, "bytes 12-14/15", jpegChunkB, "toast.jpg")
+  secondChunkRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(secondChunkRecorder, secondChunkRequest)
+
+  if secondChunkRecorder.Code != http.StatusOK {
+    t.Fatalf("expected 200 from second chunk, got %d", secondChunkRecorder.Code)
+  }
+
+  var secondChunkPayload struct {
+    NextOffset int64  `json:"nextOffset"`
+    Complete   bool   `json:"complete"`
+    FileID     string `json:"fileId"`
+  }
+  if err := json.Unmarshal(secondChunkRecorder.Body.Bytes(), &secondChunkPayload); err != nil {
+    t.Fatalf("decode second chunk payload: %v", err)
+  }
+
+  if secondChunkPayload.NextOffset != 15 {
+    t.Fatalf("expected nextOffset 15 after completion, got %d", secondChunkPayload.NextOffset)
+  }
+
+  if !secondChunkPayload.Complete {
+    t.Fatalf("expected second chunk to complete upload")
+  }
+
+  if secondChunkPayload.FileID != "drive-file-123" {
+    t.Fatalf("expected provider file id, got %q", secondChunkPayload.FileID)
+  }
+}
+
+func TestUploadChunkReturnsConflictWithNextOffset(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+  seedUploadReadyStorageConfig(t, db)
+  jpegChunk := []byte{0xff, 0xd8, 0xff, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x02}
+  provider := &fakeUploadProvider{
+    sessionRef: "drive-session-1",
+    chunkResults: []uploadservice.ChunkResult{{NextOffset: 12, Complete: false}},
+  }
+
+  handler := NewWithUploadService(env, db, uploadservice.New(env, db, provider))
+
+  initBody := strings.NewReader(`{"filename":"toast.jpg","mimeType":"image/jpeg","fileSize":15}`)
+  initRequest := httptest.NewRequest(http.MethodPost, "/api/upload/init", initBody)
+  initRequest.Header.Set("Content-Type", "application/json")
+  initRequest.RemoteAddr = "127.0.0.1:12345"
+  initRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(initRecorder, initRequest)
+
+  var initPayload struct {
+    UploadID string `json:"uploadId"`
+  }
+  if err := json.Unmarshal(initRecorder.Body.Bytes(), &initPayload); err != nil {
+    t.Fatalf("decode init payload: %v", err)
+  }
+
+  firstChunkRequest := newChunkRequest(t, initPayload.UploadID, 0, "bytes 0-11/15", jpegChunk, "toast.jpg")
+  firstChunkRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(firstChunkRecorder, firstChunkRequest)
+
+  conflictRequest := newChunkRequest(t, initPayload.UploadID, 0, "bytes 0-11/15", jpegChunk, "toast.jpg")
+  conflictRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(conflictRecorder, conflictRequest)
+
+  if conflictRecorder.Code != http.StatusConflict {
+    t.Fatalf("expected 409 conflict, got %d", conflictRecorder.Code)
+  }
+
+  var conflictPayload struct {
+    Error      string `json:"error"`
+    NextOffset int64  `json:"nextOffset"`
+  }
+  if err := json.Unmarshal(conflictRecorder.Body.Bytes(), &conflictPayload); err != nil {
+    t.Fatalf("decode conflict payload: %v", err)
+  }
+
+  if conflictPayload.NextOffset != 12 {
+    t.Fatalf("expected nextOffset 12 in conflict response, got %d", conflictPayload.NextOffset)
+  }
+}
+
+type fakeUploadProvider struct {
+  sessionRef    string
+  chunkResults  []uploadservice.ChunkResult
+  uploadCount   int
+  beginErr      error
+  uploadChunkErr error
+}
+
+func (f *fakeUploadProvider) BeginUpload(_ context.Context, _ string, _ string, _ models.StorageProviderConfig) (string, error) {
+  if f.beginErr != nil {
+    return "", f.beginErr
+  }
+  return f.sessionRef, nil
+}
+
+func (f *fakeUploadProvider) UploadChunk(_ context.Context, _ string, _ string, _ string, _ []byte) (uploadservice.ChunkResult, error) {
+  if f.uploadChunkErr != nil {
+    return uploadservice.ChunkResult{}, f.uploadChunkErr
+  }
+  if f.uploadCount >= len(f.chunkResults) {
+    return uploadservice.ChunkResult{}, nil
+  }
+
+  result := f.chunkResults[f.uploadCount]
+  f.uploadCount += 1
+  return result, nil
+}
+
+func newChunkRequest(t *testing.T, uploadID string, offset int64, contentRange string, chunk []byte, filename string) *http.Request {
+  t.Helper()
+
+  var body bytes.Buffer
+  writer := multipart.NewWriter(&body)
+
+  if err := writer.WriteField("uploadId", uploadID); err != nil {
+    t.Fatalf("write uploadId field: %v", err)
+  }
+  if err := writer.WriteField("offset", strconv.FormatInt(offset, 10)); err != nil {
+    t.Fatalf("write offset field: %v", err)
+  }
+
+  part, err := writer.CreateFormFile("chunk", filename)
+  if err != nil {
+    t.Fatalf("create chunk part: %v", err)
+  }
+  if _, err := part.Write(chunk); err != nil {
+    t.Fatalf("write chunk bytes: %v", err)
+  }
+
+  if err := writer.Close(); err != nil {
+    t.Fatalf("close multipart writer: %v", err)
+  }
+
+  request := httptest.NewRequest(http.MethodPut, "/api/upload/chunk", &body)
+  request.Header.Set("Content-Type", writer.FormDataContentType())
+  request.Header.Set("Content-Range", contentRange)
+  return request
+}
+
+func seedUploadReadyStorageConfig(t *testing.T, db *postgres.DB) {
+  t.Helper()
+
+  err := db.UpdateDocument(t.Context(), "wedding.storage.google_drive", models.StorageProviderConfig{
+    Provider:         "google_drive",
+    DriveFolderID:    "drive-folder-123",
+    DriveFolderLabel: "Wedding Uploads",
+    PhotosEnabled:    false,
+    PhotosAlbumID:    "",
+    PhotosAlbumTitle: "",
+  })
+  if err != nil {
+    t.Fatalf("seed upload-ready storage config: %v", err)
+  }
 }
 
 func testEnv(databaseURL string) appconfig.Env {

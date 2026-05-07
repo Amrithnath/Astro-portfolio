@@ -10,16 +10,28 @@ import (
   adminauthhandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/adminauth"
   adminconfighandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/adminconfig"
   publichandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/public"
+  uploadhandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/upload"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/repo/postgres"
   adminauthservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminauth"
   adminconfigservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminconfig"
   configservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/config"
+  uploadservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/upload"
 
   "github.com/go-chi/chi/v5"
   chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func New(env appconfig.Env, db *postgres.DB) http.Handler {
+  uploadProvider := uploadservice.NewGoogleDriveProvider(env)
+  uploadConfig := uploadservice.New(env, db, uploadProvider)
+  return newRouter(env, db, uploadConfig)
+}
+
+func NewWithUploadService(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service) http.Handler {
+  return newRouter(env, db, uploadConfig)
+}
+
+func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service) http.Handler {
   r := chi.NewRouter()
   r.Use(chimiddleware.RequestID)
   r.Use(chimiddleware.RealIP)
@@ -30,6 +42,7 @@ func New(env appconfig.Env, db *postgres.DB) http.Handler {
   adminAuth := adminauthservice.New(env, db)
   publicConfig := configservice.New(db)
   publicHandler := publichandlers.New(publicConfig)
+  uploadHandler := uploadhandlers.New(uploadConfig)
   adminAuthHandler := adminauthhandlers.New(adminAuth)
   adminConfigHandler := adminconfighandlers.New(adminconfigservice.New(db))
 
@@ -39,6 +52,8 @@ func New(env appconfig.Env, db *postgres.DB) http.Handler {
   })
 
   r.Get("/api/public/wedding-config", publicHandler.GetWeddingConfig)
+  r.Post("/api/upload/init", uploadHandler.InitUpload)
+  r.Put("/api/upload/chunk", uploadHandler.UploadChunk)
   r.Route("/api/admin", func(adminRouter chi.Router) {
     adminRouter.Get("/session", adminAuthHandler.GetSession)
 
@@ -67,7 +82,7 @@ func corsMiddleware(env appconfig.Env) func(http.Handler) http.Handler {
     }
   }
 
-  const allowedHeaders = "Accept, Content-Type, X-Admin-Debug-Email"
+  const allowedHeaders = "Accept, Content-Type, Content-Range, X-Admin-Debug-Email"
   const allowedMethods = "GET, POST, PUT, OPTIONS"
 
   return func(next http.Handler) http.Handler {
