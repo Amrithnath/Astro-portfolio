@@ -294,6 +294,212 @@ func TestAdminRoutesAllowConfiguredCORSOrigin(t *testing.T) {
   }
 }
 
+func TestAdminWeddingThemeConfigCanBeUpdatedBySeededAdmin(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  handler := New(env, db)
+
+  body := strings.NewReader(`{"config":{"preset":"nocturne-glass","typographyPreset":"modern-editorial","primaryAccent":"#ff7ab6","secondaryAccent":"#f4d35e","surfaceStyle":"velvet","heroAssetId":"hero-asset-01","textureAssetId":"texture-asset-01","buttonStyle":"rounded-rectangle"}}`)
+  request := httptest.NewRequest(http.MethodPut, "/api/admin/config/wedding-theme", body)
+  request.Header.Set("Content-Type", "application/json")
+  request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  recorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(recorder, request)
+
+  if recorder.Code != http.StatusOK {
+    t.Fatalf("expected 200, got %d", recorder.Code)
+  }
+
+  var payload struct {
+    Config struct {
+      Preset        string `json:"preset"`
+      HeroAssetId   string `json:"heroAssetId"`
+      PrimaryAccent string `json:"primaryAccent"`
+    } `json:"config"`
+  }
+
+  if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+    t.Fatalf("decode theme payload: %v", err)
+  }
+
+  if payload.Config.Preset != "nocturne-glass" {
+    t.Fatalf("expected updated preset, got %q", payload.Config.Preset)
+  }
+
+  if payload.Config.HeroAssetId != "hero-asset-01" {
+    t.Fatalf("expected updated hero asset, got %q", payload.Config.HeroAssetId)
+  }
+
+  if payload.Config.PrimaryAccent != "#ff7ab6" {
+    t.Fatalf("expected updated primary accent, got %q", payload.Config.PrimaryAccent)
+  }
+}
+
+func TestAdminUploadPolicyConfigCanBeUpdatedBySeededAdmin(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  handler := New(env, db)
+
+  body := strings.NewReader(`{"config":{"uploadsEnabled":false,"maxFileBytes":"524288000","maxActiveUploadsPerIp":"3","uploadSessionTtlMs":"7200000","allowedMimeTypes":["image/jpeg","video/mp4"],"maintenanceMessage":"Uploads are paused while we migrate storage."}}`)
+  request := httptest.NewRequest(http.MethodPut, "/api/admin/config/upload-policy", body)
+  request.Header.Set("Content-Type", "application/json")
+  request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  recorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(recorder, request)
+
+  if recorder.Code != http.StatusOK {
+    t.Fatalf("expected 200, got %d", recorder.Code)
+  }
+
+  var payload struct {
+    Config struct {
+      UploadsEnabled       bool     `json:"uploadsEnabled"`
+      MaxFileBytes         string   `json:"maxFileBytes"`
+      MaxActiveUploadsPerIp string  `json:"maxActiveUploadsPerIp"`
+      AllowedMimeTypes     []string `json:"allowedMimeTypes"`
+    } `json:"config"`
+  }
+
+  if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+    t.Fatalf("decode upload policy payload: %v", err)
+  }
+
+  if payload.Config.UploadsEnabled {
+    t.Fatalf("expected uploads to be disabled")
+  }
+
+  if payload.Config.MaxFileBytes != "524288000" {
+    t.Fatalf("expected updated max file bytes, got %q", payload.Config.MaxFileBytes)
+  }
+
+  if len(payload.Config.AllowedMimeTypes) != 2 {
+    t.Fatalf("expected two allowed mime types, got %d", len(payload.Config.AllowedMimeTypes))
+  }
+}
+
+func TestAdminStorageProviderConfigCanBeUpdatedBySeededAdmin(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  handler := New(env, db)
+
+  t.Run("drive config persists validated state", func(t *testing.T) {
+    body := strings.NewReader(`{"config":{"provider":"STORAGE_PROVIDER_KIND_GOOGLE_DRIVE","driveFolderId":"drive-folder-123","driveFolderLabel":"Wedding Uploads","photosEnabled":false,"photosAlbumId":"","photosAlbumTitle":""}}`)
+    request := httptest.NewRequest(http.MethodPut, "/api/admin/config/storage-provider", body)
+    request.Header.Set("Content-Type", "application/json")
+    request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+    recorder := httptest.NewRecorder()
+
+    handler.ServeHTTP(recorder, request)
+
+    if recorder.Code != http.StatusOK {
+      t.Fatalf("expected 200, got %d", recorder.Code)
+    }
+
+    var payload struct {
+      Config struct {
+        Provider            string `json:"provider"`
+        DriveFolderId       string `json:"driveFolderId"`
+        LastValidationError string `json:"lastValidationError"`
+        ValidatedAtUnix     string `json:"validatedAtUnix"`
+      } `json:"config"`
+    }
+
+    if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+      t.Fatalf("decode storage payload: %v", err)
+    }
+
+    if payload.Config.Provider != "STORAGE_PROVIDER_KIND_GOOGLE_DRIVE" {
+      t.Fatalf("expected google drive provider, got %q", payload.Config.Provider)
+    }
+
+    if payload.Config.DriveFolderId != "drive-folder-123" {
+      t.Fatalf("expected persisted drive folder id, got %q", payload.Config.DriveFolderId)
+    }
+
+    if payload.Config.LastValidationError != "" {
+      t.Fatalf("expected no validation error, got %q", payload.Config.LastValidationError)
+    }
+
+    validatedAt, err := strconv.ParseInt(payload.Config.ValidatedAtUnix, 10, 64)
+    if err != nil {
+      t.Fatalf("parse validatedAtUnix: %v", err)
+    }
+
+    if validatedAt <= 0 {
+      t.Fatalf("expected validatedAtUnix to be populated, got %d", validatedAt)
+    }
+  })
+
+  t.Run("photos config persists validation message", func(t *testing.T) {
+    body := strings.NewReader(`{"config":{"provider":"STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS","driveFolderId":"","driveFolderLabel":"","photosEnabled":true,"photosAlbumId":"album-123","photosAlbumTitle":"Reception Highlights"}}`)
+    request := httptest.NewRequest(http.MethodPut, "/api/admin/config/storage-provider", body)
+    request.Header.Set("Content-Type", "application/json")
+    request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+    recorder := httptest.NewRecorder()
+
+    handler.ServeHTTP(recorder, request)
+
+    if recorder.Code != http.StatusOK {
+      t.Fatalf("expected 200, got %d", recorder.Code)
+    }
+
+    var payload struct {
+      Config struct {
+        Provider            string `json:"provider"`
+        PhotosAlbumId       string `json:"photosAlbumId"`
+        LastValidationError string `json:"lastValidationError"`
+        ValidatedAtUnix     string `json:"validatedAtUnix"`
+      } `json:"config"`
+    }
+
+    if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+      t.Fatalf("decode photos payload: %v", err)
+    }
+
+    if payload.Config.Provider != "STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS" {
+      t.Fatalf("expected google photos provider, got %q", payload.Config.Provider)
+    }
+
+    if payload.Config.PhotosAlbumId != "album-123" {
+      t.Fatalf("expected persisted photos album id, got %q", payload.Config.PhotosAlbumId)
+    }
+
+    if payload.Config.LastValidationError == "" {
+      t.Fatalf("expected validation error for google photos")
+    }
+
+    if payload.Config.ValidatedAtUnix != "" {
+      t.Fatalf("expected validatedAtUnix to be omitted for an unvalidated provider, got %q", payload.Config.ValidatedAtUnix)
+    }
+  })
+}
+
 func testEnv(databaseURL string) appconfig.Env {
   return appconfig.Env{
     AppEnv:              "test",

@@ -52,8 +52,38 @@ func (h *Handlers) GetWeddingThemeConfig(w http.ResponseWriter, r *http.Request)
   writeJSON(w, http.StatusOK, payload)
 }
 
+func (h *Handlers) UpdateWeddingThemeConfig(w http.ResponseWriter, r *http.Request) {
+  var request adminconfigv1.UpdateWeddingThemeConfigRequest
+  if err := decodeProtoJSON(r, &request); err != nil {
+    writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+    return
+  }
+
+  payload, err := h.service.UpdateWeddingThemeConfig(r.Context(), request.GetConfig())
+  if err != nil {
+    writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+    return
+  }
+  writeJSON(w, http.StatusOK, payload)
+}
+
 func (h *Handlers) GetUploadPolicyConfig(w http.ResponseWriter, r *http.Request) {
   payload, err := h.service.GetUploadPolicyConfig(r.Context())
+  if err != nil {
+    writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+    return
+  }
+  writeJSON(w, http.StatusOK, payload)
+}
+
+func (h *Handlers) UpdateUploadPolicyConfig(w http.ResponseWriter, r *http.Request) {
+  var request adminconfigv1.UpdateUploadPolicyConfigRequest
+  if err := decodeProtoJSON(r, &request); err != nil {
+    writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+    return
+  }
+
+  payload, err := h.service.UpdateUploadPolicyConfig(r.Context(), request.GetConfig())
   if err != nil {
     writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
     return
@@ -65,6 +95,21 @@ func (h *Handlers) GetStorageProviderConfig(w http.ResponseWriter, r *http.Reque
   payload, err := h.service.GetStorageProviderConfig(r.Context())
   if err != nil {
     writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+    return
+  }
+  writeJSON(w, http.StatusOK, payload)
+}
+
+func (h *Handlers) UpdateStorageProviderConfig(w http.ResponseWriter, r *http.Request) {
+  var request adminconfigv1.UpdateStorageProviderConfigRequest
+  if err := decodeProtoJSON(r, &request); err != nil {
+    writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+    return
+  }
+
+  payload, err := h.service.UpdateStorageProviderConfig(r.Context(), request.GetConfig())
+  if err != nil {
+    writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
     return
   }
   writeJSON(w, http.StatusOK, payload)
