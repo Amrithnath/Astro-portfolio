@@ -23,6 +23,11 @@ type Provider interface {
   UploadChunk(ctx context.Context, sessionRef string, mimeType string, contentRange string, chunk []byte) (ChunkResult, error)
 }
 
+type DriveProvider interface {
+  Provider
+  ValidateStorage(ctx context.Context, storage models.StorageProviderConfig) (validationMessage string, driveFolderLabel string, err error)
+}
+
 type ChunkResult struct {
   NextOffset         int64
   Complete           bool
@@ -109,6 +114,14 @@ func (s *Service) InitUpload(ctx context.Context, ip string, filename string, mi
 
   if strings.TrimSpace(bundle.Storage.DriveFolderID) == "" {
     return nil, &StatusError{Status: 503, Message: "Upload storage is not configured yet. Add a Google Drive folder before collecting files."}
+  }
+
+  if strings.TrimSpace(bundle.Storage.LastValidationError) != "" {
+    return nil, &StatusError{Status: 503, Message: bundle.Storage.LastValidationError}
+  }
+
+  if bundle.Storage.ValidatedAt == nil {
+    return nil, &StatusError{Status: 503, Message: "Upload storage has not been validated yet. Verify the Google Drive folder in admin before enabling guest uploads."}
   }
 
   ipHash := hashIP(ip)

@@ -25,7 +25,7 @@ func StartPostgres(t *testing.T) PostgresContainer {
   t.Helper()
 
   port := pickFreePort(t)
-  containerName := fmt.Sprintf("wedding-api-test-%d", time.Now().UnixNano())
+  containerName := fmt.Sprintf("wedding-api-test-%d-%d", time.Now().UnixNano(), port)
   password := "postgres"
   database := "wedding_test"
   dbURL := fmt.Sprintf("postgresql://postgres:%s@127.0.0.1:%d/%s?sslmode=disable", password, port, database)

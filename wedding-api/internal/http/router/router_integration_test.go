@@ -407,12 +407,13 @@ func TestAdminStorageProviderConfigCanBeUpdatedBySeededAdmin(t *testing.T) {
   pg := testutil.StartPostgres(t)
   db := testutil.OpenDatabase(t, pg.DatabaseURL)
   env := testEnv(pg.DatabaseURL)
+  provider := &fakeUploadProvider{}
 
   if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
     t.Fatalf("seed admins: %v", err)
   }
 
-  handler := New(env, db)
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
 
   t.Run("drive config persists validated state", func(t *testing.T) {
     body := strings.NewReader(`{"config":{"provider":"STORAGE_PROVIDER_KIND_GOOGLE_DRIVE","driveFolderId":"drive-folder-123","driveFolderLabel":"Wedding Uploads","photosEnabled":false,"photosAlbumId":"","photosAlbumTitle":""}}`)
@@ -523,7 +524,7 @@ func TestUploadEndpointsMatchWeddingClientContract(t *testing.T) {
     },
   }
 
-  handler := NewWithUploadService(env, db, uploadservice.New(env, db, provider))
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
 
   initBody := strings.NewReader(`{"filename":"toast.jpg","mimeType":"image/jpeg","fileSize":15}`)
   initRequest := httptest.NewRequest(http.MethodPost, "/api/upload/init", initBody)
@@ -630,7 +631,7 @@ func TestUploadChunkReturnsConflictWithNextOffset(t *testing.T) {
     chunkResults: []uploadservice.ChunkResult{{NextOffset: 12, Complete: false}},
   }
 
-  handler := NewWithUploadService(env, db, uploadservice.New(env, db, provider))
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
 
   initBody := strings.NewReader(`{"filename":"toast.jpg","mimeType":"image/jpeg","fileSize":15}`)
   initRequest := httptest.NewRequest(http.MethodPost, "/api/upload/init", initBody)
@@ -671,12 +672,142 @@ func TestUploadChunkReturnsConflictWithNextOffset(t *testing.T) {
   }
 }
 
+func TestStorageProviderValidationUsesDriveValidator(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  provider := &fakeUploadProvider{
+    validateMessage: `Drive folder access verified for "Wedding Uploads".`,
+    validateLabel:   "Wedding Uploads",
+  }
+
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
+
+  request := httptest.NewRequest(http.MethodPost, "/api/admin/config/storage-provider/validate", strings.NewReader(`{"config":{"provider":"STORAGE_PROVIDER_KIND_GOOGLE_DRIVE","driveFolderId":"drive-folder-123","driveFolderLabel":"","photosEnabled":false,"photosAlbumId":"","photosAlbumTitle":""}}`))
+  request.Header.Set("Content-Type", "application/json")
+  request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  recorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(recorder, request)
+
+  if recorder.Code != http.StatusOK {
+    t.Fatalf("expected 200, got %d", recorder.Code)
+  }
+
+  var payload struct {
+    Valid             bool   `json:"valid"`
+    ValidationMessage string `json:"validationMessage"`
+  }
+  if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+    t.Fatalf("decode validation payload: %v", err)
+  }
+
+  if !payload.Valid {
+    t.Fatalf("expected validation to succeed")
+  }
+
+  if payload.ValidationMessage != `Drive folder access verified for "Wedding Uploads".` {
+    t.Fatalf("expected validation message from drive validator, got %q", payload.ValidationMessage)
+  }
+}
+
+func TestStorageProviderUpdatePersistsValidationFailureFromDriveValidator(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  provider := &fakeUploadProvider{
+    validateErr: &uploadservice.StatusError{Status: 403, Message: "Google Drive folder access failed. Share the folder with the service account email and verify the folder ID."},
+  }
+
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
+
+  request := httptest.NewRequest(http.MethodPut, "/api/admin/config/storage-provider", strings.NewReader(`{"config":{"provider":"STORAGE_PROVIDER_KIND_GOOGLE_DRIVE","driveFolderId":"drive-folder-123","driveFolderLabel":"","photosEnabled":false,"photosAlbumId":"","photosAlbumTitle":""}}`))
+  request.Header.Set("Content-Type", "application/json")
+  request.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  recorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(recorder, request)
+
+  if recorder.Code != http.StatusOK {
+    t.Fatalf("expected 200, got %d", recorder.Code)
+  }
+
+  var payload struct {
+    Config struct {
+      LastValidationError string `json:"lastValidationError"`
+      ValidatedAtUnix     string `json:"validatedAtUnix"`
+    } `json:"config"`
+  }
+  if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+    t.Fatalf("decode storage update payload: %v", err)
+  }
+
+  if payload.Config.LastValidationError == "" {
+    t.Fatalf("expected validation failure to persist")
+  }
+
+  if payload.Config.ValidatedAtUnix != "" {
+    t.Fatalf("expected validatedAtUnix to be omitted after validation failure, got %q", payload.Config.ValidatedAtUnix)
+  }
+}
+
+func TestUploadInitRejectsUnvalidatedStorage(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+  seedConfiguredButUnvalidatedStorageConfig(t, db)
+
+  provider := &fakeUploadProvider{sessionRef: "drive-session-1"}
+  handler := NewWithUploadAndDriveValidator(env, db, uploadservice.New(env, db, provider), provider)
+
+  request := httptest.NewRequest(http.MethodPost, "/api/upload/init", strings.NewReader(`{"filename":"toast.jpg","mimeType":"image/jpeg","fileSize":15}`))
+  request.Header.Set("Content-Type", "application/json")
+  request.RemoteAddr = "127.0.0.1:12345"
+  recorder := httptest.NewRecorder()
+
+  handler.ServeHTTP(recorder, request)
+
+  if recorder.Code != http.StatusServiceUnavailable {
+    t.Fatalf("expected 503, got %d", recorder.Code)
+  }
+
+  var payload struct {
+    Error string `json:"error"`
+  }
+  if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+    t.Fatalf("decode upload init failure payload: %v", err)
+  }
+
+  if payload.Error != "Upload storage has not been validated yet. Verify the Google Drive folder in admin before enabling guest uploads." {
+    t.Fatalf("unexpected upload init error: %q", payload.Error)
+  }
+}
+
 type fakeUploadProvider struct {
   sessionRef    string
   chunkResults  []uploadservice.ChunkResult
   uploadCount   int
   beginErr      error
   uploadChunkErr error
+  validateMessage string
+  validateLabel   string
+  validateErr     error
 }
 
 func (f *fakeUploadProvider) BeginUpload(_ context.Context, _ string, _ string, _ models.StorageProviderConfig) (string, error) {
@@ -697,6 +828,19 @@ func (f *fakeUploadProvider) UploadChunk(_ context.Context, _ string, _ string, 
   result := f.chunkResults[f.uploadCount]
   f.uploadCount += 1
   return result, nil
+}
+
+func (f *fakeUploadProvider) ValidateStorage(_ context.Context, _ models.StorageProviderConfig) (string, string, error) {
+  if f.validateErr != nil {
+    return "", "", f.validateErr
+  }
+
+  message := f.validateMessage
+  if message == "" {
+    message = "Drive folder access verified."
+  }
+
+  return message, f.validateLabel, nil
 }
 
 func newChunkRequest(t *testing.T, uploadID string, offset int64, contentRange string, chunk []byte, filename string) *http.Request {
@@ -733,6 +877,7 @@ func newChunkRequest(t *testing.T, uploadID string, offset int64, contentRange s
 func seedUploadReadyStorageConfig(t *testing.T, db *postgres.DB) {
   t.Helper()
 
+  validatedAt := time.Now().Unix()
   err := db.UpdateDocument(t.Context(), "wedding.storage.google_drive", models.StorageProviderConfig{
     Provider:         "google_drive",
     DriveFolderID:    "drive-folder-123",
@@ -740,9 +885,29 @@ func seedUploadReadyStorageConfig(t *testing.T, db *postgres.DB) {
     PhotosEnabled:    false,
     PhotosAlbumID:    "",
     PhotosAlbumTitle: "",
+    ValidatedAt:      &validatedAt,
+    LastValidationError: "",
   })
   if err != nil {
     t.Fatalf("seed upload-ready storage config: %v", err)
+  }
+}
+
+func seedConfiguredButUnvalidatedStorageConfig(t *testing.T, db *postgres.DB) {
+  t.Helper()
+
+  err := db.UpdateDocument(t.Context(), "wedding.storage.google_drive", models.StorageProviderConfig{
+    Provider:            "google_drive",
+    DriveFolderID:       "drive-folder-123",
+    DriveFolderLabel:    "Wedding Uploads",
+    PhotosEnabled:       false,
+    PhotosAlbumID:       "",
+    PhotosAlbumTitle:    "",
+    ValidatedAt:         nil,
+    LastValidationError: "",
+  })
+  if err != nil {
+    t.Fatalf("seed configured but unvalidated storage config: %v", err)
   }
 }
 

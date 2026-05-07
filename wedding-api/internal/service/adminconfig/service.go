@@ -3,6 +3,7 @@ package adminconfig
 import (
   "context"
   "fmt"
+  "strings"
   "time"
 
   adminconfigv1 "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/gen/admin/config/v1"
@@ -11,7 +12,20 @@ import (
 )
 
 type Service struct {
-  db *postgres.DB
+  db             *postgres.DB
+  driveValidator driveValidator
+}
+
+type DriveValidator = driveValidator
+
+type driveValidator interface {
+  ValidateStorage(ctx context.Context, storage models.StorageProviderConfig) (validationMessage string, driveFolderLabel string, err error)
+}
+
+type storageValidationResult struct {
+  Valid           bool
+  Message         string
+  DriveFolderLabel string
 }
 
 const (
@@ -21,8 +35,8 @@ const (
   storageProviderConfigKey = "wedding.storage.google_drive"
 )
 
-func New(db *postgres.DB) *Service {
-  return &Service{db: db}
+func New(db *postgres.DB, driveValidator driveValidator) *Service {
+  return &Service{db: db, driveValidator: driveValidator}
 }
 
 func (s *Service) GetWeddingPublicConfig(ctx context.Context) (*adminconfigv1.GetWeddingPublicConfigResponse, error) {
@@ -126,18 +140,22 @@ func (s *Service) UpdateStorageProviderConfig(ctx context.Context, config *admin
     return nil, err
   }
 
-  validation, err := s.ValidateStorageProvider(ctx, config)
+  validation, err := s.validateStorageConfig(ctx, model)
   if err != nil {
     return nil, err
   }
 
-  if validation.GetValid() {
+  if validation.DriveFolderLabel != "" && model.Provider == "google_drive" {
+    model.DriveFolderLabel = validation.DriveFolderLabel
+  }
+
+  if validation.Valid {
     validatedAt := time.Now().Unix()
     model.ValidatedAt = &validatedAt
     model.LastValidationError = ""
   } else {
     model.ValidatedAt = nil
-    model.LastValidationError = validation.GetValidationMessage()
+    model.LastValidationError = validation.Message
   }
 
   if err := s.db.UpdateDocument(ctx, storageProviderConfigKey, model); err != nil {
@@ -148,16 +166,44 @@ func (s *Service) UpdateStorageProviderConfig(ctx context.Context, config *admin
 }
 
 func (s *Service) ValidateStorageProvider(_ context.Context, config *adminconfigv1.StorageProviderConfig) (*adminconfigv1.ValidateStorageProviderResponse, error) {
-  switch config.GetProvider() {
-  case adminconfigv1.StorageProviderKind_STORAGE_PROVIDER_KIND_GOOGLE_DRIVE:
-    if config.GetDriveFolderId() == "" {
-      return &adminconfigv1.ValidateStorageProviderResponse{Valid: false, ValidationMessage: "Drive folder ID is required."}, nil
+  model, err := toModelStorageConfig(config)
+  if err != nil {
+    return nil, err
+  }
+
+  validation, err := s.validateStorageConfig(context.Background(), model)
+  if err != nil {
+    return nil, err
+  }
+
+  return &adminconfigv1.ValidateStorageProviderResponse{Valid: validation.Valid, ValidationMessage: validation.Message}, nil
+}
+
+func (s *Service) validateStorageConfig(ctx context.Context, model models.StorageProviderConfig) (storageValidationResult, error) {
+  switch model.Provider {
+  case "google_drive":
+    if strings.TrimSpace(model.DriveFolderID) == "" {
+      return storageValidationResult{Valid: false, Message: "Drive folder ID is required."}, nil
     }
-    return &adminconfigv1.ValidateStorageProviderResponse{Valid: true, ValidationMessage: "Drive provider config looks structurally valid. Live Drive validation lands next."}, nil
-  case adminconfigv1.StorageProviderKind_STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS:
-    return &adminconfigv1.ValidateStorageProviderResponse{Valid: false, ValidationMessage: "Google Photos requires an admin OAuth connection and album provisioning flow, which is not implemented yet."}, nil
+
+    if s.driveValidator == nil {
+      return storageValidationResult{Valid: false, Message: "Google Drive validation is unavailable because no upload provider is configured."}, nil
+    }
+
+    message, driveFolderLabel, err := s.driveValidator.ValidateStorage(ctx, model)
+    if err != nil {
+      return storageValidationResult{Valid: false, Message: err.Error(), DriveFolderLabel: driveFolderLabel}, nil
+    }
+
+    if strings.TrimSpace(message) == "" {
+      message = "Drive folder access verified."
+    }
+
+    return storageValidationResult{Valid: true, Message: message, DriveFolderLabel: driveFolderLabel}, nil
+  case "google_photos":
+    return storageValidationResult{Valid: false, Message: "Google Photos requires an admin OAuth connection and album provisioning flow, which is not implemented yet."}, nil
   default:
-    return nil, fmt.Errorf("unsupported storage provider")
+    return storageValidationResult{}, fmt.Errorf("unsupported storage provider")
   }
 }
 

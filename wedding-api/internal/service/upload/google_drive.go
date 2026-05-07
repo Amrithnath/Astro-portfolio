@@ -9,6 +9,7 @@ import (
   "net/http"
   "os"
   "strings"
+  "net/url"
 
   appconfig "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/config"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/models"
@@ -21,6 +22,7 @@ const driveScope = "https://www.googleapis.com/auth/drive"
 type GoogleDriveProvider struct {
   env        appconfig.Env
   httpClient *http.Client
+  apiBaseURL string
   tokenSource oauth2.TokenSource
 }
 
@@ -28,7 +30,73 @@ func NewGoogleDriveProvider(env appconfig.Env) *GoogleDriveProvider {
   return &GoogleDriveProvider{
     env:        env,
     httpClient: &http.Client{},
+    apiBaseURL: "https://www.googleapis.com",
   }
+}
+
+func (p *GoogleDriveProvider) ValidateStorage(ctx context.Context, storage models.StorageProviderConfig) (string, string, error) {
+  if strings.TrimSpace(p.env.GoogleDriveServicePath) == "" {
+    return "", "", &StatusError{Status: 503, Message: "Google Drive validation is unavailable because the service account path is not configured."}
+  }
+
+  if strings.TrimSpace(storage.DriveFolderID) == "" {
+    return "", "", &StatusError{Status: 400, Message: "Drive folder ID is required."}
+  }
+
+  token, err := p.accessToken(ctx)
+  if err != nil {
+    return "", "", err
+  }
+
+  requestURL := fmt.Sprintf("%s/drive/v3/files/%s?fields=id,name,mimeType&supportsAllDrives=true", strings.TrimRight(p.apiBaseURL, "/"), url.PathEscape(storage.DriveFolderID))
+  request, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+  if err != nil {
+    return "", "", fmt.Errorf("create drive validation request: %w", err)
+  }
+
+  request.Header.Set("Authorization", "Bearer "+token)
+
+  response, err := p.httpClient.Do(request)
+  if err != nil {
+    return "", "", &StatusError{Status: 503, Message: "Could not reach Google Drive while validating the folder access."}
+  }
+  defer response.Body.Close()
+
+  switch response.StatusCode {
+  case http.StatusOK:
+    payload := struct {
+      Name     string `json:"name"`
+      MimeType string `json:"mimeType"`
+    }{}
+
+    if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
+      return "", "", &StatusError{Status: 502, Message: "Google Drive returned an unreadable folder response."}
+    }
+
+    if payload.MimeType != "application/vnd.google-apps.folder" {
+      return "", "", &StatusError{Status: 400, Message: "The provided Google Drive ID does not point to a folder."}
+    }
+
+    label := strings.TrimSpace(payload.Name)
+    if label == "" {
+      return "Drive folder access verified.", "", nil
+    }
+
+    return fmt.Sprintf("Drive folder access verified for %q.", label), label, nil
+  case http.StatusForbidden:
+    return "", "", &StatusError{Status: 403, Message: "Google Drive folder access failed. Share the folder with the service account email and verify the folder ID."}
+  case http.StatusNotFound:
+    return "", "", &StatusError{Status: 404, Message: "Google Drive folder was not found. Verify the folder ID and shared drive visibility."}
+  case http.StatusUnauthorized:
+    return "", "", &StatusError{Status: 503, Message: "Google Drive authentication failed while validating the folder."}
+  }
+
+  if response.StatusCode >= http.StatusInternalServerError {
+    return "", "", &StatusError{Status: 503, Message: "Google Drive is temporarily unavailable while validating the folder."}
+  }
+
+  payload, _ := io.ReadAll(response.Body)
+  return "", "", &StatusError{Status: 502, Message: fmt.Sprintf("Google Drive folder validation failed: %s", strings.TrimSpace(string(payload)))}
 }
 
 func (p *GoogleDriveProvider) BeginUpload(ctx context.Context, storedName string, mimeType string, storage models.StorageProviderConfig) (string, error) {

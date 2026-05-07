@@ -24,14 +24,18 @@ import (
 func New(env appconfig.Env, db *postgres.DB) http.Handler {
   uploadProvider := uploadservice.NewGoogleDriveProvider(env)
   uploadConfig := uploadservice.New(env, db, uploadProvider)
-  return newRouter(env, db, uploadConfig)
+  return newRouter(env, db, uploadConfig, uploadProvider)
 }
 
 func NewWithUploadService(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service) http.Handler {
-  return newRouter(env, db, uploadConfig)
+  return newRouter(env, db, uploadConfig, nil)
 }
 
-func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service) http.Handler {
+func NewWithUploadAndDriveValidator(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator) http.Handler {
+  return newRouter(env, db, uploadConfig, driveValidator)
+}
+
+func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator) http.Handler {
   r := chi.NewRouter()
   r.Use(chimiddleware.RequestID)
   r.Use(chimiddleware.RealIP)
@@ -44,7 +48,7 @@ func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.S
   publicHandler := publichandlers.New(publicConfig)
   uploadHandler := uploadhandlers.New(uploadConfig)
   adminAuthHandler := adminauthhandlers.New(adminAuth)
-  adminConfigHandler := adminconfighandlers.New(adminconfigservice.New(db))
+  adminConfigHandler := adminconfighandlers.New(adminconfigservice.New(db, driveValidator))
 
   r.Get("/api/health", func(w http.ResponseWriter, _ *http.Request) {
     w.Header().Set("Content-Type", "application/json")
