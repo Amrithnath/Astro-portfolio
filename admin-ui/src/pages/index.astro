@@ -200,15 +200,26 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                     <div class="asset-library-header">
                       <div>
                         <h3>Theme Asset Library</h3>
-                        <p>Upload images to R2, then assign them to the hero or texture slots without copying raw IDs by hand.</p>
+                        <p>Upload hero or texture imagery to R2, then assign those assets without copying raw IDs by hand.</p>
                       </div>
-                      <label class="asset-upload-button" for="theme-asset-upload-input">
-                        <span>Upload theme asset</span>
-                        <input id="theme-asset-upload-input" type="file" accept="image/*" hidden />
-                      </label>
+                      <div class="button-row-inline">
+                        <label class="asset-upload-button" for="theme-hero-asset-upload-input">
+                          <span>Upload hero asset</span>
+                          <input id="theme-hero-asset-upload-input" type="file" accept="image/*" hidden />
+                        </label>
+                        <label class="asset-upload-button" for="theme-texture-asset-upload-input">
+                          <span>Upload texture asset</span>
+                          <input id="theme-texture-asset-upload-input" type="file" accept="image/*" hidden />
+                        </label>
+                      </div>
                     </div>
 
                     <p id="asset-upload-status" class="inline-message" hidden></p>
+                    <div class="asset-filter-tabs" role="tablist" aria-label="Theme asset filters">
+                      <button class="asset-filter-tab is-active" type="button" data-asset-filter="all">All assets</button>
+                      <button class="asset-filter-tab" type="button" data-asset-filter="theme-hero">Hero assets</button>
+                      <button class="asset-filter-tab" type="button" data-asset-filter="theme-texture">Texture assets</button>
+                    </div>
                     <div id="asset-library-grid" class="asset-library-grid"></div>
                   </section>
                 </div>
@@ -357,6 +368,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         uploadPolicy: null,
         storage: null,
         assets: [],
+        assetFilter: 'all',
         isSavingWeddingPublic: false,
         isSavingTheme: false,
         isSavingUploadPolicy: false,
@@ -386,7 +398,9 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         storageReadinessSummary: document.getElementById('storage-readiness-summary'),
         assetUploadStatus: document.getElementById('asset-upload-status'),
         assetLibraryGrid: document.getElementById('asset-library-grid'),
-        assetUploadInput: document.getElementById('theme-asset-upload-input'),
+        heroAssetUploadInput: document.getElementById('theme-hero-asset-upload-input'),
+        textureAssetUploadInput: document.getElementById('theme-texture-asset-upload-input'),
+        assetFilterTabs: Array.from(document.querySelectorAll('[data-asset-filter]')),
         driveFields: document.getElementById('drive-fields'),
         photosFields: document.getElementById('photos-fields'),
         previewPanel: document.getElementById('preview-panel'),
@@ -933,16 +947,53 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         elements.assetUploadStatus.dataset.tone = tone;
       }
 
+      function assetFilterLabel(filter) {
+        if (filter === 'theme-hero') {
+          return 'hero assets';
+        }
+        if (filter === 'theme-texture') {
+          return 'texture assets';
+        }
+        return 'theme assets';
+      }
+
+      function kindLabel(kind) {
+        if (kind === 'theme-hero') {
+          return 'Hero asset';
+        }
+        if (kind === 'theme-texture') {
+          return 'Texture asset';
+        }
+        if (kind === 'theme-library') {
+          return 'Legacy library asset';
+        }
+        return kind;
+      }
+
+      function syncAssetFilterTabs() {
+        elements.assetFilterTabs.forEach((button) => {
+          const isActive = button.dataset.assetFilter === state.assetFilter;
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-pressed', String(isActive));
+        });
+      }
+
       function renderAssets() {
         if (!elements.assetLibraryGrid) {
           return;
         }
 
-        if (!Array.isArray(state.assets) || state.assets.length === 0) {
+        syncAssetFilterTabs();
+
+        const visibleAssets = state.assetFilter === 'all'
+          ? state.assets
+          : state.assets.filter((asset) => asset.kind === state.assetFilter || asset.kind === 'theme-library');
+
+        if (!Array.isArray(visibleAssets) || visibleAssets.length === 0) {
           elements.assetLibraryGrid.replaceChildren();
           const emptyState = document.createElement('p');
           emptyState.className = 'asset-library-empty';
-          emptyState.textContent = 'No theme assets uploaded yet.';
+          emptyState.textContent = `No ${assetFilterLabel(state.assetFilter)} uploaded yet.`;
           elements.assetLibraryGrid.append(emptyState);
           return;
         }
@@ -953,7 +1004,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         const savedTextureAssetId = state.theme?.textureAssetId || '';
 
         elements.assetLibraryGrid.replaceChildren(
-          ...state.assets.map((asset) => {
+          ...visibleAssets.map((asset) => {
             const card = document.createElement('article');
             card.className = 'asset-card';
 
@@ -980,7 +1031,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             if (asset.id === textureAssetId) {
               slots.push('Texture');
             }
-            const badges = [asset.kind];
+            const badges = [kindLabel(asset.kind)];
             if (slots.length > 0) {
               badges.push(`${slots.join(' + ')} draft`);
             }
@@ -1245,16 +1296,18 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         }
       }
 
-      async function uploadThemeAsset(file) {
+      async function uploadThemeAsset(file, kind) {
         if (!file || state.isUploadingAsset) {
           return;
         }
 
         state.isUploadingAsset = true;
-        elements.assetUploadInput.disabled = true;
+        elements.heroAssetUploadInput.disabled = true;
+        elements.textureAssetUploadInput.disabled = true;
         setBanner(elements.errorBanner, '');
         setBanner(elements.successBanner, '');
-        setAssetUploadStatus(`Preparing upload for ${file.name}...`, 'positive');
+        const normalizedKind = kind || 'theme-library';
+        setAssetUploadStatus(`Preparing ${kindLabel(normalizedKind).toLowerCase()} upload for ${file.name}...`, 'positive');
 
         try {
           const createPayload = await apiFetch('/api/admin/assets/uploads', {
@@ -1265,7 +1318,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             body: JSON.stringify({
               fileName: file.name,
               contentType: file.type || 'application/octet-stream',
-              kind: 'theme-library',
+              kind: normalizedKind,
             }),
           });
 
@@ -1287,17 +1340,20 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
           const assetsPayload = await apiFetch('/api/admin/assets');
           state.assets = assetsPayload.assets || [];
+          state.assetFilter = normalizedKind;
           renderAssets();
           elements.topStatus.textContent = 'Theme asset uploaded';
-          setAssetUploadStatus(`Uploaded ${file.name} to the asset library.`, 'positive');
+          setAssetUploadStatus(`Uploaded ${file.name} to the ${assetFilterLabel(normalizedKind)} library.`, 'positive');
           setBanner(elements.successBanner, 'Theme asset uploaded to the API and asset library refreshed.');
         } catch (error) {
           setAssetUploadStatus(error instanceof Error ? error.message : 'Asset upload failed.', 'warning');
           setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Asset upload failed.');
         } finally {
           state.isUploadingAsset = false;
-          elements.assetUploadInput.disabled = false;
-          elements.assetUploadInput.value = '';
+          elements.heroAssetUploadInput.disabled = false;
+          elements.textureAssetUploadInput.disabled = false;
+          elements.heroAssetUploadInput.value = '';
+          elements.textureAssetUploadInput.value = '';
         }
       }
 
@@ -1343,11 +1399,23 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
       });
       uploadPolicyForm.addEventListener('input', syncPreview);
       storageForm.addEventListener('input', syncStorageFormVisibility);
-      elements.assetUploadInput.addEventListener('change', (event) => {
+      elements.heroAssetUploadInput.addEventListener('change', (event) => {
         const [file] = event.currentTarget.files || [];
         if (file) {
-          uploadThemeAsset(file);
+          uploadThemeAsset(file, 'theme-hero');
         }
+      });
+      elements.textureAssetUploadInput.addEventListener('change', (event) => {
+        const [file] = event.currentTarget.files || [];
+        if (file) {
+          uploadThemeAsset(file, 'theme-texture');
+        }
+      });
+      elements.assetFilterTabs.forEach((button) => {
+        button.addEventListener('click', () => {
+          state.assetFilter = button.dataset.assetFilter || 'all';
+          renderAssets();
+        });
       });
       elements.refreshButton.addEventListener('click', loadDashboard);
       elements.saveWeddingCopyButton.addEventListener('click', saveWeddingCopy);
@@ -1696,6 +1764,27 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
     display: grid;
     gap: 14px;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .asset-filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .asset-filter-tab {
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(15, 23, 42, 0.72);
+    color: #cbd5e1;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+
+  .asset-filter-tab.is-active {
+    border-color: rgba(125, 211, 252, 0.36);
+    background: rgba(125, 211, 252, 0.12);
+    color: #f8fafc;
   }
 
   .asset-library-empty {
