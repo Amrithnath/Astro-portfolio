@@ -195,6 +195,22 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                       <input id="themeTextureAssetId" name="themeTextureAssetId" type="text" placeholder="texture-asset-id" />
                     </label>
                   </form>
+
+                  <section class="asset-library">
+                    <div class="asset-library-header">
+                      <div>
+                        <h3>Theme Asset Library</h3>
+                        <p>Upload images to R2, then assign them to the hero or texture slots without copying raw IDs by hand.</p>
+                      </div>
+                      <label class="asset-upload-button" for="theme-asset-upload-input">
+                        <span>Upload theme asset</span>
+                        <input id="theme-asset-upload-input" type="file" accept="image/*" hidden />
+                      </label>
+                    </div>
+
+                    <p id="asset-upload-status" class="inline-message" hidden></p>
+                    <div id="asset-library-grid" class="asset-library-grid"></div>
+                  </section>
                 </div>
               </article>
 
@@ -336,11 +352,14 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         theme: null,
         uploadPolicy: null,
         storage: null,
+        assets: [],
         isSavingWeddingPublic: false,
         isSavingTheme: false,
         isSavingUploadPolicy: false,
         isSavingStorage: false,
         isValidatingStorage: false,
+        isUploadingAsset: false,
+        deletingAssetId: '',
       };
 
       const elements = {
@@ -361,6 +380,9 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         storageDetail: document.getElementById('storage-detail'),
         storageValidationResult: document.getElementById('storage-validation-result'),
         storageReadinessSummary: document.getElementById('storage-readiness-summary'),
+        assetUploadStatus: document.getElementById('asset-upload-status'),
+        assetLibraryGrid: document.getElementById('asset-library-grid'),
+        assetUploadInput: document.getElementById('theme-asset-upload-input'),
         driveFields: document.getElementById('drive-fields'),
         photosFields: document.getElementById('photos-fields'),
         previewPanel: document.getElementById('preview-panel'),
@@ -870,12 +892,114 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         elements.storageValidationResult.dataset.tone = isPositive ? 'positive' : 'warning';
       }
 
+      function setAssetUploadStatus(message, tone = '') {
+        if (!message) {
+          elements.assetUploadStatus.hidden = true;
+          elements.assetUploadStatus.textContent = '';
+          elements.assetUploadStatus.dataset.tone = '';
+          return;
+        }
+
+        elements.assetUploadStatus.hidden = false;
+        elements.assetUploadStatus.textContent = message;
+        elements.assetUploadStatus.dataset.tone = tone;
+      }
+
+      function renderAssets() {
+        if (!elements.assetLibraryGrid) {
+          return;
+        }
+
+        if (!Array.isArray(state.assets) || state.assets.length === 0) {
+          elements.assetLibraryGrid.replaceChildren();
+          const emptyState = document.createElement('p');
+          emptyState.className = 'asset-library-empty';
+          emptyState.textContent = 'No theme assets uploaded yet.';
+          elements.assetLibraryGrid.append(emptyState);
+          return;
+        }
+
+        const heroAssetId = themeFields.heroAssetId.value.trim();
+        const textureAssetId = themeFields.textureAssetId.value.trim();
+
+        elements.assetLibraryGrid.replaceChildren(
+          ...state.assets.map((asset) => {
+            const card = document.createElement('article');
+            card.className = 'asset-card';
+
+            const preview = document.createElement('img');
+            preview.className = 'asset-preview';
+            preview.src = asset.publicUrl;
+            preview.alt = asset.title || asset.id;
+            preview.loading = 'lazy';
+            card.append(preview);
+
+            const body = document.createElement('div');
+            body.className = 'asset-card-body';
+
+            const title = document.createElement('strong');
+            title.textContent = asset.title || 'Untitled asset';
+            body.append(title);
+
+            const meta = document.createElement('p');
+            meta.className = 'asset-meta';
+            const slots = [];
+            if (asset.id === heroAssetId) {
+              slots.push('Hero');
+            }
+            if (asset.id === textureAssetId) {
+              slots.push('Texture');
+            }
+            meta.textContent = slots.length > 0 ? `${asset.kind} · ${slots.join(' + ')} slot` : asset.kind;
+            body.append(meta);
+
+            const actions = document.createElement('div');
+            actions.className = 'asset-actions';
+
+            const heroButton = document.createElement('button');
+            heroButton.type = 'button';
+            heroButton.className = asset.id === heroAssetId ? 'secondary-button' : 'ghost-button';
+            heroButton.textContent = asset.id === heroAssetId ? 'Assigned to hero' : 'Use as hero';
+            heroButton.disabled = asset.id === heroAssetId;
+            heroButton.addEventListener('click', () => {
+              themeFields.heroAssetId.value = asset.id;
+              renderAssets();
+            });
+            actions.append(heroButton);
+
+            const textureButton = document.createElement('button');
+            textureButton.type = 'button';
+            textureButton.className = asset.id === textureAssetId ? 'secondary-button' : 'ghost-button';
+            textureButton.textContent = asset.id === textureAssetId ? 'Assigned to texture' : 'Use as texture';
+            textureButton.disabled = asset.id === textureAssetId;
+            textureButton.addEventListener('click', () => {
+              themeFields.textureAssetId.value = asset.id;
+              renderAssets();
+            });
+            actions.append(textureButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'ghost-button ghost-button-danger';
+            deleteButton.textContent = state.deletingAssetId === asset.id ? 'Deleting...' : 'Delete';
+            deleteButton.disabled = state.deletingAssetId === asset.id;
+            deleteButton.addEventListener('click', () => deleteAsset(asset));
+            actions.append(deleteButton);
+
+            body.append(actions);
+            card.append(body);
+            return card;
+          }),
+        );
+      }
+
       function renderAll() {
         renderSession();
         renderWeddingPublic();
         renderTheme();
         renderUploadPolicy();
         renderStorage();
+        renderAssets();
       }
 
       async function loadDashboard() {
@@ -884,12 +1008,13 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         elements.topStatus.textContent = 'Loading live config';
 
         try {
-          const [sessionPayload, weddingPayload, themePayload, uploadPolicyPayload, storagePayload] = await Promise.all([
+          const [sessionPayload, weddingPayload, themePayload, uploadPolicyPayload, storagePayload, assetsPayload] = await Promise.all([
             apiFetch('/api/admin/session'),
             apiFetch('/api/admin/config/wedding-public'),
             apiFetch('/api/admin/config/wedding-theme'),
             apiFetch('/api/admin/config/upload-policy'),
             apiFetch('/api/admin/config/storage-provider'),
+            apiFetch('/api/admin/assets'),
           ]);
 
           state.session = sessionPayload.session;
@@ -897,6 +1022,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
           state.theme = themePayload.config;
           state.uploadPolicy = uploadPolicyPayload.config;
           state.storage = storagePayload.config;
+          state.assets = assetsPayload.assets || [];
           renderAll();
           elements.topStatus.textContent = 'Live config connected';
         } catch (error) {
@@ -905,6 +1031,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
           state.theme = null;
           state.uploadPolicy = null;
           state.storage = null;
+          state.assets = [];
           renderAll();
           elements.topStatus.textContent = 'Live config unavailable';
           setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Dashboard load failed.');
@@ -966,6 +1093,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
           state.theme = payload.config;
           renderTheme();
+          renderAssets();
           elements.topStatus.textContent = 'Wedding theme saved';
           setBanner(elements.successBanner, 'Wedding theme config saved to the API.');
         } catch (error) {
@@ -1075,10 +1203,110 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         }
       }
 
+      async function uploadThemeAsset(file) {
+        if (!file || state.isUploadingAsset) {
+          return;
+        }
+
+        state.isUploadingAsset = true;
+        elements.assetUploadInput.disabled = true;
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+        setAssetUploadStatus(`Preparing upload for ${file.name}...`, 'positive');
+
+        try {
+          const createPayload = await apiFetch('/api/admin/assets/uploads', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              contentType: file.type || 'application/octet-stream',
+              kind: 'theme-library',
+            }),
+          });
+
+          const uploadResponse = await fetch(createPayload.uploadUrl, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              ...getHeaders(),
+              'Content-Type': file.type || 'application/octet-stream',
+            },
+            body: file,
+          });
+
+          if (!uploadResponse.ok) {
+            const isJSON = uploadResponse.headers.get('content-type')?.includes('application/json');
+            const payload = isJSON ? await uploadResponse.json() : null;
+            throw new Error(payload?.error || `Asset upload failed with status ${uploadResponse.status}`);
+          }
+
+          const assetsPayload = await apiFetch('/api/admin/assets');
+          state.assets = assetsPayload.assets || [];
+          renderAssets();
+          elements.topStatus.textContent = 'Theme asset uploaded';
+          setAssetUploadStatus(`Uploaded ${file.name} to the asset library.`, 'positive');
+          setBanner(elements.successBanner, 'Theme asset uploaded to the API and asset library refreshed.');
+        } catch (error) {
+          setAssetUploadStatus(error instanceof Error ? error.message : 'Asset upload failed.', 'warning');
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Asset upload failed.');
+        } finally {
+          state.isUploadingAsset = false;
+          elements.assetUploadInput.disabled = false;
+          elements.assetUploadInput.value = '';
+        }
+      }
+
+      async function deleteAsset(asset) {
+        if (!asset?.id || state.deletingAssetId) {
+          return;
+        }
+
+        state.deletingAssetId = asset.id;
+        renderAssets();
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+
+        try {
+          await apiFetch(`/api/admin/assets/${asset.id}`, {
+            method: 'DELETE',
+          });
+
+          if (themeFields.heroAssetId.value.trim() === asset.id) {
+            themeFields.heroAssetId.value = '';
+          }
+          if (themeFields.textureAssetId.value.trim() === asset.id) {
+            themeFields.textureAssetId.value = '';
+          }
+
+          state.assets = state.assets.filter((entry) => entry.id !== asset.id);
+          renderAssets();
+          elements.topStatus.textContent = 'Theme asset deleted';
+          setAssetUploadStatus(`Deleted ${asset.title || asset.id} from the asset library.`, 'positive');
+        } catch (error) {
+          setAssetUploadStatus(error instanceof Error ? error.message : 'Asset delete failed.', 'warning');
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Asset delete failed.');
+        } finally {
+          state.deletingAssetId = '';
+          renderAssets();
+        }
+      }
+
       weddingCopyForm.addEventListener('input', syncPreview);
-      themeForm.addEventListener('input', syncThemePreview);
+      themeForm.addEventListener('input', () => {
+        syncThemePreview();
+        renderAssets();
+      });
       uploadPolicyForm.addEventListener('input', syncPreview);
       storageForm.addEventListener('input', syncStorageFormVisibility);
+      elements.assetUploadInput.addEventListener('change', (event) => {
+        const [file] = event.currentTarget.files || [];
+        if (file) {
+          uploadThemeAsset(file);
+        }
+      });
       elements.refreshButton.addEventListener('click', loadDashboard);
       elements.saveWeddingCopyButton.addEventListener('click', saveWeddingCopy);
       elements.saveThemeButton.addEventListener('click', saveTheme);
@@ -1386,6 +1614,105 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
     margin: 0;
     color: #cbd5e1;
     font-size: 0.95rem;
+  }
+
+  .asset-library {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+  }
+
+  .asset-library-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .asset-library-header h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+  }
+
+  .asset-upload-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(125, 211, 252, 0.14);
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    cursor: pointer;
+    color: #f8fafc;
+    white-space: nowrap;
+  }
+
+  .asset-library-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .asset-library-empty {
+    color: #94a3b8;
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px dashed rgba(148, 163, 184, 0.24);
+    text-align: center;
+  }
+
+  .asset-card {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.62);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+  }
+
+  .asset-preview {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.82);
+  }
+
+  .asset-card-body {
+    display: grid;
+    gap: 8px;
+  }
+
+  .asset-card-body strong {
+    font-size: 0.98rem;
+  }
+
+  .asset-meta {
+    color: #94a3b8;
+    font-size: 0.88rem;
+  }
+
+  .asset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ghost-button {
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.72);
+    color: #e2e8f0;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+
+  .ghost-button-danger {
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.28);
   }
 
   .primary-button,
