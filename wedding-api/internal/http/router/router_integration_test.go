@@ -4,6 +4,7 @@ import (
   "bytes"
   "context"
   "encoding/json"
+  "io"
   "mime/multipart"
   "net/http"
   "net/http/httptest"
@@ -16,6 +17,7 @@ import (
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/models"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/repo/postgres"
   uploadservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/upload"
+  adminassetsservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminassets"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/testutil"
 )
 
@@ -799,6 +801,119 @@ func TestUploadInitRejectsUnvalidatedStorage(t *testing.T) {
   }
 }
 
+func TestAdminAssetsLifecycle(t *testing.T) {
+  t.Parallel()
+
+  pg := testutil.StartPostgres(t)
+  db := testutil.OpenDatabase(t, pg.DatabaseURL)
+  env := testEnv(pg.DatabaseURL)
+  env.R2AccountID = "account-id"
+  env.R2BucketName = "bucket-name"
+  env.R2AccessKeyID = "access-key"
+  env.R2SecretAccessKey = "secret-key"
+  env.R2PublicBaseURL = "https://assets.example.com"
+
+  if err := db.SeedAdmins(t.Context(), []string{"arjun.amrith@gmail.com"}); err != nil {
+    t.Fatalf("seed admins: %v", err)
+  }
+
+  provider := &fakeUploadProvider{}
+  store := &fakeObjectStore{}
+  assetService := adminassetsservice.New(env, db, store)
+  handler := NewWithServices(env, db, uploadservice.New(env, db, provider), provider, assetService)
+
+  createRequest := httptest.NewRequest(http.MethodPost, "/api/admin/assets/uploads", strings.NewReader(`{"fileName":"hero-shot.png","contentType":"image/png","kind":"theme-hero"}`))
+  createRequest.Header.Set("Content-Type", "application/json")
+  createRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  createRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(createRecorder, createRequest)
+
+  if createRecorder.Code != http.StatusCreated {
+    t.Fatalf("expected 201, got %d", createRecorder.Code)
+  }
+
+  var createPayload struct {
+    AssetId   string `json:"assetId"`
+    UploadUrl string `json:"uploadUrl"`
+    PublicUrl string `json:"publicUrl"`
+  }
+  if err := json.Unmarshal(createRecorder.Body.Bytes(), &createPayload); err != nil {
+    t.Fatalf("decode create asset payload: %v", err)
+  }
+
+  if createPayload.AssetId == "" {
+    t.Fatalf("expected asset id")
+  }
+
+  if !strings.Contains(createPayload.UploadUrl, "/api/admin/assets/"+createPayload.AssetId+"/content") {
+    t.Fatalf("unexpected upload URL %q", createPayload.UploadUrl)
+  }
+
+  if !strings.HasPrefix(createPayload.PublicUrl, "https://assets.example.com/theme-hero/") {
+    t.Fatalf("unexpected public URL %q", createPayload.PublicUrl)
+  }
+
+  uploadRequest := httptest.NewRequest(http.MethodPut, "/api/admin/assets/"+createPayload.AssetId+"/content", bytes.NewReader([]byte{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}))
+  uploadRequest.Header.Set("Content-Type", "image/png")
+  uploadRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  uploadRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(uploadRecorder, uploadRequest)
+
+  if uploadRecorder.Code != http.StatusNoContent {
+    t.Fatalf("expected 204 from asset upload, got %d", uploadRecorder.Code)
+  }
+
+  if len(store.putCalls) != 1 {
+    t.Fatalf("expected one object-store put call, got %d", len(store.putCalls))
+  }
+
+  listRequest := httptest.NewRequest(http.MethodGet, "/api/admin/assets", nil)
+  listRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  listRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(listRecorder, listRequest)
+
+  if listRecorder.Code != http.StatusOK {
+    t.Fatalf("expected 200 from list assets, got %d", listRecorder.Code)
+  }
+
+  var listPayload struct {
+    Assets []struct {
+      Id        string `json:"id"`
+      Kind      string `json:"kind"`
+      Title     string `json:"title"`
+      PublicUrl string `json:"publicUrl"`
+    } `json:"assets"`
+  }
+  if err := json.Unmarshal(listRecorder.Body.Bytes(), &listPayload); err != nil {
+    t.Fatalf("decode list assets payload: %v", err)
+  }
+
+  if len(listPayload.Assets) != 1 {
+    t.Fatalf("expected one asset, got %d", len(listPayload.Assets))
+  }
+
+  if listPayload.Assets[0].Id != createPayload.AssetId {
+    t.Fatalf("expected listed asset id %q, got %q", createPayload.AssetId, listPayload.Assets[0].Id)
+  }
+
+  if listPayload.Assets[0].Title != "hero shot" {
+    t.Fatalf("expected inferred title, got %q", listPayload.Assets[0].Title)
+  }
+
+  deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/admin/assets/"+createPayload.AssetId, nil)
+  deleteRequest.Header.Set("Cf-Access-Authenticated-User-Email", "arjun.amrith@gmail.com")
+  deleteRecorder := httptest.NewRecorder()
+  handler.ServeHTTP(deleteRecorder, deleteRequest)
+
+  if deleteRecorder.Code != http.StatusOK {
+    t.Fatalf("expected 200 from delete asset, got %d", deleteRecorder.Code)
+  }
+
+  if len(store.deleteCalls) != 1 {
+    t.Fatalf("expected one object-store delete call, got %d", len(store.deleteCalls))
+  }
+}
+
 type fakeUploadProvider struct {
   sessionRef    string
   chunkResults  []uploadservice.ChunkResult
@@ -808,6 +923,19 @@ type fakeUploadProvider struct {
   validateMessage string
   validateLabel   string
   validateErr     error
+}
+
+type fakeObjectStore struct {
+  putCalls    []fakePutCall
+  deleteCalls []string
+  putErr      error
+  deleteErr   error
+}
+
+type fakePutCall struct {
+  Key         string
+  ContentType string
+  Body        []byte
 }
 
 func (f *fakeUploadProvider) BeginUpload(_ context.Context, _ string, _ string, _ models.StorageProviderConfig) (string, error) {
@@ -841,6 +969,29 @@ func (f *fakeUploadProvider) ValidateStorage(_ context.Context, _ models.Storage
   }
 
   return message, f.validateLabel, nil
+}
+
+func (f *fakeObjectStore) PutObject(_ context.Context, key string, contentType string, body io.Reader) error {
+  if f.putErr != nil {
+    return f.putErr
+  }
+
+  payload, err := io.ReadAll(body)
+  if err != nil {
+    return err
+  }
+
+  f.putCalls = append(f.putCalls, fakePutCall{Key: key, ContentType: contentType, Body: payload})
+  return nil
+}
+
+func (f *fakeObjectStore) DeleteObject(_ context.Context, key string) error {
+  if f.deleteErr != nil {
+    return f.deleteErr
+  }
+
+  f.deleteCalls = append(f.deleteCalls, key)
+  return nil
 }
 
 func newChunkRequest(t *testing.T, uploadID string, offset int64, contentRange string, chunk []byte, filename string) *http.Request {

@@ -44,13 +44,6 @@ type StorageProviderConfig struct {
   LastValidationError string `json:"lastValidationError"`
 }
 
-type Asset struct {
-  ID        string `json:"id"`
-  Kind      string `json:"kind"`
-  Title     string `json:"title"`
-  PublicURL string `json:"publicUrl"`
-}
-
 type WeddingConfigBundle struct {
   Public  WeddingPublicConfig
   Theme   WeddingThemeConfig

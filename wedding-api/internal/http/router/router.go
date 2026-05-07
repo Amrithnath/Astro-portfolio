@@ -1,17 +1,20 @@
 package router
 
 import (
+  "context"
   "encoding/json"
   "errors"
   "net/http"
   "time"
 
   appconfig "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/config"
+  adminassetshandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/adminassets"
   adminauthhandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/adminauth"
   adminconfighandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/adminconfig"
   publichandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/public"
   uploadhandlers "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/http/handlers/upload"
   "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/repo/postgres"
+  adminassetsservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminassets"
   adminauthservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminauth"
   adminconfigservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/adminconfig"
   configservice "github.com/Amrithnath/Astro-portfolio/wedding-api/internal/service/config"
@@ -24,18 +27,27 @@ import (
 func New(env appconfig.Env, db *postgres.DB) http.Handler {
   uploadProvider := uploadservice.NewGoogleDriveProvider(env)
   uploadConfig := uploadservice.New(env, db, uploadProvider)
-  return newRouter(env, db, uploadConfig, uploadProvider)
+  assetStore, err := adminassetsservice.NewR2Store(context.Background(), env)
+  if err != nil {
+    assetStore = nil
+  }
+  assetService := adminassetsservice.New(env, db, assetStore)
+  return newRouter(env, db, uploadConfig, uploadProvider, assetService)
 }
 
 func NewWithUploadService(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service) http.Handler {
-  return newRouter(env, db, uploadConfig, nil)
+  return newRouter(env, db, uploadConfig, nil, nil)
 }
 
 func NewWithUploadAndDriveValidator(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator) http.Handler {
-  return newRouter(env, db, uploadConfig, driveValidator)
+  return newRouter(env, db, uploadConfig, driveValidator, nil)
 }
 
-func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator) http.Handler {
+func NewWithServices(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator, assetService *adminassetsservice.Service) http.Handler {
+  return newRouter(env, db, uploadConfig, driveValidator, assetService)
+}
+
+func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.Service, driveValidator adminconfigservice.DriveValidator, assetService *adminassetsservice.Service) http.Handler {
   r := chi.NewRouter()
   r.Use(chimiddleware.RequestID)
   r.Use(chimiddleware.RealIP)
@@ -48,6 +60,14 @@ func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.S
   publicHandler := publichandlers.New(publicConfig)
   uploadHandler := uploadhandlers.New(uploadConfig)
   adminAuthHandler := adminauthhandlers.New(adminAuth)
+  if assetService == nil {
+    assetStore, err := adminassetsservice.NewR2Store(context.Background(), env)
+    if err != nil {
+      assetStore = nil
+    }
+    assetService = adminassetsservice.New(env, db, assetStore)
+  }
+  adminAssetsHandler := adminassetshandlers.New(adminAuth, assetService)
   adminConfigHandler := adminconfighandlers.New(adminconfigservice.New(db, driveValidator))
 
   r.Get("/api/health", func(w http.ResponseWriter, _ *http.Request) {
@@ -72,6 +92,10 @@ func newRouter(env appconfig.Env, db *postgres.DB, uploadConfig *uploadservice.S
       protected.Get("/config/storage-provider", adminConfigHandler.GetStorageProviderConfig)
       protected.Put("/config/storage-provider", adminConfigHandler.UpdateStorageProviderConfig)
       protected.Post("/config/storage-provider/validate", adminConfigHandler.ValidateStorageProvider)
+      protected.Get("/assets", adminAssetsHandler.ListAssets)
+      protected.Post("/assets/uploads", adminAssetsHandler.CreateAssetUpload)
+      protected.Put("/assets/{assetID}/content", adminAssetsHandler.UploadAssetContent)
+      protected.Delete("/assets/{assetID}", adminAssetsHandler.DeleteAsset)
     })
   })
 
@@ -87,7 +111,7 @@ func corsMiddleware(env appconfig.Env) func(http.Handler) http.Handler {
   }
 
   const allowedHeaders = "Accept, Content-Type, Content-Range, X-Admin-Debug-Email"
-  const allowedMethods = "GET, POST, PUT, OPTIONS"
+  const allowedMethods = "GET, POST, PUT, DELETE, OPTIONS"
 
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
