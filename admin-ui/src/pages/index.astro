@@ -64,13 +64,13 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                     </section>
 
                     <section class="mini-panel">
-                      <span class="status-label">Wedding route</span>
+                      <span class="status-label">Guest route</span>
                       <strong id="rollout-state">Loading</strong>
                       <p id="rollout-detail">Reading enabled state from wedding public config.</p>
                     </section>
 
                     <section class="mini-panel">
-                      <span class="status-label">Storage validation</span>
+                      <span class="status-label">Upload backend</span>
                       <strong id="storage-state">Loading</strong>
                       <p id="storage-detail">Reading provider validation snapshot.</p>
                     </section>
@@ -249,7 +249,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                   <div class="section-heading-row">
                     <div>
                       <h2>Storage Provider</h2>
-                      <p>Switch providers, stage provider-specific settings, and run structural validation before saving.</p>
+                      <p>Switch providers, stage provider-specific settings, and verify real backend readiness before guests can upload.</p>
                     </div>
                     <div class="button-row-inline">
                       <button id="validate-storage-button" class="secondary-button" type="button">Validate provider</button>
@@ -297,6 +297,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                   </form>
 
                   <p id="storage-validation-result" class="inline-message" hidden></p>
+                  <div id="storage-readiness-summary" class="storage-readiness-summary"></div>
                 </div>
               </article>
             </section>
@@ -359,6 +360,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         storageState: document.getElementById('storage-state'),
         storageDetail: document.getElementById('storage-detail'),
         storageValidationResult: document.getElementById('storage-validation-result'),
+        storageReadinessSummary: document.getElementById('storage-readiness-summary'),
         driveFields: document.getElementById('drive-fields'),
         photosFields: document.getElementById('photos-fields'),
         previewPanel: document.getElementById('preview-panel'),
@@ -621,6 +623,116 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         elements.photosFields.hidden = isDrive;
       }
 
+      function getStorageProviderLabel(provider) {
+        if (provider === 'STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS') {
+          return 'Google Photos';
+        }
+
+        if (provider === 'STORAGE_PROVIDER_KIND_GOOGLE_DRIVE') {
+          return 'Google Drive';
+        }
+
+        return 'Not set';
+      }
+
+      function getStorageReadinessSnapshot(storage = state.storage) {
+        if (!storage) {
+          return {
+            guestState: 'Unavailable',
+            guestDetail: 'Storage provider config could not be loaded.',
+            backendState: 'Unavailable',
+            backendDetail: 'Storage provider config could not be loaded.',
+            validationTone: 'warning',
+            validationMessage: '',
+            summaryLines: [],
+          };
+        }
+
+        const providerLabel = getStorageProviderLabel(storage.provider);
+        const validatedAtLabel = formatUnixTimestamp(storage.validatedAtUnix);
+        const hasDriveFolder = Boolean(storage.driveFolderId);
+        const hasValidationError = Boolean(storage.lastValidationError);
+        const isValidated = Boolean(storage.validatedAtUnix) && !hasValidationError;
+
+        if (storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS') {
+          return {
+            guestState: 'Blocked on provider',
+            guestDetail: 'Google Photos is selected, but guest upload ingest still requires the future OAuth album flow.',
+            backendState: 'Needs new flow',
+            backendDetail: 'Google Photos cannot power guest uploads yet. Switch to Drive or build the Photos admin OAuth path.',
+            validationTone: 'warning',
+            validationMessage: storage.lastValidationError || 'Google Photos configuration is stored, but it is not a guest-ready provider yet.',
+            summaryLines: [
+              `Selected provider: ${providerLabel}`,
+              `Album title: ${storage.photosAlbumTitle || 'Not set'}`,
+              `Photos ingest flag: ${storage.photosEnabled ? 'Enabled' : 'Disabled'}`,
+            ],
+          };
+        }
+
+        if (!hasDriveFolder) {
+          return {
+            guestState: 'Blocked on storage',
+            guestDetail: 'The wedding page can open, but guests cannot start uploads until a Drive folder ID is set.',
+            backendState: 'Folder missing',
+            backendDetail: 'Add a Google Drive folder ID, then run validation so the API can confirm access.',
+            validationTone: 'warning',
+            validationMessage: 'Drive folder ID is required before guest uploads can be enabled safely.',
+            summaryLines: [
+              `Selected provider: ${providerLabel}`,
+              'Drive folder ID: Not set',
+              'Validation: Never run',
+            ],
+          };
+        }
+
+        if (hasValidationError) {
+          return {
+            guestState: 'Blocked on validation',
+            guestDetail: 'The wedding page may be enabled, but upload init will currently reject guests because Drive validation is failing.',
+            backendState: 'Needs attention',
+            backendDetail: storage.lastValidationError,
+            validationTone: 'warning',
+            validationMessage: storage.lastValidationError,
+            summaryLines: [
+              `Selected provider: ${providerLabel}`,
+              `Drive folder: ${storage.driveFolderLabel || storage.driveFolderId}`,
+              `Last successful check: ${validatedAtLabel}`,
+            ],
+          };
+        }
+
+        if (!isValidated) {
+          return {
+            guestState: 'Blocked until validated',
+            guestDetail: 'The wedding page copy can be live, but upload init will not start until Drive validation runs successfully at least once.',
+            backendState: 'Awaiting validation',
+            backendDetail: 'Run “Validate provider” to confirm the folder is reachable by the configured service account.',
+            validationTone: 'warning',
+            validationMessage: 'Drive storage is configured but has not been validated yet.',
+            summaryLines: [
+              `Selected provider: ${providerLabel}`,
+              `Drive folder: ${storage.driveFolderLabel || storage.driveFolderId}`,
+              'Validation: Never run',
+            ],
+          };
+        }
+
+        return {
+          guestState: 'Backend ready',
+          guestDetail: 'Drive storage is validated. Guests can upload whenever the page and upload policy are enabled.',
+          backendState: 'Validated',
+          backendDetail: `Drive access last verified ${validatedAtLabel}.`,
+          validationTone: 'positive',
+          validationMessage: `Drive folder access verified for ${storage.driveFolderLabel || storage.driveFolderId}.`,
+          summaryLines: [
+            `Selected provider: ${providerLabel}`,
+            `Drive folder: ${storage.driveFolderLabel || storage.driveFolderId}`,
+            `Last verified: ${validatedAtLabel}`,
+          ],
+        };
+      }
+
       function renderSession() {
         if (!state.session) {
           elements.sessionName.textContent = 'No admin session';
@@ -642,11 +754,30 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         applyWeddingCopyForm(state.weddingPublic);
         syncPreview();
 
-        const uploadsOpen = Boolean(state.weddingPublic.enabled) && Boolean(state.uploadPolicy?.uploadsEnabled);
-        elements.rolloutState.textContent = uploadsOpen ? 'Open for uploads' : 'Closed to guests';
-        elements.rolloutDetail.textContent = uploadsOpen
-          ? 'Guests currently see the upload composer on `/wedding`.'
-          : (state.uploadPolicy?.maintenanceMessage || state.weddingPublic.closedMessage || 'Uploads are unavailable right now.');
+        const storageReadiness = getStorageReadinessSnapshot();
+        const pageEnabled = Boolean(state.weddingPublic.enabled);
+        const uploadPolicyEnabled = Boolean(state.uploadPolicy?.uploadsEnabled);
+
+        if (!pageEnabled) {
+          elements.rolloutState.textContent = 'Closed to guests';
+          elements.rolloutDetail.textContent = state.weddingPublic.closedMessage || 'The wedding page is currently closed from the public-config switch.';
+          return;
+        }
+
+        if (!uploadPolicyEnabled) {
+          elements.rolloutState.textContent = 'Paused by policy';
+          elements.rolloutDetail.textContent = state.uploadPolicy?.maintenanceMessage || 'The wedding page is enabled, but the upload policy currently pauses guest uploads.';
+          return;
+        }
+
+        if (storageReadiness.backendState !== 'Validated') {
+          elements.rolloutState.textContent = 'Visible but blocked';
+          elements.rolloutDetail.textContent = storageReadiness.guestDetail;
+          return;
+        }
+
+        elements.rolloutState.textContent = 'Open for uploads';
+        elements.rolloutDetail.textContent = 'Guests currently see the upload composer on `/wedding`, and upload init is ready to accept files.';
       }
 
       function renderTheme() {
@@ -671,21 +802,24 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         if (!state.storage) {
           elements.storageState.textContent = 'Unavailable';
           elements.storageDetail.textContent = 'Storage provider config could not be loaded.';
+          elements.storageReadinessSummary.replaceChildren();
           return;
         }
 
         applyStorageForm(state.storage);
 
-        const providerLabel = state.storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS'
-          ? 'Google Photos'
-          : state.storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_DRIVE'
-            ? 'Google Drive'
-            : 'Not set';
-
-        const validationState = state.storage.lastValidationError ? 'Needs attention' : 'Ready for validation';
-        elements.storageState.textContent = validationState;
-        elements.storageDetail.textContent = state.storage.lastValidationError || `${providerLabel} is the currently selected provider.`;
-        setStorageValidationResult(state.storage.lastValidationError || `Last checked: ${formatUnixTimestamp(state.storage.validatedAtUnix)}`, !state.storage.lastValidationError);
+        const readiness = getStorageReadinessSnapshot();
+        elements.storageState.textContent = readiness.backendState;
+        elements.storageDetail.textContent = readiness.backendDetail;
+        setStorageValidationResult(readiness.validationMessage, readiness.validationTone === 'positive');
+        elements.storageReadinessSummary.replaceChildren(
+          ...readiness.summaryLines.map((line) => {
+            const item = document.createElement('p');
+            item.className = 'storage-summary-line';
+            item.textContent = line;
+            return item;
+          }),
+        );
       }
 
       function syncThemePreview() {
@@ -896,6 +1030,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             body: JSON.stringify({ config: readStorageForm() }),
           });
 
+          elements.topStatus.textContent = payload.valid ? 'Storage validation passed' : 'Storage validation needs attention';
           setStorageValidationResult(payload.validationMessage, payload.valid);
         } catch (error) {
           setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Validation failed.');
@@ -928,6 +1063,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
           state.storage = payload.config;
           renderStorage();
+          renderWeddingPublic();
           elements.topStatus.textContent = 'Storage provider saved';
           setBanner(elements.successBanner, 'Storage provider config saved to the API.');
         } catch (error) {
@@ -1235,6 +1371,21 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
     color: #fecaca;
     border-color: rgba(248, 113, 113, 0.35);
     background: rgba(127, 29, 29, 0.2);
+  }
+
+  .storage-readiness-summary {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+  }
+
+  .storage-summary-line {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.95rem;
   }
 
   .primary-button,
