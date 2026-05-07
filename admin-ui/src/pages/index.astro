@@ -325,6 +325,10 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
               </div>
               <div class="preview-phone">
                 <div class="preview-screen">
+                  <div id="preview-hero-media" class="preview-hero-media" hidden>
+                    <img id="preview-hero-image" class="preview-hero-image" alt="Selected wedding hero asset" />
+                    <div id="preview-texture-overlay" class="preview-texture-overlay" hidden></div>
+                  </div>
                   <p id="preview-eyebrow" class="preview-eyebrow">wedding.media://dropbox</p>
                   <h2 id="preview-title" class="preview-title">Share the moments you caught.</h2>
                   <p id="preview-copy" class="preview-copy">Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.</p>
@@ -387,6 +391,9 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         photosFields: document.getElementById('photos-fields'),
         previewPanel: document.getElementById('preview-panel'),
         previewDropzone: document.getElementById('preview-dropzone'),
+        previewHeroMedia: document.getElementById('preview-hero-media'),
+        previewHeroImage: document.getElementById('preview-hero-image'),
+        previewTextureOverlay: document.getElementById('preview-texture-overlay'),
         previewEyebrow: document.getElementById('preview-eyebrow'),
         previewTitle: document.getElementById('preview-title'),
         previewCopy: document.getElementById('preview-copy'),
@@ -846,6 +853,9 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
       function syncThemePreview() {
         const theme = readThemeForm();
+        const heroAsset = state.assets.find((asset) => asset.id === theme.heroAssetId);
+        const textureAsset = state.assets.find((asset) => asset.id === theme.textureAssetId);
+
         if (theme.primaryAccent) {
           elements.previewDropzone.style.borderColor = theme.primaryAccent;
         } else {
@@ -862,6 +872,24 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
           elements.previewPanel.style.borderColor = `${theme.primaryAccent}33`;
         } else {
           elements.previewPanel.style.removeProperty('border-color');
+        }
+
+        if (heroAsset?.publicUrl) {
+          elements.previewHeroMedia.hidden = false;
+          elements.previewHeroImage.src = heroAsset.publicUrl;
+          elements.previewHeroImage.alt = heroAsset.title || 'Selected hero asset';
+        } else {
+          elements.previewHeroMedia.hidden = true;
+          elements.previewHeroImage.removeAttribute('src');
+          elements.previewHeroImage.alt = 'Selected wedding hero asset';
+        }
+
+        if (textureAsset?.publicUrl) {
+          elements.previewTextureOverlay.hidden = false;
+          elements.previewTextureOverlay.style.backgroundImage = `url(${textureAsset.publicUrl})`;
+        } else {
+          elements.previewTextureOverlay.hidden = true;
+          elements.previewTextureOverlay.style.removeProperty('background-image');
         }
       }
 
@@ -921,6 +949,8 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
         const heroAssetId = themeFields.heroAssetId.value.trim();
         const textureAssetId = themeFields.textureAssetId.value.trim();
+        const savedHeroAssetId = state.theme?.heroAssetId || '';
+        const savedTextureAssetId = state.theme?.textureAssetId || '';
 
         elements.assetLibraryGrid.replaceChildren(
           ...state.assets.map((asset) => {
@@ -950,7 +980,14 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             if (asset.id === textureAssetId) {
               slots.push('Texture');
             }
-            meta.textContent = slots.length > 0 ? `${asset.kind} · ${slots.join(' + ')} slot` : asset.kind;
+            const badges = [asset.kind];
+            if (slots.length > 0) {
+              badges.push(`${slots.join(' + ')} draft`);
+            }
+            if (asset.id === savedHeroAssetId || asset.id === savedTextureAssetId) {
+              badges.push('saved in live theme');
+            }
+            meta.textContent = badges.join(' · ');
             body.append(meta);
 
             const actions = document.createElement('div');
@@ -981,9 +1018,14 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             const deleteButton = document.createElement('button');
             deleteButton.type = 'button';
             deleteButton.className = 'ghost-button ghost-button-danger';
+            const isReferencedBySavedTheme = asset.id === savedHeroAssetId || asset.id === savedTextureAssetId;
             deleteButton.textContent = state.deletingAssetId === asset.id ? 'Deleting...' : 'Delete';
-            deleteButton.disabled = state.deletingAssetId === asset.id;
-            deleteButton.addEventListener('click', () => deleteAsset(asset));
+            deleteButton.disabled = state.deletingAssetId === asset.id || isReferencedBySavedTheme;
+            if (isReferencedBySavedTheme) {
+              deleteButton.textContent = 'In use by live theme';
+            } else {
+              deleteButton.addEventListener('click', () => deleteAsset(asset));
+            }
             actions.append(deleteButton);
 
             body.append(actions);
@@ -1783,12 +1825,40 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
   }
 
   .preview-screen {
+    position: relative;
     border-radius: 22px;
     padding: 18px;
     background:
       radial-gradient(circle at top, rgba(99, 240, 182, 0.18), transparent 24%),
       linear-gradient(180deg, #08111f 0%, #050811 48%, #03050a 100%);
     min-height: 520px;
+    overflow: hidden;
+  }
+
+  .preview-hero-media {
+    position: relative;
+    margin: -18px -18px 18px;
+    min-height: 180px;
+    border-radius: 22px 22px 18px 18px;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  }
+
+  .preview-hero-image {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(1.05);
+  }
+
+  .preview-texture-overlay {
+    position: absolute;
+    inset: 0;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.18;
+    mix-blend-mode: screen;
   }
 
   .preview-eyebrow {
