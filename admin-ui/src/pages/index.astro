@@ -25,7 +25,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
           <nav class="nav-stack" aria-label="Admin sections">
             <a href="#overview" class="nav-link is-active">Overview</a>
             <a href="#wedding-copy" class="nav-link">Wedding Copy</a>
-            <a href="#theme" class="nav-link">Theme Snapshot</a>
+            <a href="#theme" class="nav-link">Wedding Theme</a>
             <a href="#uploads" class="nav-link">Upload Policy</a>
             <a href="#storage" class="nav-link">Storage Provider</a>
           </nav>
@@ -143,35 +143,165 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                 </div>
               </article>
 
-              <article id="theme" class="section-card">
+              <article id="theme" class="section-card section-card-wide">
                 <div class="section-index">03</div>
                 <div class="section-body">
-                  <h2>Theme Snapshot</h2>
-                  <p>Current read-only theme values from the admin config service.</p>
-                  <dl id="theme-list" class="detail-list"></dl>
+                  <div class="section-heading-row">
+                    <div>
+                      <h2>Wedding Theme</h2>
+                      <p>Manage the palette and presentation tokens currently backing the guest upload experience.</p>
+                    </div>
+                    <button id="save-theme-button" class="primary-button" type="button">Save theme</button>
+                  </div>
+
+                  <form id="theme-form" class="form-grid">
+                    <label>
+                      <span>Preset</span>
+                      <input id="themePreset" name="themePreset" type="text" placeholder="terminal-romance" />
+                    </label>
+
+                    <label>
+                      <span>Typography preset</span>
+                      <input id="themeTypographyPreset" name="themeTypographyPreset" type="text" placeholder="mono-editorial" />
+                    </label>
+
+                    <label>
+                      <span>Primary accent</span>
+                      <input id="themePrimaryAccent" name="themePrimaryAccent" type="text" placeholder="#63f0b6" />
+                    </label>
+
+                    <label>
+                      <span>Secondary accent</span>
+                      <input id="themeSecondaryAccent" name="themeSecondaryAccent" type="text" placeholder="#7dd3fc" />
+                    </label>
+
+                    <label>
+                      <span>Surface style</span>
+                      <input id="themeSurfaceStyle" name="themeSurfaceStyle" type="text" placeholder="glass-dark" />
+                    </label>
+
+                    <label>
+                      <span>Button style</span>
+                      <input id="themeButtonStyle" name="themeButtonStyle" type="text" placeholder="pill" />
+                    </label>
+
+                    <label>
+                      <span>Hero asset ID</span>
+                      <input id="themeHeroAssetId" name="themeHeroAssetId" type="text" placeholder="hero-asset-id" />
+                    </label>
+
+                    <label>
+                      <span>Texture asset ID</span>
+                      <input id="themeTextureAssetId" name="themeTextureAssetId" type="text" placeholder="texture-asset-id" />
+                    </label>
+                  </form>
                 </div>
               </article>
 
-              <article id="uploads" class="section-card">
+              <article id="uploads" class="section-card section-card-wide">
                 <div class="section-index">04</div>
                 <div class="section-body">
-                  <h2>Upload Policy</h2>
-                  <p>Live limits and maintenance message currently backing the guest upload flow.</p>
-                  <dl id="upload-policy-list" class="detail-list"></dl>
+                  <div class="section-heading-row">
+                    <div>
+                      <h2>Upload Policy</h2>
+                      <p>Control live upload availability, limits, session lifetime, and MIME policy.</p>
+                    </div>
+                    <button id="save-upload-policy-button" class="primary-button" type="button">Save upload policy</button>
+                  </div>
+
+                  <form id="upload-policy-form" class="form-grid">
+                    <label class="checkbox-row">
+                      <input id="policyUploadsEnabled" name="policyUploadsEnabled" type="checkbox" />
+                      <span>Uploads enabled</span>
+                    </label>
+
+                    <label>
+                      <span>Max file bytes</span>
+                      <input id="policyMaxFileBytes" name="policyMaxFileBytes" type="text" inputmode="numeric" placeholder="10737418240" />
+                    </label>
+
+                    <label>
+                      <span>Max active uploads per IP</span>
+                      <input id="policyMaxActiveUploadsPerIp" name="policyMaxActiveUploadsPerIp" type="text" inputmode="numeric" placeholder="12" />
+                    </label>
+
+                    <label>
+                      <span>Upload session TTL ms</span>
+                      <input id="policyUploadSessionTtlMs" name="policyUploadSessionTtlMs" type="text" inputmode="numeric" placeholder="86400000" />
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Allowed MIME types</span>
+                      <textarea id="policyAllowedMimeTypes" name="policyAllowedMimeTypes" rows="4" placeholder="image/jpeg&#10;video/mp4"></textarea>
+                    </label>
+
+                    <label class="field-wide">
+                      <span>Maintenance message</span>
+                      <textarea id="policyMaintenanceMessage" name="policyMaintenanceMessage" rows="3"></textarea>
+                    </label>
+                  </form>
                 </div>
               </article>
 
-              <article id="storage" class="section-card">
+              <article id="storage" class="section-card section-card-wide">
                 <div class="section-index">05</div>
                 <div class="section-body">
-                  <h2>Storage Provider</h2>
-                  <p>Current provider selection and validation status. Write flow lands next.</p>
-                  <dl id="storage-list" class="detail-list"></dl>
+                  <div class="section-heading-row">
+                    <div>
+                      <h2>Storage Provider</h2>
+                      <p>Switch providers, stage provider-specific settings, and run structural validation before saving.</p>
+                    </div>
+                    <div class="button-row-inline">
+                      <button id="validate-storage-button" class="secondary-button" type="button">Validate provider</button>
+                      <button id="save-storage-button" class="primary-button" type="button">Save provider</button>
+                    </div>
+                  </div>
+
+                  <form id="storage-form" class="form-grid">
+                    <label>
+                      <span>Provider</span>
+                      <select id="storageProvider" name="storageProvider">
+                        <option value="STORAGE_PROVIDER_KIND_GOOGLE_DRIVE">Google Drive</option>
+                        <option value="STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS">Google Photos</option>
+                      </select>
+                    </label>
+
+                    <label class="checkbox-row">
+                      <input id="storagePhotosEnabled" name="storagePhotosEnabled" type="checkbox" />
+                      <span>Google Photos ingest enabled</span>
+                    </label>
+
+                    <div id="drive-fields" class="stack-group field-wide">
+                      <label>
+                        <span>Drive folder ID</span>
+                        <input id="storageDriveFolderId" name="storageDriveFolderId" type="text" placeholder="folder-id" />
+                      </label>
+
+                      <label>
+                        <span>Drive folder label</span>
+                        <input id="storageDriveFolderLabel" name="storageDriveFolderLabel" type="text" placeholder="Wedding Uploads" />
+                      </label>
+                    </div>
+
+                    <div id="photos-fields" class="stack-group field-wide">
+                      <label>
+                        <span>Photos album ID</span>
+                        <input id="storagePhotosAlbumId" name="storagePhotosAlbumId" type="text" placeholder="album-id" />
+                      </label>
+
+                      <label>
+                        <span>Photos album title</span>
+                        <input id="storagePhotosAlbumTitle" name="storagePhotosAlbumTitle" type="text" placeholder="Reception Highlights" />
+                      </label>
+                    </div>
+                  </form>
+
+                  <p id="storage-validation-result" class="inline-message" hidden></p>
                 </div>
               </article>
             </section>
 
-            <aside class="panel preview-panel">
+            <aside id="preview-panel" class="panel preview-panel">
               <div class="preview-header">
                 <span class="status-label">Live Preview</span>
                 <span id="preview-chip" class="preview-chip">mobile</span>
@@ -181,7 +311,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
                   <p id="preview-eyebrow" class="preview-eyebrow">wedding.media://dropbox</p>
                   <h2 id="preview-title" class="preview-title">Share the moments you caught.</h2>
                   <p id="preview-copy" class="preview-copy">Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.</p>
-                  <div class="preview-dropzone">
+                  <div id="preview-dropzone" class="preview-dropzone">
                     <span>Tap to choose files</span>
                     <strong id="preview-dropzone-copy">Photos, HEIC, MOV, and large videos are all welcome.</strong>
                   </div>
@@ -205,13 +335,21 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         theme: null,
         uploadPolicy: null,
         storage: null,
-        isSaving: false,
+        isSavingWeddingPublic: false,
+        isSavingTheme: false,
+        isSavingUploadPolicy: false,
+        isSavingStorage: false,
+        isValidatingStorage: false,
       };
 
       const elements = {
         topStatus: document.getElementById('top-status'),
         refreshButton: document.getElementById('refresh-button'),
-        saveButton: document.getElementById('save-button'),
+        saveWeddingCopyButton: document.getElementById('save-button'),
+        saveThemeButton: document.getElementById('save-theme-button'),
+        saveUploadPolicyButton: document.getElementById('save-upload-policy-button'),
+        saveStorageButton: document.getElementById('save-storage-button'),
+        validateStorageButton: document.getElementById('validate-storage-button'),
         errorBanner: document.getElementById('error-banner'),
         successBanner: document.getElementById('success-banner'),
         sessionName: document.getElementById('session-name'),
@@ -220,9 +358,11 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         rolloutDetail: document.getElementById('rollout-detail'),
         storageState: document.getElementById('storage-state'),
         storageDetail: document.getElementById('storage-detail'),
-        themeList: document.getElementById('theme-list'),
-        uploadPolicyList: document.getElementById('upload-policy-list'),
-        storageList: document.getElementById('storage-list'),
+        storageValidationResult: document.getElementById('storage-validation-result'),
+        driveFields: document.getElementById('drive-fields'),
+        photosFields: document.getElementById('photos-fields'),
+        previewPanel: document.getElementById('preview-panel'),
+        previewDropzone: document.getElementById('preview-dropzone'),
         previewEyebrow: document.getElementById('preview-eyebrow'),
         previewTitle: document.getElementById('preview-title'),
         previewCopy: document.getElementById('preview-copy'),
@@ -232,8 +372,8 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         previewClosedMessage: document.getElementById('preview-closed-message'),
       };
 
-      const form = document.getElementById('wedding-copy-form');
-      const fields = {
+      const weddingCopyForm = document.getElementById('wedding-copy-form');
+      const weddingCopyFields = {
         enabled: document.getElementById('enabled'),
         names: document.getElementById('names'),
         eyebrow: document.getElementById('eyebrow'),
@@ -244,6 +384,38 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         successTitle: document.getElementById('successTitle'),
         successMessage: document.getElementById('successMessage'),
         closedMessage: document.getElementById('closedMessage'),
+      };
+
+      const themeForm = document.getElementById('theme-form');
+      const themeFields = {
+        preset: document.getElementById('themePreset'),
+        typographyPreset: document.getElementById('themeTypographyPreset'),
+        primaryAccent: document.getElementById('themePrimaryAccent'),
+        secondaryAccent: document.getElementById('themeSecondaryAccent'),
+        surfaceStyle: document.getElementById('themeSurfaceStyle'),
+        buttonStyle: document.getElementById('themeButtonStyle'),
+        heroAssetId: document.getElementById('themeHeroAssetId'),
+        textureAssetId: document.getElementById('themeTextureAssetId'),
+      };
+
+      const uploadPolicyForm = document.getElementById('upload-policy-form');
+      const uploadPolicyFields = {
+        uploadsEnabled: document.getElementById('policyUploadsEnabled'),
+        maxFileBytes: document.getElementById('policyMaxFileBytes'),
+        maxActiveUploadsPerIp: document.getElementById('policyMaxActiveUploadsPerIp'),
+        uploadSessionTtlMs: document.getElementById('policyUploadSessionTtlMs'),
+        allowedMimeTypes: document.getElementById('policyAllowedMimeTypes'),
+        maintenanceMessage: document.getElementById('policyMaintenanceMessage'),
+      };
+
+      const storageForm = document.getElementById('storage-form');
+      const storageFields = {
+        provider: document.getElementById('storageProvider'),
+        photosEnabled: document.getElementById('storagePhotosEnabled'),
+        driveFolderId: document.getElementById('storageDriveFolderId'),
+        driveFolderLabel: document.getElementById('storageDriveFolderLabel'),
+        photosAlbumId: document.getElementById('storagePhotosAlbumId'),
+        photosAlbumTitle: document.getElementById('storagePhotosAlbumTitle'),
       };
 
       function getHeaders() {
@@ -335,32 +507,118 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         );
       }
 
-      function applyForm(config) {
-        fields.enabled.checked = Boolean(config.enabled);
-        fields.names.value = config.names || '';
-        fields.eyebrow.value = config.eyebrow || '';
-        fields.headline.value = config.headline || '';
-        fields.subheadline.value = config.subheadline || '';
-        fields.dropzoneCopy.value = config.dropzoneCopy || '';
-        fields.supportingCopy.value = config.supportingCopy || '';
-        fields.successTitle.value = config.successTitle || '';
-        fields.successMessage.value = config.successMessage || '';
-        fields.closedMessage.value = config.closedMessage || '';
+      function parseInteger(value, fallback = 0) {
+        const normalized = String(value ?? '').trim();
+        if (normalized === '') {
+          return fallback;
+        }
+
+        const parsed = Number.parseInt(normalized, 10);
+        return Number.isFinite(parsed) ? parsed : fallback;
       }
 
-      function readForm() {
+      function applyWeddingCopyForm(config) {
+        weddingCopyFields.enabled.checked = Boolean(config.enabled);
+        weddingCopyFields.names.value = config.names || '';
+        weddingCopyFields.eyebrow.value = config.eyebrow || '';
+        weddingCopyFields.headline.value = config.headline || '';
+        weddingCopyFields.subheadline.value = config.subheadline || '';
+        weddingCopyFields.dropzoneCopy.value = config.dropzoneCopy || '';
+        weddingCopyFields.supportingCopy.value = config.supportingCopy || '';
+        weddingCopyFields.successTitle.value = config.successTitle || '';
+        weddingCopyFields.successMessage.value = config.successMessage || '';
+        weddingCopyFields.closedMessage.value = config.closedMessage || '';
+      }
+
+      function readWeddingCopyForm() {
         return {
-          enabled: fields.enabled.checked,
-          names: fields.names.value.trim(),
-          eyebrow: fields.eyebrow.value.trim(),
-          headline: fields.headline.value.trim(),
-          subheadline: fields.subheadline.value.trim(),
-          dropzoneCopy: fields.dropzoneCopy.value.trim(),
-          supportingCopy: fields.supportingCopy.value.trim(),
-          successTitle: fields.successTitle.value.trim(),
-          successMessage: fields.successMessage.value.trim(),
-          closedMessage: fields.closedMessage.value.trim(),
+          enabled: weddingCopyFields.enabled.checked,
+          names: weddingCopyFields.names.value.trim(),
+          eyebrow: weddingCopyFields.eyebrow.value.trim(),
+          headline: weddingCopyFields.headline.value.trim(),
+          subheadline: weddingCopyFields.subheadline.value.trim(),
+          dropzoneCopy: weddingCopyFields.dropzoneCopy.value.trim(),
+          supportingCopy: weddingCopyFields.supportingCopy.value.trim(),
+          successTitle: weddingCopyFields.successTitle.value.trim(),
+          successMessage: weddingCopyFields.successMessage.value.trim(),
+          closedMessage: weddingCopyFields.closedMessage.value.trim(),
         };
+      }
+
+      function applyThemeForm(config) {
+        themeFields.preset.value = config.preset || '';
+        themeFields.typographyPreset.value = config.typographyPreset || '';
+        themeFields.primaryAccent.value = config.primaryAccent || '';
+        themeFields.secondaryAccent.value = config.secondaryAccent || '';
+        themeFields.surfaceStyle.value = config.surfaceStyle || '';
+        themeFields.buttonStyle.value = config.buttonStyle || '';
+        themeFields.heroAssetId.value = config.heroAssetId || '';
+        themeFields.textureAssetId.value = config.textureAssetId || '';
+      }
+
+      function readThemeForm() {
+        return {
+          preset: themeFields.preset.value.trim(),
+          typographyPreset: themeFields.typographyPreset.value.trim(),
+          primaryAccent: themeFields.primaryAccent.value.trim(),
+          secondaryAccent: themeFields.secondaryAccent.value.trim(),
+          surfaceStyle: themeFields.surfaceStyle.value.trim(),
+          buttonStyle: themeFields.buttonStyle.value.trim(),
+          heroAssetId: themeFields.heroAssetId.value.trim(),
+          textureAssetId: themeFields.textureAssetId.value.trim(),
+        };
+      }
+
+      function applyUploadPolicyForm(config) {
+        uploadPolicyFields.uploadsEnabled.checked = Boolean(config.uploadsEnabled);
+        uploadPolicyFields.maxFileBytes.value = config.maxFileBytes || '';
+        uploadPolicyFields.maxActiveUploadsPerIp.value = config.maxActiveUploadsPerIp || '';
+        uploadPolicyFields.uploadSessionTtlMs.value = config.uploadSessionTtlMs || '';
+        uploadPolicyFields.allowedMimeTypes.value = Array.isArray(config.allowedMimeTypes)
+          ? config.allowedMimeTypes.join('\n')
+          : '';
+        uploadPolicyFields.maintenanceMessage.value = config.maintenanceMessage || '';
+      }
+
+      function readUploadPolicyForm() {
+        return {
+          uploadsEnabled: uploadPolicyFields.uploadsEnabled.checked,
+          maxFileBytes: parseInteger(uploadPolicyFields.maxFileBytes.value),
+          maxActiveUploadsPerIp: parseInteger(uploadPolicyFields.maxActiveUploadsPerIp.value),
+          uploadSessionTtlMs: parseInteger(uploadPolicyFields.uploadSessionTtlMs.value),
+          allowedMimeTypes: uploadPolicyFields.allowedMimeTypes.value
+            .split('\n')
+            .map((value) => value.trim())
+            .filter(Boolean),
+          maintenanceMessage: uploadPolicyFields.maintenanceMessage.value.trim(),
+        };
+      }
+
+      function applyStorageForm(config) {
+        storageFields.provider.value = config.provider || 'STORAGE_PROVIDER_KIND_GOOGLE_DRIVE';
+        storageFields.photosEnabled.checked = Boolean(config.photosEnabled);
+        storageFields.driveFolderId.value = config.driveFolderId || '';
+        storageFields.driveFolderLabel.value = config.driveFolderLabel || '';
+        storageFields.photosAlbumId.value = config.photosAlbumId || '';
+        storageFields.photosAlbumTitle.value = config.photosAlbumTitle || '';
+        syncStorageFormVisibility();
+      }
+
+      function readStorageForm() {
+        return {
+          provider: storageFields.provider.value,
+          photosEnabled: storageFields.photosEnabled.checked,
+          driveFolderId: storageFields.driveFolderId.value.trim(),
+          driveFolderLabel: storageFields.driveFolderLabel.value.trim(),
+          photosAlbumId: storageFields.photosAlbumId.value.trim(),
+          photosAlbumTitle: storageFields.photosAlbumTitle.value.trim(),
+        };
+      }
+
+      function syncStorageFormVisibility() {
+        const isDrive = storageFields.provider.value === 'STORAGE_PROVIDER_KIND_GOOGLE_DRIVE';
+        elements.driveFields.hidden = !isDrive;
+        elements.photosFields.hidden = isDrive;
       }
 
       function renderSession() {
@@ -381,7 +639,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
           return;
         }
 
-        applyForm(state.weddingPublic);
+        applyWeddingCopyForm(state.weddingPublic);
         syncPreview();
 
         const uploadsOpen = Boolean(state.weddingPublic.enabled) && Boolean(state.uploadPolicy?.uploadsEnabled);
@@ -393,45 +651,30 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
       function renderTheme() {
         if (!state.theme) {
-          renderDetailList(elements.themeList, [{ label: 'Status', value: 'Unavailable' }]);
           return;
         }
 
-        renderDetailList(elements.themeList, [
-          { label: 'Preset', value: formatValue(state.theme.preset) },
-          { label: 'Typography', value: formatValue(state.theme.typographyPreset) },
-          { label: 'Primary accent', value: formatValue(state.theme.primaryAccent) },
-          { label: 'Secondary accent', value: formatValue(state.theme.secondaryAccent) },
-          { label: 'Surface style', value: formatValue(state.theme.surfaceStyle) },
-          { label: 'Button style', value: formatValue(state.theme.buttonStyle) },
-          { label: 'Hero asset', value: formatValue(state.theme.heroAssetId) },
-          { label: 'Texture asset', value: formatValue(state.theme.textureAssetId) },
-        ]);
+        applyThemeForm(state.theme);
+        syncThemePreview();
       }
 
       function renderUploadPolicy() {
         if (!state.uploadPolicy) {
-          renderDetailList(elements.uploadPolicyList, [{ label: 'Status', value: 'Unavailable' }]);
           return;
         }
 
-        renderDetailList(elements.uploadPolicyList, [
-          { label: 'Uploads', value: formatValue(state.uploadPolicy.uploadsEnabled) },
-          { label: 'Max file size', value: formatBytes(state.uploadPolicy.maxFileBytes) },
-          { label: 'Concurrent uploads/IP', value: formatValue(state.uploadPolicy.maxActiveUploadsPerIp) },
-          { label: 'Session TTL', value: `${formatValue(state.uploadPolicy.uploadSessionTtlMs)} ms` },
-          { label: 'Allowed MIME types', value: formatValue(state.uploadPolicy.allowedMimeTypes) },
-          { label: 'Maintenance message', value: formatValue(state.uploadPolicy.maintenanceMessage) },
-        ]);
+        applyUploadPolicyForm(state.uploadPolicy);
+        syncPreview();
       }
 
       function renderStorage() {
         if (!state.storage) {
           elements.storageState.textContent = 'Unavailable';
           elements.storageDetail.textContent = 'Storage provider config could not be loaded.';
-          renderDetailList(elements.storageList, [{ label: 'Status', value: 'Unavailable' }]);
           return;
         }
+
+        applyStorageForm(state.storage);
 
         const providerLabel = state.storage.provider === 'STORAGE_PROVIDER_KIND_GOOGLE_PHOTOS'
           ? 'Google Photos'
@@ -442,21 +685,32 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         const validationState = state.storage.lastValidationError ? 'Needs attention' : 'Ready for validation';
         elements.storageState.textContent = validationState;
         elements.storageDetail.textContent = state.storage.lastValidationError || `${providerLabel} is the currently selected provider.`;
+        setStorageValidationResult(state.storage.lastValidationError || `Last checked: ${formatUnixTimestamp(state.storage.validatedAtUnix)}`, !state.storage.lastValidationError);
+      }
 
-        renderDetailList(elements.storageList, [
-          { label: 'Provider', value: providerLabel },
-          { label: 'Drive folder ID', value: formatValue(state.storage.driveFolderId) },
-          { label: 'Drive label', value: formatValue(state.storage.driveFolderLabel) },
-          { label: 'Photos enabled', value: formatValue(state.storage.photosEnabled) },
-          { label: 'Photos album ID', value: formatValue(state.storage.photosAlbumId) },
-          { label: 'Photos album title', value: formatValue(state.storage.photosAlbumTitle) },
-          { label: 'Validated at', value: formatUnixTimestamp(state.storage.validatedAtUnix) },
-          { label: 'Validation error', value: formatValue(state.storage.lastValidationError) },
-        ]);
+      function syncThemePreview() {
+        const theme = readThemeForm();
+        if (theme.primaryAccent) {
+          elements.previewDropzone.style.borderColor = theme.primaryAccent;
+        } else {
+          elements.previewDropzone.style.removeProperty('border-color');
+        }
+
+        if (theme.secondaryAccent) {
+          elements.previewEyebrow.style.color = theme.secondaryAccent;
+        } else {
+          elements.previewEyebrow.style.removeProperty('color');
+        }
+
+        if (theme.primaryAccent) {
+          elements.previewPanel.style.borderColor = `${theme.primaryAccent}33`;
+        } else {
+          elements.previewPanel.style.removeProperty('border-color');
+        }
       }
 
       function syncPreview() {
-        const config = readForm();
+        const config = readWeddingCopyForm();
         elements.previewEyebrow.textContent = config.eyebrow || 'wedding.media://dropbox';
         elements.previewTitle.textContent = config.headline || 'Share the moments you caught.';
         elements.previewCopy.textContent = config.subheadline || 'Drop in the photos and videos from your phone. Uploads stay private and go straight into our wedding archive.';
@@ -465,7 +719,21 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
         const uploadsOpen = Boolean(config.enabled) && Boolean(state.uploadPolicy?.uploadsEnabled);
         elements.previewClosed.hidden = uploadsOpen;
-        elements.previewClosedMessage.textContent = state.uploadPolicy?.maintenanceMessage || config.closedMessage || 'Uploads are paused right now. Please try again later.';
+        const uploadPolicyDraft = readUploadPolicyForm();
+        elements.previewClosedMessage.textContent = uploadPolicyDraft.maintenanceMessage || config.closedMessage || 'Uploads are paused right now. Please try again later.';
+      }
+
+      function setStorageValidationResult(message, isPositive = false) {
+        if (!message) {
+          elements.storageValidationResult.hidden = true;
+          elements.storageValidationResult.textContent = '';
+          elements.storageValidationResult.dataset.tone = '';
+          return;
+        }
+
+        elements.storageValidationResult.hidden = false;
+        elements.storageValidationResult.textContent = message;
+        elements.storageValidationResult.dataset.tone = isPositive ? 'positive' : 'warning';
       }
 
       function renderAll() {
@@ -510,13 +778,13 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
       }
 
       async function saveWeddingCopy() {
-        if (state.isSaving) {
+        if (state.isSavingWeddingPublic) {
           return;
         }
 
-        state.isSaving = true;
-        elements.saveButton.disabled = true;
-        elements.saveButton.textContent = 'Saving...';
+        state.isSavingWeddingPublic = true;
+        elements.saveWeddingCopyButton.disabled = true;
+        elements.saveWeddingCopyButton.textContent = 'Saving...';
         setBanner(elements.errorBanner, '');
         setBanner(elements.successBanner, '');
 
@@ -526,7 +794,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ config: readForm() }),
+            body: JSON.stringify({ config: readWeddingCopyForm() }),
           });
 
           state.weddingPublic = payload.config;
@@ -536,15 +804,151 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
         } catch (error) {
           setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Save failed.');
         } finally {
-          state.isSaving = false;
-          elements.saveButton.disabled = false;
-          elements.saveButton.textContent = 'Save wedding copy';
+          state.isSavingWeddingPublic = false;
+          elements.saveWeddingCopyButton.disabled = false;
+          elements.saveWeddingCopyButton.textContent = 'Save wedding copy';
         }
       }
 
-      form.addEventListener('input', syncPreview);
+      async function saveTheme() {
+        if (state.isSavingTheme) {
+          return;
+        }
+
+        state.isSavingTheme = true;
+        elements.saveThemeButton.disabled = true;
+        elements.saveThemeButton.textContent = 'Saving...';
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+
+        try {
+          const payload = await apiFetch('/api/admin/config/wedding-theme', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ config: readThemeForm() }),
+          });
+
+          state.theme = payload.config;
+          renderTheme();
+          elements.topStatus.textContent = 'Wedding theme saved';
+          setBanner(elements.successBanner, 'Wedding theme config saved to the API.');
+        } catch (error) {
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Save failed.');
+        } finally {
+          state.isSavingTheme = false;
+          elements.saveThemeButton.disabled = false;
+          elements.saveThemeButton.textContent = 'Save theme';
+        }
+      }
+
+      async function saveUploadPolicy() {
+        if (state.isSavingUploadPolicy) {
+          return;
+        }
+
+        state.isSavingUploadPolicy = true;
+        elements.saveUploadPolicyButton.disabled = true;
+        elements.saveUploadPolicyButton.textContent = 'Saving...';
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+
+        try {
+          const payload = await apiFetch('/api/admin/config/upload-policy', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ config: readUploadPolicyForm() }),
+          });
+
+          state.uploadPolicy = payload.config;
+          renderUploadPolicy();
+          renderWeddingPublic();
+          elements.topStatus.textContent = 'Upload policy saved';
+          setBanner(elements.successBanner, 'Upload policy saved to the API.');
+        } catch (error) {
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Save failed.');
+        } finally {
+          state.isSavingUploadPolicy = false;
+          elements.saveUploadPolicyButton.disabled = false;
+          elements.saveUploadPolicyButton.textContent = 'Save upload policy';
+        }
+      }
+
+      async function validateStorageProvider() {
+        if (state.isValidatingStorage) {
+          return;
+        }
+
+        state.isValidatingStorage = true;
+        elements.validateStorageButton.disabled = true;
+        elements.validateStorageButton.textContent = 'Validating...';
+        setBanner(elements.errorBanner, '');
+
+        try {
+          const payload = await apiFetch('/api/admin/config/storage-provider/validate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ config: readStorageForm() }),
+          });
+
+          setStorageValidationResult(payload.validationMessage, payload.valid);
+        } catch (error) {
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Validation failed.');
+        } finally {
+          state.isValidatingStorage = false;
+          elements.validateStorageButton.disabled = false;
+          elements.validateStorageButton.textContent = 'Validate provider';
+        }
+      }
+
+      async function saveStorageProvider() {
+        if (state.isSavingStorage) {
+          return;
+        }
+
+        state.isSavingStorage = true;
+        elements.saveStorageButton.disabled = true;
+        elements.saveStorageButton.textContent = 'Saving...';
+        setBanner(elements.errorBanner, '');
+        setBanner(elements.successBanner, '');
+
+        try {
+          const payload = await apiFetch('/api/admin/config/storage-provider', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ config: readStorageForm() }),
+          });
+
+          state.storage = payload.config;
+          renderStorage();
+          elements.topStatus.textContent = 'Storage provider saved';
+          setBanner(elements.successBanner, 'Storage provider config saved to the API.');
+        } catch (error) {
+          setBanner(elements.errorBanner, error instanceof Error ? error.message : 'Save failed.');
+        } finally {
+          state.isSavingStorage = false;
+          elements.saveStorageButton.disabled = false;
+          elements.saveStorageButton.textContent = 'Save provider';
+        }
+      }
+
+      weddingCopyForm.addEventListener('input', syncPreview);
+      themeForm.addEventListener('input', syncThemePreview);
+      uploadPolicyForm.addEventListener('input', syncPreview);
+      storageForm.addEventListener('input', syncStorageFormVisibility);
       elements.refreshButton.addEventListener('click', loadDashboard);
-      elements.saveButton.addEventListener('click', saveWeddingCopy);
+      elements.saveWeddingCopyButton.addEventListener('click', saveWeddingCopy);
+      elements.saveThemeButton.addEventListener('click', saveTheme);
+      elements.saveUploadPolicyButton.addEventListener('click', saveUploadPolicy);
+      elements.validateStorageButton.addEventListener('click', validateStorageProvider);
+      elements.saveStorageButton.addEventListener('click', saveStorageProvider);
       loadDashboard();
     </script>
   </body>
@@ -768,6 +1172,7 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
   }
 
   input[type='text'],
+  select,
   textarea {
     width: 100%;
     border-radius: 12px;
@@ -780,6 +1185,10 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
   textarea {
     resize: vertical;
     min-height: 96px;
+  }
+
+  select {
+    appearance: none;
   }
 
   input[type='checkbox'] {
@@ -796,6 +1205,36 @@ const adminDebugEmail = import.meta.env.PUBLIC_ADMIN_DEBUG_EMAIL || '';
 
   .field-wide {
     grid-column: 1 / -1;
+  }
+
+  .stack-group {
+    display: grid;
+    gap: 14px;
+  }
+
+  .button-row-inline {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .inline-message {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.56);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+  }
+
+  .inline-message[data-tone='positive'] {
+    color: #bbf7d0;
+    border-color: rgba(74, 222, 128, 0.35);
+    background: rgba(20, 83, 45, 0.22);
+  }
+
+  .inline-message[data-tone='warning'] {
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(127, 29, 29, 0.2);
   }
 
   .primary-button,
