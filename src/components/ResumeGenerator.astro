@@ -8,9 +8,18 @@ export interface Props {
 }
 
 const { theme = 'professional' } = Astro.props;
+const resumeExportData = {
+  contact: resumeCompendium.contact,
+  summary: resumeCompendium.summary,
+  skills: Object.fromEntries(
+    resumeCompendium.skills.map(({ category, skills }) => [category, skills.map(({ name }) => name)])
+  ),
+  experience: resumeCompendium.experience,
+  education: resumeCompendium.education,
+};
 ---
 
-<div class={`resume-generator ${theme}-theme`}>
+<div class={`resume-generator ${theme}-theme`} data-resume={JSON.stringify(resumeExportData)}>
   <!-- Terminal Theme Interactive Interface -->
   <div class="terminal-interface" style={theme === 'terminal' ? 'display: flex;' : 'display: none;'}>
     <div class="terminal-output" id="terminal-output">
@@ -123,13 +132,13 @@ Try: python generator.py generate --format pdf</pre>
           <label class="toggle-item">
             <input type="checkbox" id="include-experience" checked />
             <span class="checkmark"></span>
-            Experience (Sample)
+            Experience
           </label>
           
           <label class="toggle-item">
             <input type="checkbox" id="include-education" checked />
             <span class="checkmark"></span>
-            Education (Sample)
+            Education
           </label>
         </div>
       </div>
@@ -271,52 +280,11 @@ Try: python generator.py generate --format pdf</pre>
         this.handleMDExport = this.handleMDExport.bind(this);
         this.handleTXTExport = this.handleTXTExport.bind(this);
         
-        // Use the actual resume data from the imported compendium
-        this.resumeData = {
-          contact: {
-            name: "Amrithnath Vijayakumar",
-            title: "Product Development Engineer III | Solutions Engineer",
-            email: "hello@amrithnath.dev",
-            phone: "+91 8147842231",
-            location: "Bangalore, India",
-            website: "amrithnath.dev",
-            linkedin: "linkedin.com/in/amrithnath",
-            github: "github.com/Amrithnath"
-          },
-          summary: "Versatile Solutions Engineer with 6+ years of experience architecting and delivering complex IT solutions. Expert in Python scripting and cloud-native architectures, with a proven track record of client-facing technical leadership, rapid prototyping, and driving business outcomes.",
-          skills: {
-            "Frontend": ["React", "Next.js", "TypeScript", "Astro", "Vue.js", "HTML/CSS"],
-            "Backend": ["Node.js", "Python", "Django", "Express", "FastAPI", "C++", "Java"],
-            "Database": ["PostgreSQL", "MongoDB", "Redis", "SQLite", "MySQL"],
-            "DevOps & Cloud": ["Docker", "AWS", "Azure", "CI/CD", "Git", "Vercel", "Kubernetes"],
-            "AI/ML": ["TensorFlow", "PyTorch", "OpenAI", "Hugging Face", "Langchain"]
-          },
-          experience: [
-            {
-              company: "Cisco Systems",
-              position: "Product Development Engineer III",
-              location: "Bangalore, India",
-              startDate: "2022",
-              endDate: "Present",
-              description: "Leading product development and solutions engineering initiatives",
-              achievements: [
-                "Architected and delivered complex IT solutions for enterprise clients",
-                "Expert in Python scripting and cloud-native architectures",
-                "Drove business outcomes through rapid prototyping and technical leadership"
-              ]
-            }
-          ],
-          education: [
-            {
-              institution: "RV College of Engineering",
-              degree: "Bachelor of Engineering",
-              field: "Computer Science",
-              startDate: "2018",
-              endDate: "2022",
-              location: "Bangalore, India"
-            }
-          ]
-        };
+        const resumeDataElement = document.querySelector('.resume-generator');
+        if (!resumeDataElement?.dataset.resume) {
+          throw new Error('Resume data is unavailable');
+        }
+        this.resumeData = JSON.parse(resumeDataElement.dataset.resume);
         
         this.sections = {
           contact: true,
