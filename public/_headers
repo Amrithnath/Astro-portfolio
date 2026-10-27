@@ -20,10 +20,19 @@
   Cross-Origin-Opener-Policy: same-origin
   X-Frame-Options: DENY
 
-# Wedding upload page: previews selected photos/videos via blob: URLs and talks to same-origin /api/*.
-/wedding/*
+# Archived: wedding upload page headers (see project-archive/README.md).
+# /wedding/*
+#   ! Content-Security-Policy
+#   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+# Sveltia CMS editor (self-hosted bundle). Needs the GitHub API, the sign-in Worker, blob: previews,
+# its jsDelivr font and unpkg add-ons. COOP must allow the sign-in popup to message back.
+/admin/*
   ! Content-Security-Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  ! Cross-Origin-Opener-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' blob: data: https:; media-src 'self' blob:; frame-src blob:; worker-src 'self' blob:; manifest-src 'self' blob:; connect-src 'self' blob: data: https://api.github.com https://cms-auth.amrithnath.dev https://unpkg.com https://www.githubstatus.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  X-Robots-Tag: noindex, nofollow
 
 # Content-hashed build output: safe to cache forever.
 /_astro/*

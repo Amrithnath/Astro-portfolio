@@ -52,6 +52,18 @@ const imageSource = content.img || content.image;
       {content.link && <p><Button href={content.link} target="_blank" rel="noopener noreferrer">View project</Button></p>}
     </header>
     <div class="article-body"><slot /></div>
-    <footer><p><a href="/projects/">View more projects</a></p></footer>
+    <footer>
+      {schemaType === 'BlogPosting' ? (
+        <>
+          <p class="content-license">
+            This post is licensed under{' '}
+            <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>.
+          </p>
+          <p><a href="/blogs/">View more posts</a></p>
+        </>
+      ) : (
+        <p><a href="/projects/">View more projects</a></p>
+      )}
+    </footer>
   </article>
 </BaseLayout>

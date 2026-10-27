@@ -1,0 +1,11 @@
+# Deployed by .github/workflows/cms-auth.yml. Secrets GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET
+# are uploaded from GitHub Actions secrets on each deploy.
+name = "amrithnath-cms-auth"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = false
+routes = [{ pattern = "cms-auth.amrithnath.dev", custom_domain = true }]
+
+[vars]
+# Exact hostnames allowed to receive tokens (comma-separated, https only, no wildcards).
+ALLOWED_DOMAINS = "amrithnath.dev"

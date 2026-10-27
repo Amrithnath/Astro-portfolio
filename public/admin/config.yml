@@ -1,0 +1,56 @@
+# Sveltia CMS configuration for /admin. https://sveltiacms.app/en/docs
+# Every save opens (or updates) a pull request on a cms/blog/<slug> branch, so the full CI
+# pipeline and preview deploys run before anything reaches main.
+backend:
+  name: github
+  repo: Amrithnath/Astro-portfolio
+  branch: main
+  base_url: https://cms-auth.amrithnath.dev
+  auth_methods: [oauth]
+  commit_messages:
+    create: 'docs(blog): 📝 create {{slug}}'
+    update: 'docs(blog): 📝 update {{slug}}'
+    delete: 'docs(blog): 📝 delete {{slug}}'
+    uploadMedia: 'docs(blog): 📝 upload {{path}}'
+    deleteMedia: 'docs(blog): 📝 delete {{path}}'
+
+publish_mode: editorial_workflow
+site_url: https://amrithnath.dev
+display_url: https://amrithnath.dev
+media_folder: public/images/blog
+public_folder: /images/blog
+
+collections:
+  - name: blog
+    label: Blog
+    label_singular: Post
+    folder: src/content/blog
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    preview_path: blog/{{slug}}/
+    summary: '{{title}} ({{pubDate}})'
+    sortable_fields:
+      fields: [pubDate, title]
+      default: { field: pubDate, direction: descending }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Description, widget: text }
+      - name: pubDate
+        label: Published
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        default: '{{now}}'
+      - name: updatedDate
+        label: Updated
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        required: false
+      - { name: tags, label: Tags, widget: list, required: false, default: [] }
+      - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
+      - { name: img, label: Cover image, widget: image, required: false }
+      - { name: lang, label: Language code, widget: string, required: false }
+      - { name: body, label: Body, widget: markdown }

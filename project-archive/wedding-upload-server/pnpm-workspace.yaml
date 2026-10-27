@@ -1,0 +1,4 @@
+# Standalone archived package (not part of the portfolio workspace).
+minimumReleaseAge: 1440
+overrides:
+  uuid: '^11.1.1'

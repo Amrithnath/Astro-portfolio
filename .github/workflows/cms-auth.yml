@@ -1,0 +1,65 @@
+name: CMS Auth Worker
+
+# Tests the Sveltia CMS sign-in Worker on PRs that touch it, and deploys it with wrangler on main.
+# Required secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CMS_GITHUB_CLIENT_ID,
+# CMS_GITHUB_CLIENT_SECRET. Deploy skips itself (with a notice) until they are set.
+on:
+  pull_request:
+    paths:
+      - 'workers/cms-auth/**'
+      - '.github/workflows/cms-auth.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workers/cms-auth/**'
+      - '.github/workflows/cms-auth.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test "workers/cms-auth/test/*.test.js"
+
+  deploy:
+    name: Deploy
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_CLIENT_ID: ${{ secrets.CMS_GITHUB_CLIENT_ID }}
+      GITHUB_CLIENT_SECRET: ${{ secrets.CMS_GITHUB_CLIENT_SECRET }}
+    steps:
+      - if: env.CLOUDFLARE_API_TOKEN == '' || env.GITHUB_CLIENT_ID == '' || env.GITHUB_CLIENT_SECRET == ''
+        run: echo "::notice::CMS auth secrets not set; skipping Worker deploy."
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.GITHUB_CLIENT_ID != '' && env.GITHUB_CLIENT_SECRET != ''
+        uses: actions/checkout@v4
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.GITHUB_CLIENT_ID != '' && env.GITHUB_CLIENT_SECRET != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Deploy Worker with secrets
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.GITHUB_CLIENT_ID != '' && env.GITHUB_CLIENT_SECRET != ''
+        run: |
+          umask 077
+          secrets="$RUNNER_TEMP/cms-auth-secrets.json"
+          trap 'rm -f "$secrets"' EXIT
+          node -e 'process.stdout.write(JSON.stringify({ GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET }))' > "$secrets"
+          npx -y wrangler@4 deploy -c workers/cms-auth/wrangler.toml --secrets-file "$secrets"
