@@ -27,6 +27,11 @@ for (const file of htmlFiles) {
     assert.match(html, /data-terminal-fragment/);
     continue;
   }
+  // Static service-worker fallback in public/; intentionally minimal and noindex.
+  if (file === 'offline/index.html') {
+    assert.match(html, /name="robots" content="noindex"/);
+    continue;
+  }
   const metadata = head(html);
   assert.ok(metadata, `Missing head: ${file}`);
   assert.equal(parsed.length, 1, `Expected one JSON-LD graph: ${file}`);

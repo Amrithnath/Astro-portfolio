@@ -22,6 +22,7 @@ export const excludedPrefixes = [
   '/api',
   '/terminal-full',
   '/work-in-progress',
+  '/offline',
   '/404',
 ];
 
