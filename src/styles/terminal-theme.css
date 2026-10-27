@@ -295,7 +295,6 @@ body {
   overflow-x: auto;
 }
 
-.json-output { content-visibility: auto; }
 .json-key { color: var(--color-link); }
 .json-string { color: var(--color-accent); }
 .json-number { color: var(--color-secondary); }

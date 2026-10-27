@@ -95,6 +95,11 @@ a.card:focus-visible {
   color: var(--color-accent);
 }
 
+.tag-list,
+.prose .tag-list {
+  padding: 0;
+}
+
 .link-row {
   display: flex;
   flex-wrap: wrap;

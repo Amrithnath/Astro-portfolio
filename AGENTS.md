@@ -12,7 +12,7 @@
 
 ## Architecture
 - This is a single-package Astro 7 site with `output: 'static'`; do not add SSR-only or server endpoint features to the Astro app.
-- `src/pages/index.astro` is a special homepage entrypoint: it does not use `src/layouts/BaseLayout.astro`, inlines its own terminal tabs, and fetches deferred terminal HTML from `src/pages/terminal-full.astro`.
+- `src/pages/index.astro` is a special homepage entrypoint: it does not use `src/layouts/BaseLayout.astro` but renders the same `src/components/TerminalShell.astro` (window chrome, `TerminalNav` tabs, status bar, footer) and fetches deferred terminal HTML from `src/pages/terminal-full.astro`.
 - Homepage content is assembled from `src/data/landing-data-service.ts` and `src/data/resume-compendium.ts`, not from one static data file.
 - Interior routes use `src/layouts/BaseLayout.astro`, which renders terminal nav/footer and one content slot, and can replace the page with a WIP screen via `src/data/wip.ts` (independent of themes).
 - Blog Markdown lives in `src/content/blog/`; projects live in `src/content/projects/` (preserve case-sensitive subfolders such as `webDev/`). `src/content.config.ts` defines Content Layer glob loaders and Zod schemas; IDs are file paths without `.md` so existing URLs remain stable.
@@ -26,21 +26,22 @@
 
 ## Navigation And Routing
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
-- Update `src/components/TerminalNav.astro` for interior terminal tabs.
-- Update `src/pages/index.astro` for homepage terminal tabs.
+- Update `src/components/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`).
 - Update `src/data/navigation.ts` if the route should appear in terminal `ls` output.
 - `/blog` meta-refreshes to `/blogs/`.
 - `src/pages/blog.astro` and `src/pages/blogs.astro` use `RedirectPage.astro` meta-refreshes: `/blog` → `/blogs/` → `/work-in-progress`.
 
 ## Styling And Themes
 - Do not assume Tailwind; styling is plain CSS in `src/styles/` plus page/component-local styles.
-- Only `terminal` is registered. Render each page/component once; never add hidden per-theme views or repeated IDs. `.terminal-view` is a structural wrapper, not a visibility switch.
+- Only `terminal` is registered. Render each page/component once; never add hidden per-theme views or repeated IDs. 
 - `src/themes/index.ts` is the typed registry (`id`, `label`, `colorScheme`, `themeColor`, `defaultTheme`). All portfolio documents render `data-theme="terminal"` on `<html>` for no-JS defaults.
 - `ThemeBootstrap.astro` runs inline in the head before paint, validates persisted `portfolio-theme`, migrates a valid legacy `portfolio-layout-theme` only when the new key is absent, removes the legacy key, and falls back safely when storage is invalid/blocked. `window.__theme.current` / `window.__theme.set(id)` is the future UI API; invalid IDs return false, valid changes emit `portfolio:theme-change` with `detail.theme`. Storage events synchronize tabs. No switcher is rendered for the single theme.
 - To add a theme: (1) register a unique id and metadata in `src/themes/index.ts`; (2) add `src/styles/themes/<id>.css`, scoped to `[data-theme="<id>"]`, defining every semantic and terminal palette token in `terminal.css`; (3) import that file in `BaseHead.astro`; (4) optionally add `[data-theme="<id>"]` component overrides (use `:global([data-theme="<id>"])` in scoped Astro styles); (5) if exposing selection, build a switcher from `themes` only when `themes.length > 1` and call `window.__theme.set(id)`. Do not clone content or add theme-specific route layouts. See `src/themes/README.md`.
 - Shell styling in `src/styles/terminal-theme.css` is theme-independent and consumes tokens; prefer `var(--color-bg)`, `var(--color-text)`, `var(--color-surface)`, `var(--color-border)`, `var(--color-link)`, and `var(--color-accent)` for new components. Existing terminal palette aliases remain supported.
 - Verify theme changes with `pnpm build`, `node scripts/check-agentic-seo.mjs`, and `node scripts/check-theme-system.mjs` (built HTML, storage/API, and single-instance resume exports/toggles).
-- `src/styles/global.css` sets `* { box-sizing: content-box; }`; account for that on pages importing it.
+- Token layers: `src/styles/tokens.css` (theme-agnostic spacing `--space-1..8`, type `--text-xs..3xl`, line-heights, `--radius-*`, `--content-width`, `--shell-width`, `--shell-padding`, z-index, transitions) and `src/styles/themes/<id>.css` (colors only: semantic `--color-*`, `--window-control-*`; `--terminal-*` are aliases). Do not hardcode hex/rgb outside theme files, the resume print `--print-*` block, and `public/offline/index.html` (static token snapshot).
+- Primitives: `src/components/ui/{TerminalWindow,Prompt,Card,Button}.astro`, shared classes in `src/styles/ui.css`, and `.prose` in `src/styles/prose.css` (use for Markdown/long text). Pages should use these instead of page-local CSS; `TerminalShell` is the single shell for all pages.
+- `src/styles/global.css` sets `*, *::before, *::after { box-sizing: border-box; }`. Breakpoints (not usable as custom properties): `48rem` (md) and `64rem` (lg). Links use `--color-link` (hover `--color-accent`), fonts `--font-mono`; animations must respect `prefers-reduced-motion` (global rule exists).
 
 ## Formatting
 - `.prettierrc` expects semicolons, single quotes, 2-space indentation, `printWidth: 100`, and `prettier-plugin-astro`.

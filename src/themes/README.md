@@ -10,6 +10,10 @@ content trees: render every component once and keep IDs unique.
    HTML default on all Astro portfolio pages.
 2. Copy `src/styles/themes/terminal.css` to `<id>.css`. Change its scope to
    `[data-theme='<id>']` and supply every semantic token **and** terminal palette alias.
+   A theme must define: `--color-bg/surface/border/text/muted/secondary/heading/accent/link/on-accent`,
+   `--color-success/warning/danger/info`, `--color-overlay/overlay-strong`, `--color-shadow`,
+   `--window-control-close/min/max`, `--font-mono`, and the `--terminal-*` aliases (see
+   `terminal.css`). Spacing, type, radius and layout tokens live in theme-agnostic `tokens.css`.
    `--font-mono` controls the shell font. Import the file in `BaseHead.astro` so it
    is available before paint. Shell rules in `terminal-theme.css` work for all themes.
 3. For optional overrides, use `[data-theme='<id>'] .component` in global CSS, or
@@ -28,7 +32,7 @@ persist when storage is available and synchronize between tabs. Server HTML and 
 provide the terminal default even without JavaScript.
 
 `BaseHead` also preserves SEO, icons/manifest and production service worker setup.
-Blog/project articles reuse `BaseLayout`. The homepage keeps its special shell and
+Blog/project articles reuse `BaseLayout`/`TerminalShell` with `.prose`. The homepage uses the same `TerminalShell` and
 extracts only deferred commands from `/terminal-full/`. The public `/offline/` page
 is a self-contained terminal fallback (a small inline token snapshot); wedding is
 independent and deliberately excluded from this system.
