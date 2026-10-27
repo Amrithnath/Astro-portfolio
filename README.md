@@ -173,15 +173,16 @@ count on the deployed site.
 
 ## CI/CD and deployment
 
-**Portfolio Quality** (`ci.yml`) is a gated pipeline. Each stage runs only if the previous one
-passed:
+**Portfolio Quality** (`ci.yml`) runs its checks in parallel and stops at the first failure:
 
-1. **Conventions** (PRs only): PR title and commit messages
-2. **CodeQL**
-3. **Quality**: audit, type check, build checks, Playwright + axe
-4. **Node 24 build** and **Lighthouse** (mobile and desktop)
-5. **Deploy**: GitHub Pages on `main`, plus Cloudflare Pages and Vercel once their secrets are set
+1. **At once:** Conventions (PRs only: PR title and commit messages), CodeQL, Build (audit, type
+   check, build, SEO/theme/link checks) and Node 24.
+2. **As soon as Build is done:** E2E (Playwright + axe on the runner's Chrome) and Lighthouse
+   (mobile and desktop).
+3. **Deploy**, once every check has passed: GitHub Pages on `main`, plus Cloudflare Pages and Vercel
+   once their secrets are set.
 
+If any check fails, it cancels the rest of the run, so failures don't waste minutes.
 It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 
 Other workflows:
