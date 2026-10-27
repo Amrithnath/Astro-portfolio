@@ -237,3 +237,11 @@ File paths preserve case and subfolders: `projects/webDev/weather-app.md` publis
 exclude them from routes, lists, mirrors, LLM discovery, sitemap, and RSS. Published blog
 posts automatically appear in `/rss.xml`; blog and project Markdown mirrors and LLM notes
 are also generated from the collections. The profile compendium is still maintained separately.
+
+## Versioning and releases
+
+The package version is displayed in the terminal footer and exposed at `/version.json`. Releases
+are managed by Release Please from Conventional Commit messages using the format
+`feat: ✨ add a feature`; the generated `CHANGELOG.md` and `vX.Y.Z` tags are updated through the
+release PR workflow. See [AGENTS.md](AGENTS.md#versioning-and-releases) for commit emoji conventions
+and the one-time 2.0.0 bootstrap instructions.

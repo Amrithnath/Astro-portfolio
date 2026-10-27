@@ -1,5 +1,6 @@
 ---
 import Prompt from './ui/Prompt.astro';
+import pkg from '../../package.json';
 
 export interface Props {
   showCursor?: boolean;
@@ -14,7 +15,7 @@ const year = new Date().getFullYear();
   <div class="output"><div class="command-output">Thanks for visiting!</div></div>
 
   <Prompt command="uname -srv" />
-  <div class="output"><div class="command-output">Astro/Terminal v1.0 — © {year} Amrith — All rights reserved</div></div>
+  <div class="output"><div class="command-output">Astro/Terminal v{pkg.version} — © {year} Amrith — All rights reserved</div></div>
 
   <Prompt command={'echo "Made with ❤  using Astro"'} />
   <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>

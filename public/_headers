@@ -33,6 +33,11 @@
 /sw.js
   Cache-Control: no-cache
 
+# Version metadata changes with each deployment and must not be cached indefinitely.
+/version.json
+  Cache-Control: no-cache, max-age=0, must-revalidate
+  Content-Type: application/json; charset=utf-8
+
 # HTML documents: always revalidate.
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
