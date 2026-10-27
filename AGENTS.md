@@ -2,7 +2,7 @@
 
 ## Source Of Truth
 - Trust `package.json`, `astro.config.mjs`, and `.github/workflows/*` over `README.md` when they disagree.
-- CI is the runtime truth: Node 26 current release line (pinned in `.nvmrc`; CI also builds on the latest Node), pnpm 10 (pinned via `packageManager`), preview on port `4321`. `sandbox.config.json` still says Node 14/port 3000 and is not authoritative.
+- CI is the runtime truth: Node 26 current release line (pinned in `.nvmrc`; CI also builds on the latest Node), pnpm 12 (pinned via `packageManager`; dependency build scripts must be allowlisted in `pnpm-workspace.yaml` `allowBuilds`), preview on port `4321`. `sandbox.config.json` still says Node 14/port 3000 and is not authoritative.
 
 ## Commands
 - Install with `pnpm install --frozen-lockfile` to match CI.

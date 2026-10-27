@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
       - name: install node
         uses: actions/setup-node@v4
         with:
@@ -50,11 +50,9 @@ jobs:
           path: |
             dist
       - name: Install dependencies and build your site
-        uses: withastro/action@v3
+        uses: withastro/action@v6
         with:
              node-version: '26.12.1' # Keep in sync with .nvmrc (Node current release line).
-             package-manager: pnpm # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
-             pnpm-version: 10.34.9
   deploy-ghpages:
     needs: build
     runs-on: ubuntu-latest

@@ -45,7 +45,7 @@ The standalone public offline page stays terminal-only; wedding has its own styl
 ### Prerequisites
 
 - Node.js 26+ (current release line; pinned in `.nvmrc`, CI also builds on the latest Node release)
-- pnpm 10 (pinned via `packageManager`; lockfile format 9)
+- pnpm 12 (pinned via `packageManager`; build-script approvals live in `pnpm-workspace.yaml` `allowBuilds`; packages younger than 24h are rejected by pnpm’s default `minimumReleaseAge`)
 
 TypeScript remains on the latest 5.x release (5.9.3). TypeScript 6.0.3 and 7.0.2
 enable stricter defaults that introduce nullability errors in the existing resume data;
