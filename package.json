@@ -23,7 +23,8 @@
     "check:seo": "node scripts/check-agentic-seo.mjs",
     "check:theme": "node scripts/check-theme-system.mjs",
     "test:e2e": "playwright test",
-    "verify": "pnpm build && pnpm check:seo && pnpm check:theme"
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme",
+    "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
