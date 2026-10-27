@@ -50,7 +50,8 @@ pnpm dev            # http://localhost:4321
 | `pnpm dev` | Start the dev server |
 | `pnpm build` / `pnpm preview` | Build the static site to `dist/` / serve it locally |
 | `pnpm check` | Astro and TypeScript diagnostics |
-| `pnpm verify` | Build, then check SEO output, the theme system and internal links |
+| `pnpm verify` | Build, then check SEO output, the theme system, internal links and `vercel.json` headers |
+| `pnpm sync:headers` | Regenerate `vercel.json` headers from `public/_headers` |
 | `pnpm test:e2e` | Playwright smoke and accessibility tests (run after a build) |
 | `pnpm test:cms-auth` | Unit tests for the CMS sign-in Worker |
 | `pnpm lighthouse` | Lighthouse CI against `dist/` (`LIGHTHOUSE_DESKTOP=1` for desktop) |
@@ -169,16 +170,18 @@ Latest local medians, measured 2026-10-27 (Performance / Accessibility / Best Pr
 | `/project/webDev/weather-app/` | 100/100/100/100 | 100/100/100/100 |
 
 The local servers don't apply Cloudflare's `public/_headers`, so header checks (CSP, HSTS) only
-count on the deployed site.
+count on the deployed site. `public/_headers` is the single source of truth: after editing it, run
+`pnpm sync:headers` so Vercel (which reads `vercel.json`, not `_headers`) serves the same headers.
+`pnpm verify` and CI fail if the two drift.
 
 ## CI/CD and deployment
 
 **Portfolio Quality** (`ci.yml`) runs its checks in parallel and stops at the first failure:
 
 1. **At once:** Conventions (PRs only: PR title and commit messages), CodeQL, Build (audit, type
-   check, build, SEO/theme/link checks) and Node 24.
+   check, build, SEO/theme/link/header checks) and Node 24.
 2. **As soon as Build is done:** E2E (Playwright + axe on the runner's Chrome) and Lighthouse
-   (mobile and desktop).
+   (mobile and desktop, each split into two URL shards).
 3. **Deploy**, once every check has passed: GitHub Pages on `main`, plus Cloudflare Pages and Vercel
    once their secrets are set.
 

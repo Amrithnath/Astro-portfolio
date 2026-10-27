@@ -26,7 +26,9 @@
     "test:e2e": "playwright test",
     "test:cms-auth": "node --test \"workers/cms-auth/test/*.test.js\"",
     "check:links": "node scripts/check-links.mjs",
-    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links",
+    "check:headers": "node scripts/sync-vercel-headers.mjs --check",
+    "sync:headers": "node scripts/sync-vercel-headers.mjs",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers",
     "commitlint": "commitlint",
     "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun"
   },
