@@ -1,5 +1,5 @@
 ---
-import type { MarkdownInstance } from 'astro';
+import { getProjectPreviews } from '../lib/content';
 import { defaultTheme } from '../themes';
 // Component Imports
 import BaseHead from '../components/BaseHead.astro';
@@ -10,10 +10,8 @@ import TerminalView from '../components/TerminalView.astro';
 // Dynamic data service
 import { generateSeededLandingData } from '../data/landing-data-service';
 
-// Data Fetching: List all Markdown posts in the repo.
-const projects = Object.values(
-  import.meta.glob<MarkdownInstance<Record<string, any>>>('./project/**/*.md', { eager: true })
-);
+// Load published project collection entries.
+const projects = await getProjectPreviews();
 
 // Generate dynamic data from resume compendium
 const dynamicData = generateSeededLandingData();

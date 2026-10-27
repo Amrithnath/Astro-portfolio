@@ -1,17 +1,18 @@
-import type { MarkdownInstance } from 'astro';
+import { contentPath, getPublishedCollection } from './content';
 import { absoluteProfileUrl, isIndexablePath, profile, profileLinks } from './seo';
 
-type Post = MarkdownInstance<{ title: string; description?: string }>;
-const documents = import.meta.glob<Post>(
-  ['/src/pages/blog/**/*.md', '/src/pages/project/**/*.md'], { eager: true },
-);
-
-export const posts = Object.entries(documents).map(([file, document]) => ({
-  path: file.replace('/src/pages', '').replace(/\.md$/, ''),
-  title: document.frontmatter.title as string,
-  description: String(document.frontmatter.description || '').trim(),
-  body: document.rawContent().trim(),
-})).filter(post => isIndexablePath(post.path));
+export async function getPosts() {
+  const documents = [
+    ...(await getPublishedCollection('blog')),
+    ...(await getPublishedCollection('projects')),
+  ];
+  return documents.map(entry => ({
+    path: contentPath(entry),
+    title: entry.data.title,
+    description: entry.data.description,
+    body: entry.body?.trim() || '',
+  })).filter(post => isIndexablePath(post.path));
+}
 
 export const keyPages = [
   { path: '/', label: 'Home', description: profile.contact.title, markdown: '/index.md' },
@@ -84,7 +85,8 @@ export function fullProfileMarkdown(site: URL): string {
   ].join('\n\n') + '\n';
 }
 
-export function markdownMirrors() {
+export async function markdownMirrors() {
+  const posts = await getPosts();
   const overview = [
     `# ${profile.contact.name}`, `> ${profile.contact.title}`, profile.summary,
     '## Experience', experienceMarkdown(),

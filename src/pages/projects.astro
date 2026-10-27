@@ -1,19 +1,12 @@
 ---
-import type { MarkdownInstance } from 'astro';
+import { getProjectPreviews } from '../lib/content';
 import { profile } from '../lib/seo';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LsOutput from '../components/LsOutput.astro';
 import TerminalCommand from '../components/TerminalCommand.astro';
 import CatOutput from '../components/CatOutput.astro';
 
-const projects = Object.values(
-  import.meta.glob<MarkdownInstance<Record<string, any>>>('./project/**/*.md', { eager: true })
-)
-	.filter(({ frontmatter }) => !!frontmatter.publishDate)
-	.sort(
-		(a, b) =>
-			new Date(b.frontmatter.publishDate).valueOf() - new Date(a.frontmatter.publishDate).valueOf()
-	);
+const projects = await getProjectPreviews();
 
 // Projects directory items for ls command
 const projectsDirectoryItems = [
@@ -65,7 +58,7 @@ ${projects.slice(0, 3).map(project => `
   <div class="md-subheader">### ${project.frontmatter.title}</div>
   <div class="md-text">${project.frontmatter.description}</div>
   <div class="md-list-item">**Tech:** ${project.frontmatter.tags?.join(', ') || 'N/A'}</div>
-  <div class="md-list-item">**Date:** ${project.frontmatter.publishDate}</div>
+  <div class="md-list-item">**Date:** ${project.frontmatter.pubDate.toISOString().slice(0, 10)}</div>
 </div>
 `).join('')}
 

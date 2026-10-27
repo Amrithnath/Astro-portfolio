@@ -15,6 +15,7 @@ export interface Props {
   type?: 'website' | 'article';
   schemaType?: 'BlogPosting' | 'SoftwareSourceCode' | 'CreativeWork';
   published?: string | Date;
+  modified?: string | Date;
   keywords?: string[];
   projectUrl?: string;
   markdown?: string;
@@ -29,6 +30,7 @@ const {
   type = 'website',
   schemaType,
   published,
+  modified,
   keywords,
   projectUrl,
   markdown = isIndexablePath(path)
@@ -67,6 +69,7 @@ const graph: Record<string, unknown>[] = [
 ];
 if (schemaType) {
   const date = published ? new Date(published) : undefined;
+  const updated = modified ? new Date(modified) : undefined;
   graph.push({
     '@type': schemaType,
     '@id': `${canonical}#work`,
@@ -78,6 +81,7 @@ if (schemaType) {
     author: { '@id': person['@id'] },
     mainEntityOfPage: { '@id': pageId },
     ...(date && !Number.isNaN(date.valueOf()) ? { datePublished: date.toISOString() } : {}),
+    ...(updated && !Number.isNaN(updated.valueOf()) ? { dateModified: updated.toISOString() } : {}),
     ...(keywords ? { keywords } : {}),
     ...(projectUrl ? { sameAs: projectUrl } : {}),
   });

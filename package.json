@@ -21,6 +21,7 @@
     "admin:preview": "pnpm --dir admin-ui preview"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource/fira-code": "^5.3.0",
     "astro": "^7.4.2",

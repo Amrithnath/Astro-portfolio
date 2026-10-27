@@ -19,6 +19,7 @@ export const GET: APIRoute = ({ site }) => {
   return new Response([
     '# Public portfolio: search, training, and user-fetch agents are welcome.',
     `# LLM discovery: ${new URL('/llms.txt', site).href}`,
+    `# RSS feed: ${new URL('/rss.xml', site).href}`,
     group,
     `Sitemap: ${new URL('/sitemap-index.xml', site).href}`,
     '',
