@@ -194,7 +194,7 @@ export const resumeCompendium: ResumeCompendium = {
     portfolio: "amrithnath.dev"
   },
   
-  summary: "Senior Engineer in HashiCorp's HCP Core Platform Engineering group at IBM India Software Labs, maintaining services core to the HashiCorp Cloud Platform used by hundreds of thousands of users and integrating HCP with IBM's cloud offerings. 8+ years of experience architecting and delivering cloud-native platforms, distributed systems, and API integrations, with a track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Expert in Python and cloud-native architectures, and passionate about open-source technologies and AI-powered applications.",
+  summary: "Senior Engineer in HashiCorp's HCP Core Platform Engineering group at IBM India Software Labs, maintaining services core to the HashiCorp Cloud Platform used by hundreds of thousands of users and integrating HCP with IBM's cloud offerings. 8+ years of experience architecting and delivering cloud-native platforms, distributed systems, and API integrations, with a track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Expert in Go, AWS, and cloud-native platform engineering, with deep experience in developer tooling, and passionate about open-source technologies and AI-powered applications.",
   
   experience: [
     {
@@ -208,6 +208,7 @@ export const resumeCompendium: ResumeCompendium = {
         "Maintain services core to the HashiCorp Cloud Platform, powering products used by hundreds of thousands of users",
         "Integrate the HashiCorp Cloud Platform with IBM's cloud offerings"
       ],
+      technologies: ["Go", "AWS", "Terraform", "Kubernetes", "Developer Tooling"],
       type: "full-time",
       industry: "Enterprise Software/Cloud Infrastructure",
       isRemote: false
@@ -361,8 +362,15 @@ export const resumeCompendium: ResumeCompendium = {
   
   skills: [
     {
-      category: "Programming Languages",
+      category: "Primary Language",
       priority: 1,
+      skills: [
+        { name: "Go", level: "expert", yearsOfExperience: 2, lastUsed: "2026-01" }
+      ]
+    },
+    {
+      category: "Other Languages",
+      priority: 2,
       skills: [
         { name: "JavaScript", level: "expert", yearsOfExperience: 6, lastUsed: "2024-01" },
         { name: "TypeScript", level: "expert", yearsOfExperience: 5, lastUsed: "2024-01" },
@@ -370,7 +378,6 @@ export const resumeCompendium: ResumeCompendium = {
         { name: "Python", level: "expert", yearsOfExperience: 6, lastUsed: "2024-01" },
         { name: "Java", level: "intermediate", yearsOfExperience: 3, lastUsed: "2023-06" },
         { name: "PHP", level: "intermediate", yearsOfExperience: 2, lastUsed: "2022-12" },
-        { name: "Go", level: "beginner", yearsOfExperience: 1, lastUsed: "2023-09" },
         { name: "Zig", level: "beginner", yearsOfExperience: 1, lastUsed: "2023-08" }
       ]
     },

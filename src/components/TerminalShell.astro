@@ -6,9 +6,11 @@ import TerminalFooter from './TerminalFooter.astro';
 
 export interface Props {
   currentPage?: string;
+  /** Pages with their own live input (e.g. the resume CLI) hide the decorative footer cursor. */
+  footerCursor?: boolean;
 }
 
-const { currentPage = '/' } = Astro.props;
+const { currentPage = '/', footerCursor = true } = Astro.props;
 ---
 
 <TerminalWindow>
@@ -26,4 +28,4 @@ const { currentPage = '/' } = Astro.props;
   </div>
   <main id="main-content"><slot /></main>
 </TerminalWindow>
-<TerminalFooter />
+<TerminalFooter showCursor={footerCursor} />

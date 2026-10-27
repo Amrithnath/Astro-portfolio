@@ -1,6 +1,7 @@
 ---
 // Resume Generator Component
 import { resumeCompendium } from '../data/resume-compendium';
+import { formatMonth, formatRange } from '../lib/format-date';
 import Button from './ui/Button.astro';
 import Card from './ui/Card.astro';
 
@@ -10,8 +11,8 @@ const resumeExportData = {
   skills: Object.fromEntries(
     resumeCompendium.skills.map(({ category, skills }) => [category, skills.map(({ name }) => name)])
   ),
-  experience: resumeCompendium.experience,
-  education: resumeCompendium.education,
+  experience: resumeCompendium.experience.map(exp => ({ ...exp, period: formatRange(exp.startDate, exp.endDate) })),
+  education: resumeCompendium.education.map(edu => ({ ...edu, period: formatRange(edu.startDate, edu.endDate, 'In Progress') })),
 };
 ---
 
@@ -48,6 +49,7 @@ Available commands:
   config              - Show current configuration
   preview             - Preview resume content
   export [format]     - Export and download resume
+  gui                 - Open the visual generator
 
 Examples:
   generate pdf         - Generate PDF resume
@@ -94,12 +96,24 @@ Try: python generator.py generate --format pdf</pre>
         <span class="suggestion" data-cmd="preview">preview</span>
         <span class="suggestion" data-cmd="generate pdf">generate pdf</span>
         <span class="suggestion" data-cmd="export md">export md</span>
+        <span class="suggestion" data-cmd="gui">gui</span>
       </div>
     </div>
   </div>
 
+  <div class="generator-mode">
+    <Button
+      id="toggle-visual-generator"
+      variant="ghost"
+      aria-controls="resume-tools"
+      aria-expanded="false"
+    >
+      🖥️ Open visual generator
+    </Button>
+  </div>
+
   <!-- Single-instance controls and preview complement the terminal commands. -->
-  <div class="resume-tools">
+  <div class="resume-tools" id="resume-tools" hidden>
     <!-- Resume Customization Panel -->
     <Card class="resume-controls">
       <h2>Customize Your Resume</h2>
@@ -198,7 +212,7 @@ Try: python generator.py generate --format pdf</pre>
             <div class="experience-item">
               <div class="job-header">
                 <h3 class="job-title">{exp.position}</h3>
-                <span class="job-period">{exp.startDate} - {exp.endDate || 'Present'}</span>
+                <span class="job-period">{formatRange(exp.startDate, exp.endDate)}</span>
               </div>
               <div class="company">{exp.company} • {exp.location}</div>
               <p class="job-description">{exp.description}</p>
@@ -236,7 +250,7 @@ Try: python generator.py generate --format pdf</pre>
             <div class="education-item">
               <div class="degree-header">
                 <h3 class="degree-title">{edu.degree} in {edu.field}</h3>
-                <span class="graduation-year">{edu.endDate || 'In Progress'}</span>
+                <span class="graduation-year">{edu.endDate ? formatMonth(edu.endDate) : 'In Progress'}</span>
               </div>
               <div class="institution">{edu.institution} • {edu.location}</div>
               <div class="education-details">
@@ -267,6 +281,7 @@ Try: python generator.py generate --format pdf</pre>
       this.handlePDFExport = this.handlePDFExport.bind(this);
       this.handleMDExport = this.handleMDExport.bind(this);
       this.handleTXTExport = this.handleTXTExport.bind(this);
+      this.toggleVisualGenerator = this.toggleVisualGenerator.bind(this);
       this.resumeData = JSON.parse(document.getElementById('resume-generator').dataset.resume);
       this.sections = { contact: true, bio: true, skills: true, experience: true, education: true };
       this.initializeEventListeners();
@@ -286,6 +301,7 @@ Try: python generator.py generate --format pdf</pre>
       Object.entries(exportHandlers).forEach(([id, handler]) => {
         document.getElementById(id)?.addEventListener('click', handler);
       });
+      document.getElementById('toggle-visual-generator')?.addEventListener('click', () => this.toggleVisualGenerator());
       
       // Terminal interface events
       const terminalInput = document.getElementById('terminal-input');
@@ -321,6 +337,18 @@ Try: python generator.py generate --format pdf</pre>
       this.updatePreviewFromSections();
     }
     
+    toggleVisualGenerator(open) {
+      const tools = document.getElementById('resume-tools');
+      const button = document.getElementById('toggle-visual-generator');
+      if (!tools || !button) return false;
+      const show = typeof open === 'boolean' ? open : tools.hidden;
+      tools.hidden = !show;
+      button.setAttribute('aria-expanded', String(show));
+      button.textContent = show ? '⌨️ Hide visual generator' : '🖥️ Open visual generator';
+      if (show) tools.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return show;
+    }
+
     handlePDFExport() {
       this.exportPDF();
     }
@@ -337,6 +365,7 @@ Try: python generator.py generate --format pdf</pre>
       const output = document.getElementById('terminal-output');
       const parts = command.toLowerCase().split(' ');
       const cmd = parts[0];
+      const safeCommand = command.replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`);
       
       // Don't process empty commands
       if (!cmd) return;
@@ -344,7 +373,7 @@ Try: python generator.py generate --format pdf</pre>
       // Add user input to terminal
       const inputLine = document.createElement('div');
       inputLine.className = 'command-line';
-      inputLine.innerHTML = `<span class="prompt">amrith@portfolio:~/resume$ </span><span class="command">${command}</span>`;
+      inputLine.innerHTML = `<span class="prompt">amrith@portfolio:~/resume$ </span><span class="command">${safeCommand}</span>`;
       output.appendChild(inputLine);
       
       const responseDiv = document.createElement('div');
@@ -361,6 +390,7 @@ Try: python generator.py generate --format pdf</pre>
   sections               - List available resume sections
   sections --toggle      - Toggle sections interactively
   preview               - Show current resume preview
+  gui [--close]         - Open or hide the visual generator
   clear                 - Clear terminal output
 </div>
 
@@ -483,6 +513,15 @@ Generator Version: 3.0
 Last Updated:     ${new Date().toLocaleDateString()}</pre>`;
           break;
           
+        case 'gui':
+        case 'ui': {
+          const shown = this.toggleVisualGenerator(parts[1] !== '--close');
+          responseDiv.innerHTML = shown
+            ? '<pre>Opening visual generator below… (run "gui --close" to hide it)</pre>'
+            : '<pre>Visual generator hidden.</pre>';
+          break;
+        }
+
         case 'clear':
           output.innerHTML = '';
           return; // Don't add the command to output
@@ -516,7 +555,7 @@ ${Object.entries(this.sections).map(([k,v]) => `  ${sectionNames[k]}: ${v ? '✓
           break;
           
         default:
-          responseDiv.innerHTML = `<pre>Command not found: ${command}
+          responseDiv.innerHTML = `<pre>Command not found: ${safeCommand}
 
 Type 'help' to see available commands.</pre>`;
           break;
@@ -552,7 +591,7 @@ Type 'help' to see available commands.</pre>`;
         if (this.sections.experience) {
           preview += `EXPERIENCE\n${'='.repeat(10)}\n`;
           this.resumeData.experience.forEach(exp => {
-            preview += `${exp.position} (${exp.startDate} - ${exp.endDate || 'Present'})\n`;
+            preview += `${exp.position} (${exp.period})\n`;
             preview += `${exp.company} • ${exp.location}\n`;
             exp.achievements.forEach(achievement => {
               preview += `- ${achievement}\n`;
@@ -564,7 +603,7 @@ Type 'help' to see available commands.</pre>`;
         if (this.sections.education) {
           preview += `EDUCATION\n${'='.repeat(9)}\n`;
           this.resumeData.education.forEach(edu => {
-            preview += `${edu.degree} in ${edu.field} (${edu.startDate} - ${edu.endDate || 'In Progress'})\n`;
+            preview += `${edu.degree} in ${edu.field} (${edu.period})\n`;
             preview += `${edu.institution} • ${edu.location}\n\n`;
           });
         }
@@ -616,7 +655,7 @@ Type 'help' to see available commands.</pre>`;
               if (this.sections.experience) {
           let experienceContent = '';
           this.resumeData.experience.forEach(exp => {
-            experienceContent += `${exp.position} (${exp.startDate} - ${exp.endDate || 'Present'})\n`;
+            experienceContent += `${exp.position} (${exp.period})\n`;
             experienceContent += `${exp.company} • ${exp.location}\n`;
             exp.achievements.forEach(achievement => {
               experienceContent += `- ${achievement}\n`;
@@ -634,7 +673,7 @@ Type 'help' to see available commands.</pre>`;
         if (this.sections.education) {
           let educationContent = '';
           this.resumeData.education.forEach(edu => {
-            educationContent += `${edu.degree} in ${edu.field} (${edu.startDate} - ${edu.endDate || 'In Progress'})\n`;
+            educationContent += `${edu.degree} in ${edu.field} (${edu.period})\n`;
             educationContent += `${edu.institution} • ${edu.location}\n`;
           });
           
@@ -917,6 +956,16 @@ Type 'help' to see available commands.</pre>`;
   .suggestion:hover {
     background: var(--color-info);
     color: var(--color-on-accent);
+  }
+
+  .generator-mode {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-4);
+  }
+
+  .resume-tools[hidden] {
+    display: none;
   }
 
   .resume-tools {

@@ -5,7 +5,7 @@ import ProfileSummary from '../components/ProfileSummary.astro';
 import { profile } from '../lib/seo';
 ---
 
-<BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume">
+<BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume" footerCursor={false}>
   <ProfileSummary />
   <ResumeGenerator />
 </BaseLayout>

@@ -71,6 +71,7 @@ const defaultSkills: Record<string, string[]> = {
 
 function getSkillExtension(skill: string): string {
   const s = skill.toLowerCase();
+  if (s === 'go' || s === 'golang') return 'go';
   if (s.includes('javascript') || s.includes('js') || s.includes('react') || s.includes('vue') || s.includes('angular')) return 'js';
   if (s.includes('typescript') || s.includes('ts')) return 'ts';
   if (s.includes('python') || s.includes('django') || s.includes('fastapi')) return 'py';
@@ -214,12 +215,12 @@ const lastLogin = new Date().toLocaleDateString('en-US', {
         <div class="output"><div class="command-output">up {terminal.systemInfo?.uptime || '321 days'}, load {terminal.systemInfo?.load || '0.95 0.23 1.83'}</div></div>
 
         <Prompt command="echo $TECH_STACK | tr ':' '\n'" />
-        <div class="output"><div class="command-output">JavaScript
-TypeScript
-Node.js
-Astro
+        <div class="output"><pre class="command-output">Go
 AWS
-Docker</div></div>
+Terraform
+Docker
+Kubernetes
+TypeScript</pre></div>
         <Prompt />
       </>
     )}

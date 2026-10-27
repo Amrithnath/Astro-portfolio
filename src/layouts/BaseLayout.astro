@@ -8,9 +8,10 @@ import { isWip } from '../data/wip';
 export interface Props extends HeadProps {
   currentPage?: string;
   lang?: string;
+  footerCursor?: boolean;
 }
 
-const { currentPage = '/', lang = 'en', ...head } = Astro.props;
+const { currentPage = '/', lang = 'en', footerCursor = true, ...head } = Astro.props;
 const wip = isWip(currentPage);
 ---
 
@@ -21,7 +22,7 @@ const wip = isWip(currentPage);
     <slot name="head" />
   </head>
   <body>
-    <TerminalShell currentPage={currentPage}>
+    <TerminalShell currentPage={currentPage} footerCursor={wip ? true : footerCursor}>
       {wip ? <TerminalWip title={wip.title} note={wip.note} /> : <slot />}
     </TerminalShell>
   </body>

@@ -46,10 +46,11 @@ function getRandomTechStack(): { [category: string]: string[] } {
   }, {} as { [key: string]: string[] });
 
   // Randomly select 3-5 categories
-  const categories = Object.keys(allSkills);
-  const selectedCategories = getRandomItems(categories, Math.floor(Math.random() * 3) + 3);
-  
-  const techStack: { [category: string]: string[] } = {};
+  const primary = resumeCompendium.skills[0]?.category;
+  const categories = Object.keys(allSkills).filter(category => category !== primary);
+  const selectedCategories = getRandomItems(categories, Math.floor(Math.random() * 3) + 2);
+
+  const techStack: { [category: string]: string[] } = primary ? { [primary]: allSkills[primary] } : {};
   selectedCategories.forEach(category => {
     // Get 3-6 random skills from each category
     const skillCount = Math.floor(Math.random() * 4) + 3;

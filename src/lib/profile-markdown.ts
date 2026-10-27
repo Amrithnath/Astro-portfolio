@@ -1,3 +1,4 @@
+import { formatRange } from './format-date';
 import { contentPath, getPublishedCollection } from './content';
 import { absoluteProfileUrl, isIndexablePath, profile, profileLinks } from './seo';
 
@@ -38,7 +39,7 @@ export function contactMarkdown(): string {
 export function experienceMarkdown(): string {
   return profile.experience.map(item => [
     `### ${item.position} — ${item.company}`,
-    `${item.startDate} – ${item.endDate || 'Present'}${item.location ? ` | ${item.location}` : ''}`,
+    `${formatRange(item.startDate, item.endDate)}${item.location ? ` | ${item.location}` : ''}`,
     item.description,
     bullets(item.achievements),
     item.technologies?.length ? `Technologies: ${item.technologies.join(', ')}` : '',
@@ -48,7 +49,7 @@ export function experienceMarkdown(): string {
 export function educationMarkdown(): string {
   return profile.education.map(item => [
     `### ${item.institution}`,
-    `${item.degree} in ${item.field} | ${item.startDate} – ${item.endDate || 'Present'}`,
+    `${item.degree} in ${item.field} | ${formatRange(item.startDate, item.endDate)}`,
     item.location || '',
     bullets(item.activities || []),
   ].filter(Boolean).join('\n\n')).join('\n\n');
@@ -64,7 +65,7 @@ export function projectsMarkdown(): string {
   return profile.projects.map(item => [
     `### ${item.name}`,
     item.longDescription || item.description,
-    `Role: ${item.role} | Status: ${item.status} | ${item.startDate} – ${item.endDate || 'Present'}`,
+    `Role: ${item.role} | Status: ${item.status} | ${formatRange(item.startDate, item.endDate)}`,
     `Technologies: ${item.technologies.join(', ')}`,
     bullets(item.highlights),
     bullets([...new Set([item.url, item.github, item.demo].filter((url): url is string => Boolean(url)))]

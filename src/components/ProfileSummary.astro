@@ -1,5 +1,6 @@
 ---
 import { profile } from '../lib/seo';
+import { formatRange } from '../lib/format-date';
 ---
 <!-- Crawler-readable profile for agents that do not run JavaScript; hidden from visitors. -->
 <section class="profile-summary" hidden>
@@ -10,14 +11,14 @@ import { profile } from '../lib/seo';
   {profile.experience.map(item => (
     <section>
       <h4>{item.position} — {item.company}</h4>
-      <p>{item.startDate} – {item.endDate || 'Present'}</p>
+      <p>{formatRange(item.startDate, item.endDate)}</p>
       <p>{item.description}</p>
       <ul>{item.achievements.map(achievement => <li>{achievement}</li>)}</ul>
     </section>
   ))}
   <h3>Education</h3>
   {profile.education.map(item => (
-    <p>{item.degree} in {item.field}, {item.institution} ({item.startDate} – {item.endDate})</p>
+    <p>{item.degree} in {item.field}, {item.institution} ({formatRange(item.startDate, item.endDate)})</p>
   ))}
   <h3>Skills</h3>
   <ul>{profile.skills.map(category => (
