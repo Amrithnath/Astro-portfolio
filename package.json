@@ -23,7 +23,8 @@
     "check:seo": "node scripts/check-agentic-seo.mjs",
     "check:theme": "node scripts/check-theme-system.mjs",
     "test:e2e": "playwright test",
-    "verify": "pnpm build && pnpm check:seo && pnpm check:theme",
+    "check:links": "node scripts/check-links.mjs",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links",
     "commitlint": "commitlint"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@axe-core/playwright": "^4.14.0",
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
     "@playwright/test": "^1.64.1",

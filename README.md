@@ -99,16 +99,16 @@ upgrading that data model is deferred rather than weakening compiler checks.
 This project includes comprehensive testing and quality checks:
 
 ### Automated Tests
-- **Build Validation**: Ensures successful builds
-- **Security Audits**: Dependency vulnerability scanning
-- **Performance**: Bundle size analysis
-- **Accessibility**: axe-core accessibility testing
-- **Link Validation**: Broken link detection
+- **Type checks**: `pnpm check` (Astro + TypeScript)
+- **Build contracts**: `pnpm verify` builds, then validates SEO/crawler output, the theme system, and internal links
+- **Browser tests**: `pnpm test:e2e` runs Playwright smoke tests and axe-core accessibility checks (WCAG 2.1 AA)
+- **Security audits**: `pnpm audit --prod` in CI
 
 ### CI/CD Workflows
-- **Lint and Test**: Basic build and security checks on every push/PR
-- **Build and Quality Tests**: Comprehensive build validation and performance analysis
-- **Deploy**: Automated deployment to GitHub Pages and GCP
+- **Portfolio Quality** (`ci.yml`): type checks, build contracts, audit, Playwright + axe on every push/PR, plus a Node 24 compatibility build
+- **Conventional Commits** (`conventional-commits.yml`): validates PR titles and commit messages
+- **Release** (`release.yml`): release-please version bumps, changelog, `vX.Y.Z` tags, and GitHub releases
+- **Deploy** (`deploy.yml`): builds, checks, and deploys to GitHub Pages and GCP
 - **Badge Updates**: Status badge maintenance
 
 ## 🚢 Deployment
