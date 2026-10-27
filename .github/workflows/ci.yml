@@ -118,7 +118,7 @@ jobs:
       - run: pnpm audit --prod
       - run: pnpm check
       - run: pnpm build
-      - run: pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers
+      - run: pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos
       - uses: actions/upload-artifact@v7
         with:
           name: dist

@@ -13,3 +13,13 @@ export async function getProjectPreviews() {
   return projects.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .map(entry => ({ frontmatter: entry.data, url: `${contentPath(entry)}/` }));
 }
+
+// Featured photos first, then newest; undated photos keep file order at the end.
+export async function getPhotos() {
+  const photos = await getPublishedCollection('photos');
+  return photos.sort(
+    (a, b) =>
+      Number(b.data.featured) - Number(a.data.featured) ||
+      (b.data.date?.valueOf() ?? 0) - (a.data.date?.valueOf() ?? 0),
+  );
+}

@@ -52,6 +52,7 @@ pnpm dev            # http://localhost:4321
 | `pnpm check` | Astro and TypeScript diagnostics |
 | `pnpm verify` | Build, then check SEO output, the theme system, internal links and `vercel.json` headers |
 | `pnpm sync:headers` | Regenerate `vercel.json` headers from `public/_headers` |
+| `pnpm check:photos` | Fail if a gallery photo has GPS data or no catalogue entry |
 | `pnpm test:e2e` | Playwright smoke and accessibility tests (run after a build) |
 | `pnpm test:cms-auth` | Unit tests for the CMS sign-in Worker |
 | `pnpm lighthouse` | Lighthouse CI against `dist/` (`LIGHTHOUSE_DESKTOP=1` for desktop) |
@@ -142,6 +143,22 @@ run before anything reaches production. Publishing in the CMS merges the PR. Upl
 
    After that, the workflow redeploys the Worker on every change to `workers/cms-auth/`.
 
+### Photography (`/photography/`)
+
+The gallery is **unlisted**: it deploys to production and opens when you type the URL, but nothing
+links to it, it is `noindex`, and robots, the sitemap and `llms.txt` leave it out.
+
+To add a photo, use the **Photography** collection in `/admin`, or by hand:
+
+1. Export the image **without GPS/location metadata** and put it in `src/assets/photos/`.
+2. Add `src/content/photos/<slug>.yml` with `title`, `image: ../../assets/photos/<file>` and
+   `alt`. Optional: `caption`, `location`, `date`, `camera`, `lens`, `settings`, `tags`,
+   `featured` (shown first), `draft`.
+3. Run `pnpm check:photos`.
+
+Astro serves resized AVIF/WebP copies with all metadata removed, but the originals are public in
+the repository, so CI rejects photos that still carry GPS coordinates.
+
 ## Testing and quality
 
 | Check | Command |
@@ -211,11 +228,12 @@ The canonical origin is `https://amrithnath.dev`. Everything below is generated 
 - `/llms.txt` and `/llms-full.txt` list the pages, the Markdown mirrors and `/rss.xml`.
 - Markdown mirrors such as `/about.md`, `/resume.md` and the post mirrors provide plain-text
   versions of each page.
-- `/robots.txt` welcomes search and AI crawlers. It excludes the wedding, admin, API, fragment and
-  WIP paths. Robots rules are guidance, not access control.
+- `/robots.txt` welcomes search and AI crawlers. It excludes the wedding, admin, API, fragment,
+  WIP and unlisted paths. Robots rules are guidance, not access control.
 - The sitemap leaves out private, noindex and redirect routes.
 
-Route exclusions live in `src/lib/seo.ts`. Add new private pages there. Keep profile facts in
+Route exclusions live in `src/lib/seo.ts`. Add new private or unlisted pages there, and keep
+unlisted pages out of `TerminalNav.astro` and `src/data/navigation.ts` until they launch. Keep profile facts in
 `src/data/resume-compendium.ts` rather than duplicating them. Check the output with
 `pnpm build && pnpm check:seo`.
 

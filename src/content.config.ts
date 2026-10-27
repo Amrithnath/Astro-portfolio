@@ -42,4 +42,25 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { blog, projects };
+// Photography gallery entries (YAML). Images live in src/assets/photos so Astro emits
+// optimized AVIF/WebP derivatives and never ships the originals or their EXIF metadata.
+const photos = defineCollection({
+  loader: glob({ base: './src/content/photos', pattern: '**/*.{yml,yaml}' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      image: image(),
+      alt: z.string().trim().min(1),
+      caption: z.string().optional(),
+      location: z.string().optional(),
+      date: z.coerce.date().optional(),
+      camera: z.string().optional(),
+      lens: z.string().optional(),
+      settings: z.string().optional(),
+      tags: z.array(z.string()).default([]),
+      featured: z.boolean().default(false),
+      draft: z.boolean().default(false),
+    }),
+});
+
+export const collections = { blog, projects, photos };

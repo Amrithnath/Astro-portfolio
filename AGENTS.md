@@ -34,6 +34,8 @@
 - The wedding stack is paused in `project-archive/` (see its README); it is not built, and its hooks in `astro.config.mjs` and `public/_headers` are commented out. Do not change it as part of portfolio work. The public `/offline/` fallback is deliberately self-contained and terminal-only.
 
 ## Navigation And Routing
+- New pages ship **unlisted** until the owner says otherwise: deploy them, but add the prefix to `excludedPrefixes` in `src/lib/seo.ts` (noindex, robots Disallow, no sitemap/LLM entry), add an `X-Robots-Tag` block to `public/_headers` (then `pnpm sync:headers`), add it to the unlisted loop in `scripts/check-agentic-seo.mjs`, and do not link it from `TerminalNav`, `navigation.ts` or any other page. `/photography/` is currently unlisted.
+- `/photography/` renders the `photos` collection (`src/content/photos/*.yml` → `src/assets/photos/`), editable as the CMS "Photography" collection. `pnpm check:photos` rejects originals with GPS EXIF and uncatalogued images; Astro derivatives are metadata-free.
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
 - Update `src/components/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`).
 - Update `src/data/navigation.ts` if the route should appear in terminal `ls` output.
