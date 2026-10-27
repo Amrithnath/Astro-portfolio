@@ -79,6 +79,61 @@ upgrading that data model is deferred rather than weakening compiler checks.
 | `pnpm build` | Build for production |
 | `pnpm preview` | Preview production build locally |
 
+## Lighthouse
+
+Build first with `pnpm build`, then run `pnpm lighthouse` for default mobile
+emulation and `LIGHTHOUSE_DESKTOP=1 pnpm lighthouse` for desktop. The pinned
+`@lhci/cli@0.15.1` runs through `pnpm dlx`, without adding project dependencies.
+Chrome must be installed; set `CHROME_PATH` to select another Chromium executable.
+
+The `lighthouse` CI matrix audits all six routes three times per profile. Accessibility, Best Practices and SEO
+require median scores of **100**; Performance requires **95** (all failures are
+errors). The 95 Performance budget absorbs CI timing variance; local medians
+are 100. JSON/HTML
+reports are uploaded as `lighthouse-mobile` and `lighthouse-desktop` artifacts;
+local reports live in `.lighthouseci/reports/` (ignored by Git).
+
+### Local measurements
+
+Measured on 2026-10-27 using headless Chrome 156: baseline Lighthouse 12.8.2,
+final Lighthouse CI 0.15.1 (Lighthouse 12.6.1). Baselines are one run per route/profile;
+finals are three-run category medians. Values are **Performance / Accessibility /
+Best Practices / SEO**, not a claim about a hosted production deployment.
+
+| Route | Mobile before | Mobile after | Desktop before | Desktop after |
+| --- | --- | --- | --- | --- |
+| `/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/about/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/projects/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/contact/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/resume/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/project/webDev/weather-app/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+
+Every non-perfect baseline audit was recorded:
+
+- `first-contentful-paint`: all mobile routes, 1.4–1.5 s.
+- `largest-contentful-paint`: mobile home, about and article, 1.7 s.
+- `render-blocking-resources`: all mobile routes and desktop resume,
+  estimated savings 120–600 ms.
+- `render-blocking-insight`: all route/profile pairs, mobile savings 450–600 ms.
+- `network-dependency-tree-insight`: all route/profile pairs.
+- `uses-responsive-images`: article on both profiles, savings 23–24 KiB.
+- `image-delivery-insight`: article on both profiles, savings 23–29 KiB.
+- `lcp-discovery-insight`: article on both profiles, missing high fetch priority.
+
+Critical CSS is now inline, the two local text font weights are preloaded, and
+article hero images have responsive AVIF candidates and high fetch priority.
+Scrollable JSON, directory trees and resume output have named keyboard-accessible
+regions, with mobile keyboard regression tests. Informational dependency-chain
+and timing diagnostics can remain even when all category scores are 100.
+
+`astro preview` and Lighthouse CI's static server do **not** apply Cloudflare
+`public/_headers`. CSP/HSTS and related header diagnostics are therefore not
+production-header verification; the existing CSP is unchanged. Production scores
+must be measured separately, especially when Cloudflare injects analytics/scripts.
+Intentionally noindex redirect/WIP routes are outside this budget. Lighthouse 100
+is not a substitute for a complete accessibility or security audit.
+
 ## 📁 Project Structure
 
 ```

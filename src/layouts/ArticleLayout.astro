@@ -1,5 +1,5 @@
 ---
-import { getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import BaseLayout from './BaseLayout.astro';
 import Prompt from '../components/ui/Prompt.astro';
 import Button from '../components/ui/Button.astro';
@@ -12,9 +12,6 @@ interface Props {
 
 const { content, schemaType } = Astro.props;
 const imageSource = content.img || content.image;
-const image = imageSource
-  ? await getImage({ src: imageSource, width: 1700, height: 800, format: 'avif' })
-  : undefined;
 ---
 
 <BaseLayout
@@ -39,7 +36,19 @@ const image = imageSource
           {content.tags.map((tag: string) => <li>{tag}</li>)}
         </ul>
       )}
-      {image && <img src={image.src} width={image.attributes.width} height={image.attributes.height} decoding="async" alt={content.title} />}
+      {imageSource && (
+        <Image
+          src={imageSource}
+          width={1400}
+          height={700}
+          widths={[400, 800, 1400]}
+          sizes="(max-width: 48rem) calc(100vw - 1.5rem), 72ch"
+          format="avif"
+          loading="eager"
+          fetchpriority="high"
+          alt={content.title}
+        />
+      )}
       {content.link && <p><Button href={content.link} target="_blank" rel="noopener noreferrer">View project</Button></p>}
     </header>
     <div class="article-body"><slot /></div>

@@ -43,7 +43,7 @@ const {
       </div>
       <Prompt command="cat .banner" />
       <div class="output">
-        <pre class="ascii-art">╔═══════════════════════════════════════╗
+        <pre class="ascii-art" tabindex="0" role="region" aria-label="Terminal banner">╔═══════════════════════════════════════╗
 ║          AMRITHNATH VIJAYAKUMAR       ║
 ║            SENIOR ENGINEER            ║
 ╚═══════════════════════════════════════╝</pre>
@@ -53,7 +53,7 @@ const {
 
   <Prompt command="cat about.json" />
   <div class="output">
-    <pre class="json-output"><span class="json-brace">&#123;</span>
+    <pre class="json-output" tabindex="0" role="region" aria-label="About JSON"><span class="json-brace">&#123;</span>
   <span class="json-key">"name"</span>: <span class="json-string">"{title}"</span>,
   <span class="json-key">"role"</span>: <span class="json-string">"Senior Engineer"</span>,
   <span class="json-key">"description"</span>: <span class="json-string">"{description}"</span>,
@@ -76,7 +76,7 @@ const {
 
   <Prompt command="cat stats.json" />
   <div class="output">
-    <pre class="json-output"><span class="json-brace">&#123;</span>
+    <pre class="json-output" tabindex="0" role="region" aria-label="Statistics JSON"><span class="json-brace">&#123;</span>
   <span class="json-key">"projects_completed"</span>: <span class="json-number">{stats.projectsCompleted || 25}</span>,
   <span class="json-key">"technologies_used"</span>: <span class="json-number">{stats.technologiesUsed || 30}</span>,
   <span class="json-key">"years_experience"</span>: <span class="json-number">{stats.yearsOfExperience || 6}</span>,
@@ -87,7 +87,7 @@ const {
 
   <Prompt command="cat contact.json" />
   <div class="output">
-    <pre class="json-output"><span class="json-brace">&#123;</span>
+    <pre class="json-output" tabindex="0" role="region" aria-label="Contact JSON"><span class="json-brace">&#123;</span>
   <span class="json-key">"email"</span>: <span class="json-string">"{contact.email || 'hello@amrithnath.dev'}"</span>,
   <span class="json-key">"github"</span>: <span class="json-string">"{contact.github || 'github.com/amrithnath'}"</span>,
   <span class="json-key">"linkedin"</span>: <span class="json-string">"{contact.linkedin || 'linkedin.com/in/amrithnath'}"</span>,

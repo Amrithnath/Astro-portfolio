@@ -25,7 +25,8 @@
     "test:e2e": "playwright test",
     "check:links": "node scripts/check-links.mjs",
     "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links",
-    "commitlint": "commitlint"
+    "commitlint": "commitlint",
+    "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

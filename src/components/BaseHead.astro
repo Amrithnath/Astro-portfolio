@@ -3,6 +3,8 @@ import { ClientRouter } from 'astro:transitions';
 import { isIndexablePath } from '../lib/seo';
 import '@fontsource/fira-code/400.css';
 import '@fontsource/fira-code/700.css';
+import regularFont from '@fontsource/fira-code/files/fira-code-latin-400-normal.woff2?url';
+import boldFont from '@fontsource/fira-code/files/fira-code-latin-700-normal.woff2?url';
 import SEO, { type Props as SEOProps } from './SEO.astro';
 import ThemeBootstrap from './ThemeBootstrap.astro';
 import ServiceWorker from './ServiceWorker.astro';
@@ -21,6 +23,8 @@ const theme = themes.find(({ id }) => id === defaultTheme)!;
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content={theme.themeColor} />
+<link rel="preload" href={regularFont} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={boldFont} as="font" type="font/woff2" crossorigin />
 <ThemeBootstrap />
 {isIndexablePath(Astro.url.pathname) && <ClientRouter />}
 <SEO {...Astro.props} />

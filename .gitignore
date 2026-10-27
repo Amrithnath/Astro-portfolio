@@ -45,3 +45,6 @@ wedding-api/internal/gen/
 
 # macOS-specific files
 .DS_Store
+
+# Lighthouse CI reports
+.lighthouseci/

@@ -284,8 +284,7 @@ body {
 /* Preformatted outputs: scroll instead of widening the page */
 .json-output,
 .ls-output,
-.tree-output,
-.tree-content {
+.tree-output {
   color: var(--color-text);
   white-space: pre;
   font-family: var(--font-mono);

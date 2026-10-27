@@ -10,7 +10,8 @@
 - Use `pnpm check` for Astro/TypeScript diagnostics and `pnpm build` to generate the static site.
 - Use `pnpm check:seo`, `pnpm check:theme`, and `pnpm check:links` to validate the built `dist/`; `pnpm verify` builds and runs all three.
 - Use `pnpm exec playwright install chromium` once, then `pnpm test:e2e` after building for Chromium smoke tests and axe-core accessibility checks (`tests/e2e/a11y.spec.ts`, fails on serious/critical WCAG 2.1 AA violations). The test runner starts its own preview on port `4321`; use `PORT=4326 pnpm test:e2e` if that port is occupied.
-- CI (`.github/workflows/ci.yml`, "Portfolio Quality") runs all of the above plus `pnpm audit --prod` on every push/PR. There is no lint script.
+- Lighthouse: after building, run `pnpm lighthouse` (mobile) and `LIGHTHOUSE_DESKTOP=1 pnpm lighthouse` (desktop). Chrome/Chromium must be installed (`CHROME_PATH` can select it). Each audits six routes three times; Accessibility, Best Practices and SEO medians must be 100; Performance must be at least 95 (error budget for CI variance). Reports are saved under `.lighthouseci/reports/{mobile,desktop}/`; the next collection replaces raw `.lighthouseci/` runs. The static server does not apply Cloudflare `_headers`, so header diagnostics are informational, not production-header verification.
+- CI (`.github/workflows/ci.yml`, "Portfolio Quality") runs all of the above plus `pnpm audit --prod` and a mobile/desktop Lighthouse budget on every push/PR. There is no lint script.
 - To mirror CI preview checks, run `PORT=4321 pnpm preview` and smoke-test the route with `curl -f http://localhost:4321/<route>`.
 
 ## Architecture
