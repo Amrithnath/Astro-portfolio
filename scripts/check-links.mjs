@@ -30,7 +30,11 @@ for (const file of walk(dist).filter((path) => path.endsWith('.html'))) {
     for (const raw of values) {
       const value = raw.replace(/&amp;/g, '&');
       let pathname;
-      if (value.startsWith(site)) pathname = new URL(value).pathname;
+      if (/^https?:\/\//i.test(value)) {
+        const url = new URL(value);
+        if (url.origin !== site) continue;
+        pathname = url.pathname;
+      }
       else if (value.startsWith('/') && !value.startsWith('//')) pathname = value;
       else continue;
       if (ignoredPrefixes.some((prefix) => pathname.startsWith(prefix))) continue;

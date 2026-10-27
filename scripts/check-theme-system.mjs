@@ -15,7 +15,12 @@ const files = htmlFiles('dist');
 const versions = new Set();
 for (const file of files) {
   const html = read(file);
-  const markup = html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
+  let markup = html;
+  let previous;
+  do {
+    previous = markup;
+    markup = markup.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+  } while (markup !== previous);
   const ids = [...markup.matchAll(/<[a-z][^>]*\sid\s*=\s*["']([^"']+)["'][^>]*>/gi)]
     .map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, `${file}: duplicate IDs`);
@@ -32,7 +37,7 @@ assert.equal([...homepage.matchAll(/class="terminal"/g)].length, 1, 'One homepag
 const deferred = read('dist/terminal-full/index.html');
 assert.match(deferred, /data-terminal-fragment/);
 assert.doesNotMatch(deferred, /class="terminal"/, 'Deferred commands must not duplicate the shell');
-const bootstrap = [...homepage.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)]
+const bootstrap = [...homepage.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
   .find((match) => match[1].includes('window.__theme'))?.[1];
 assert.ok(bootstrap, 'Missing inline theme bootstrap');
 assert.ok(homepage.indexOf(bootstrap) < homepage.indexOf('</head>'), 'Bootstrap must run in head');
@@ -148,7 +153,7 @@ const context = vm.createContext({
     focus() {}, print: () => { printCalls++; }, close() {},
   }) },
 });
-const script = read('src/components/ResumeGenerator.astro').match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = read('src/components/ResumeGenerator.astro').match(/<script>([\s\S]*?)<\/script\s*>/i)[1];
 const { outputText } = ts.transpileModule(script, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 });

@@ -76,12 +76,11 @@ for (const file of ['index.html', 'about/index.html', 'resume/index.html']) {
   const graph = graphs.get(file);
   const person = graph.find(item => item['@type'] === 'Person');
   assert.ok(graph.some(item => item['@type'] === 'ProfilePage'));
-  assert.ok(person.sameAs.some(url => url.includes('linkedin.com/')));
-  assert.ok(person.sameAs.some(url => url.includes('github.com/')));
+  assert.ok(person.sameAs.some(url => hostIs(url, 'linkedin.com')));
+  assert.ok(person.sameAs.some(url => hostIs(url, 'github.com')));
   assert.ok(person.alumniOf.length && person.worksFor.length && person.description);
   // Check real text nodes, not serialized data, attributes, scripts, or styles.
-  const text = read(file).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
-    .replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+  const text = stripMarkup(read(file)).replace(/&amp;/g, '&').replace(/\s+/g, ' ');
   for (const value of [person.name, person.jobTitle, person.worksFor[0].name, 'Python']) {
     assert.ok(text.includes(value), `${file}: missing JavaScript-free content: ${value}`);
   }
@@ -142,3 +141,22 @@ for (const [file, graph] of graphs) {
 assert.match(read('blog/bluetooth-dystopia.md'), /## Innovation/);
 assert.match(read('project/webDev/weather-app.md'), /Project description coming soon/);
 console.log(`SEO checks passed: ${htmlFiles.length} HTML files, ${blocks} JSON-LD blocks parsed; crawl policy, raw profile text, sitemap, RSS, article dates, and Markdown verified.`);
+
+function hostIs(url, domain) {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === domain || hostname.endsWith(`.${domain}`);
+  } catch {
+    return false;
+  }
+}
+
+function stripMarkup(html) {
+  let text = html;
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+  } while (text !== previous);
+  return text.replace(/<[^>]*>/g, ' ').replace(/[<>]/g, ' ');
+}
