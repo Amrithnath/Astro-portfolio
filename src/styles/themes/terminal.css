@@ -8,7 +8,7 @@
   /* Core semantic tokens */
   --color-bg: #1e1e2e;
   --color-text: #cdd6f4;
-  --color-muted: #9399b2;
+  --color-muted: #a0a6bf;
   --color-surface: #313244;
   --color-border: #45475a;
   --color-accent: #a6e3a1;
@@ -16,7 +16,7 @@
   --color-secondary: #cba6f7;
   --color-heading: #94e2d5;
   --color-on-accent: #1e1e2e;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+  --font-mono: 'Fira Code', 'Consolas', 'Courier New', monospace;
 
   /* Status colors */
   --color-success: #a6e3a1;

@@ -13,6 +13,7 @@ export interface Props {
 const { currentPage = '/', footerCursor = true } = Astro.props;
 ---
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <TerminalWindow>
   <TerminalNav slot="tabs" currentPage={currentPage} />
   <div class="terminal-status" slot="status">
@@ -26,6 +27,6 @@ const { currentPage = '/', footerCursor = true } = Astro.props;
       <span class="position">Ln 1, Col 1</span>
     </div>
   </div>
-  <main id="main-content"><slot /></main>
+  <main id="main-content" tabindex="-1"><slot /></main>
 </TerminalWindow>
 <TerminalFooter showCursor={footerCursor} />

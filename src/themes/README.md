@@ -39,3 +39,20 @@ independent and deliberately excluded from this system.
 
 Run `pnpm build`, `node scripts/check-agentic-seo.mjs`, and
 `node scripts/check-theme-system.mjs` after changes; smoke-test with preview as well.
+
+## Navigation and sharing
+
+`BaseHead` enables Astro `ClientRouter` on indexable portfolio pages. Redirects,
+WIP and deferred fragments keep full-document navigation. Initialize page-specific
+behavior on `astro:page-load`, guard DOM roots against double binding, and ignore
+disconnected elements after asynchronous work. Theme bootstrap reruns after swaps
+but installs storage synchronization once; worker registration is also guarded.
+The shared shell includes a keyboard skip link. Semantic text tokens meet WCAG AA
+on both background and elevated surfaces (checked in the theme verification script). Reduced-motion disables transition
+animations, and local Fira Code CSS uses `font-display: swap`.
+
+Static `/og/*.png` routes render terminal-style social cards (1200×630) at build
+time with resvg, the terminal palette and bundled OFL Fira Code. `src/lib/og.ts`
+maps top-level pages; published blog/project cards use collection titles. Unknown
+non-article routes use `/og/default.png`. The SEO component supplies image URLs,
+type, dimensions and descriptive alternatives; no server or runtime font is needed.

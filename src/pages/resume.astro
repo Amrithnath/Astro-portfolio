@@ -6,6 +6,7 @@ import { profile } from '../lib/seo';
 ---
 
 <BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume" footerCursor={false}>
+  <h1 class="visually-hidden">Resume Generator</h1>
   <ProfileSummary />
   <ResumeGenerator />
 </BaseLayout>

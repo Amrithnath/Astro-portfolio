@@ -4,10 +4,20 @@ import { buildVersion } from '../lib/build-version';
 
 {import.meta.env.PROD && (
   <script is:inline define:vars={{ buildVersion }}>
-    if ('serviceWorker' in navigator) {
-      const register = () => navigator.serviceWorker
-        .register(`/sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: '/', updateViaCache: 'none' })
-        .catch((error) => console.warn('Service worker registration failed:', error));
+    if ('serviceWorker' in navigator && !window.__portfolioWorkerSetup) {
+      window.__portfolioWorkerSetup = true;
+      let registered = false;
+      const register = () => {
+        if (registered) return;
+        registered = true;
+        return navigator.serviceWorker
+          .register(`/sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: '/', updateViaCache: 'none' })
+          .catch((error) => {
+            registered = false;
+            console.warn('Service worker registration failed:', error);
+          });
+      };
+      document.addEventListener('astro:page-load', register);
       if (document.readyState === 'complete') register();
       else window.addEventListener('load', register, { once: true });
     }

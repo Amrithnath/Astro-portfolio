@@ -61,6 +61,7 @@ const portfolioData = {
 	</head>
     <body>
         <TerminalShell currentPage="/">
+          <h1 class="visually-hidden">Amrithnath Vijayakumar</h1>
 		  <TerminalView 
 			  title={portfolioData.title}
 			  description={portfolioData.description}
@@ -82,41 +83,35 @@ const portfolioData = {
 
 
         <!-- Defer full terminal content until after load -->
-        <script is:inline>
-          window.addEventListener('load', () => {
+        <script>
+          function initHomepage() {
+            const container = document.querySelector<HTMLElement>('#main-content');
+            if (location.pathname !== '/' || !container || container.dataset.hydrated) return;
+            container.dataset.hydrated = 'true';
             const hydrate = async () => {
+              if (!container.isConnected) return;
               try {
-                // Randomize ASCII symbols per page view
-                (function randomizeAscii(){
-                  const grid = document.querySelector('.nf-grid');
-                  if (!grid) return;
-                  const symbols = ['#','●','■','◆','▣','▤','✶','▓','@','%','&'];
-                  const seed = (performance.now()|0) % symbols.length;
-                  const pool = symbols.slice(seed).concat(symbols.slice(0, seed));
-                  grid.querySelectorAll('.px:not(.bg)').forEach((el, idx) => {
-                    el.textContent = pool[(seed + idx*3) % pool.length];
-                  });
-                })();
-                // Append only the deferred commands, not another terminal shell.
+                const grid = container.querySelector('.nf-grid');
+                const symbols = ['#', '●', '■', '◆', '▣', '▤', '✶', '▓', '@', '%', '&'];
+                const seed = (performance.now() | 0) % symbols.length;
+                grid?.querySelectorAll('.px:not(.bg)').forEach((el, index) => {
+                  el.textContent = symbols[(seed + index * 3) % symbols.length];
+                });
                 const res = await fetch('/terminal-full/?suppressHeader=1&suppressAbout=1', { credentials: 'same-origin' });
-                if (res.ok) {
-                  const html = await res.text();
-                  const container = document.querySelector('#main-content');
-                  if (container) {
-                    // Keep the first few lines already present, append the rest
-                    const wrapper = document.createElement('div');
-                    wrapper.innerHTML = html;
-                    const fragment = wrapper.querySelector('[data-terminal-fragment]');
-                    if (fragment) container.appendChild(fragment);
-                  }
-                }
-              } catch (e) {
-                console.warn('Deferred hydration failed', e);
+                if (!res.ok || !container.isConnected) return;
+                const wrapper = new DOMParser().parseFromString(await res.text(), 'text/html');
+                const fragment = wrapper.querySelector('[data-terminal-fragment]');
+                if (fragment && container.isConnected) container.appendChild(fragment);
+              } catch (error) {
+                console.warn('Deferred hydration failed', error);
               }
             };
-            // Slight delay to not compete with LCP
+            // Avoid competing with the initial viewport, including on client-side returns home.
             setTimeout(hydrate, 50);
-          });
+          }
+          if (document.readyState === 'complete') initHomepage();
+          else window.addEventListener('load', initHomepage, { once: true });
+          document.addEventListener('astro:page-load', initHomepage);
         </script>
 	</body>
 </html>
