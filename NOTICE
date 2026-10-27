@@ -1,0 +1,8 @@
+Astro Portfolio
+Copyright 2022-2026 Amrithnath Vijayakumar
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes software derived from Sveltia CMS Authenticator
+(https://github.com/sveltia/sveltia-cms-auth), Copyright (c) 2026 Kohei Yoshino,
+licensed under the MIT License. See workers/cms-auth/LICENSE.
