@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: |
             build
@@ -29,8 +31,8 @@ jobs:
             test
           headerPattern: '^([a-z]+)(?:\((.*)\))?(?:!)?: (.*)$'
           headerPatternCorrespondence: type,scope,subject
-          subjectPattern: '^(?:✨|🐛|⚡|🔒|♻️?|📝|👷|📦|🔧|💄|✅|⏪|💥)\s+.+$'
-          subjectPatternErrorMessage: 'The subject must start with a Unicode emoji, e.g. "✨ add a feature".'
+          subjectPattern: '^(?:✨|🐛|⚡|🔒|♻️?|📝|👷|📦|⬆️?|🔀|🔧|💄|✅|⏪|💥)\s+.+$'
+          subjectPatternError: 'The subject must start with a Unicode emoji, e.g. "✨ add a feature".'
           ignoreLabels: 'autorelease: pending'
 
   commit-messages:
