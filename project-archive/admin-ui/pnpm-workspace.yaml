@@ -1,0 +1,5 @@
+# Standalone archived package (not part of the portfolio workspace).
+minimumReleaseAge: 1440
+allowBuilds:
+  esbuild: true
+  sharp: true
