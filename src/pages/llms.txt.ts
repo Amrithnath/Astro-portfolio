@@ -1,9 +1,10 @@
 import type { APIRoute } from 'astro';
-import { keyPages, posts } from '../lib/profile-markdown';
+import { keyPages, getPosts } from '../lib/profile-markdown';
 import { profile } from '../lib/seo';
 
 export const prerender = true;
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = async ({ site }) => {
+  const posts = await getPosts();
   const link = (label: string, path: string, description: string) =>
     `- [${label}](${new URL(path, site).href}): ${description}`;
   const section = (heading: string, lines: string[]) => [heading, '', ...lines].join('\n');
@@ -16,6 +17,7 @@ export const GET: APIRoute = ({ site }) => {
       ...keyPages.filter(page => page.markdown).map(page => link(page.label, page.markdown!, page.description)),
       link('Full profile', '/llms-full.txt', 'Complete summary, experience, education, skills, projects, and contact links.'),
     ]),
+    section('## Feeds', [link('RSS feed', '/rss.xml', 'Latest published blog posts.')]),
     section('## Writing and project notes', posts.flatMap(post => [
       link(post.title, `${post.path}/`, post.description),
       link(`${post.title} (Markdown)`, `${post.path}.md`, 'Plain Markdown version of the same content.'),

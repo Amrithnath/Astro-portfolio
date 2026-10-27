@@ -9,20 +9,24 @@ interface Props {
 }
 
 const { content, schemaType } = Astro.props;
-const image = await getImage({ src: content.img, width: 1700, height: 800, format: 'avif' });
+const imageSource = content.img || content.image;
+const image = imageSource
+  ? await getImage({ src: imageSource, width: 1700, height: 800, format: 'avif' })
+  : undefined;
 ---
 
 <BaseLayout
   title={content.title}
   description={content.description}
-  image={content.img}
+  image={imageSource}
   lang={content.lang || 'en'}
   currentPage={Astro.url.pathname}
   type="article"
   schemaType={schemaType}
-  published={content.publishDate}
+  published={content.pubDate}
+  modified={content.updatedDate}
   keywords={content.tags}
-  projectUrl={content.link}
+  projectUrl={content.link || content.live || content.demo || content.github}
 >
   <div class="terminal-container">
     <article class="article-content">
@@ -33,7 +37,7 @@ const image = await getImage({ src: content.img, width: 1700, height: 800, forma
         <ul class="tags" aria-label="Tags">
           {content.tags?.map((tag: string) => <li>{tag}</li>)}
         </ul>
-        <img src={image.src} width={image.attributes.width} height={image.attributes.height} alt={content.title} />
+        {image && <img src={image.src} width={image.attributes.width} height={image.attributes.height} alt={content.title} />}
         {content.link && <p><a href={content.link} target="_blank" rel="noopener noreferrer">View project</a></p>}
       </header>
       <div class="prose"><slot /></div>

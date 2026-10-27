@@ -1,0 +1,19 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { getPublishedCollection } from '../../lib/content';
+import Layout from '../../layouts/project.astro';
+
+export async function getStaticPaths() {
+  const entries = await getPublishedCollection('projects');
+  return entries.map(entry => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Layout content={entry.data}><Content /></Layout>

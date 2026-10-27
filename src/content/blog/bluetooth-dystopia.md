@@ -1,7 +1,6 @@
 ---
-layout: ../../layouts/blog.astro
 title: Bring back the headphone jack, seriously.
-publishDate: 2019-10-05 00:00:00
+pubDate: 2019-10-05 00:00:00
 img: https://images.unsplash.com/photo-1557063673-0493e05da49f?fit=crop&w=1400&h=700&q=75
 description: |
   How our quest towards a wireless Utopia is actually futile and dystopian.

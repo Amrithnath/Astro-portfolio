@@ -48,6 +48,7 @@ for (const file of htmlFiles) {
   }
   assert.match(metadata, /name="twitter:card"/);
   assert.match(metadata, /title="LLMs"/);
+  assert.match(metadata, /type="application\/rss\+xml"[^>]*href="https:\/\/amrithnath\.dev\/rss\.xml"/);
   const alternate = metadata.match(/type="text\/markdown"[^>]*href="([^"]+)"/);
   if (alternate) {
     assert.ok(existsSync(join('dist', new URL(alternate[1]).pathname)), alternate[1]);
@@ -101,6 +102,24 @@ for (const file of ['llms.txt', 'llms-full.txt', 'index.md', 'about.md', 'resume
     assert.ok(existsSync(join('dist', output)), `${file}: broken local link: ${href}`);
   }
 }
+const rss = read('rss.xml');
+assert.match(rss, /<rss[^>]*version="2\.0"/);
+assert.match(rss, /<channel>/);
+assert.match(read('llms.txt'), /https:\/\/amrithnath\.dev\/rss\.xml/);
+assert.match(robots, /# RSS feed: https:\/\/amrithnath\.dev\/rss\.xml/);
+for (const [file, graph] of graphs) {
+  const article = graph.find(item => ['BlogPosting', 'SoftwareSourceCode'].includes(item['@type']));
+  if (!article) continue;
+  assert.ok(Number.isFinite(Date.parse(article.datePublished)), `${file}: invalid publication date`);
+  if (article.dateModified) {
+    assert.ok(Number.isFinite(Date.parse(article.dateModified)), `${file}: invalid updated date`);
+  }
+  assert.ok(sitemap.includes(article.url), `${file}: missing article in sitemap`);
+  if (article['@type'] === 'BlogPosting') {
+    assert.ok(rss.includes(`<link>${article.url}</link>`), `${file}: missing blog post in RSS`);
+    assert.ok(rss.includes(`<pubDate>${new Date(article.datePublished).toUTCString()}</pubDate>`));
+  }
+}
 assert.match(read('blog/bluetooth-dystopia.md'), /## Innovation/);
 assert.match(read('project/webDev/weather-app.md'), /Project description coming soon/);
-console.log(`SEO checks passed: ${htmlFiles.length} HTML files, ${blocks} JSON-LD blocks parsed; crawl policy, raw profile text, sitemap, and Markdown verified.`);
+console.log(`SEO checks passed: ${htmlFiles.length} HTML files, ${blocks} JSON-LD blocks parsed; crawl policy, raw profile text, sitemap, RSS, article dates, and Markdown verified.`);
