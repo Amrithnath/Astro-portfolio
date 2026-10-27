@@ -7,7 +7,7 @@ const read = path => readFileSync(join('dist', path), 'utf8');
 const htmlFiles = readdirSync('dist', { recursive: true }).filter(file => file.endsWith('.html'));
 const head = html => html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1];
 const ldBlocks = html => [...html.matchAll(
-  /<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
+  /<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi,
 )].map(match => {
   assert.ok(!match[1].includes('<'), 'JSON-LD must escape HTML delimiters');
   return JSON.parse(match[1]);
@@ -156,7 +156,7 @@ function stripMarkup(html) {
   let previous;
   do {
     previous = text;
-    text = text.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+    text = text.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\b[^>]*>/gi, '');
   } while (text !== previous);
   return text.replace(/<[^>]*>/g, ' ').replace(/[<>]/g, ' ');
 }
