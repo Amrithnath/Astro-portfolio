@@ -105,8 +105,10 @@ jobs:
           name: dist
           path: dist/
           retention-days: 3
-      - run: pnpm exec playwright install --with-deps chromium
+      # ubuntu-latest ships Google Chrome with its dependencies; skip the slow Playwright download.
       - run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_CHANNEL: chrome
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
