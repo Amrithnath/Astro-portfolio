@@ -1,5 +1,6 @@
 ---
 import type { MarkdownInstance } from 'astro';
+import { profile } from '../lib/seo';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
@@ -80,7 +81,7 @@ ${projects.slice(0, 3).map(project => `
 `;
 ---
 
-<BaseLayout title="All Projects | Amrith" description="Learn about Amrith's most recent projects" currentPage="/projects">
+<BaseLayout title={`All Projects | ${profile.contact.name}`} currentPage="/projects">
   <!-- Terminal Theme View -->
   <div class="terminal-view">
     <div class="terminal-container">

@@ -3,9 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ResumeGenerator from '../components/ResumeGenerator.astro';
+import ProfileSummary from '../components/ProfileSummary.astro';
+import { profile } from '../lib/seo';
 ---
 
-<BaseLayout title="Resume Generator | Amrith Shanbhag" description="Generate and download custom resumes in multiple formats" currentPage="/resume">
+<BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume">
+  <ProfileSummary />
   <!-- Terminal Theme View -->
   <div class="terminal-view">
     <div class="terminal-container">

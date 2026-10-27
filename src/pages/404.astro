@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TerminalCommand from '../components/TerminalCommand.astro';
+import { profile } from '../lib/seo';
 ---
 
-<BaseLayout title="Not Found | Amrith" description="The requested page does not exist." currentPage="/404">
+<BaseLayout title={`Not Found | ${profile.contact.name}`} description="The requested page does not exist." currentPage="/404">
   <div class="terminal-view">
     <div class="terminal-container">
       <div class="window">

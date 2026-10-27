@@ -1,5 +1,5 @@
 ---
-import MainHead from '../components/MainHead.astro';
+import SEO from '../components/SEO.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitch from '../components/ThemeSwitch.astro';
@@ -13,7 +13,19 @@ const optmizedImage = await getImage({src:content.img,width:1700,height:800,form
 <html lang={content.lang || 'en'}>
 	<head>
 		<ThemeSwitch/>
-		<MainHead title={content.title} description={content.description} />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon/favicon.ico" />
+    <SEO
+      title={content.title}
+      description={content.description}
+      image={content.img}
+      type="article"
+      schemaType="BlogPosting"
+      published={content.publishDate}
+      keywords={content.tags}
+      projectUrl={content.link}
+    />
 		<style>
 			.hero {
 				padding: 8rem;

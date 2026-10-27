@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TerminalCommand from '../components/TerminalCommand.astro';
+import { profile } from '../lib/seo';
 ---
 
-<BaseLayout title="Privacy Policy | Amrith" description="Privacy policy for the site and messaging interactions." currentPage="/privacy-policy">
+<BaseLayout title={`Privacy Policy | ${profile.contact.name}`} description="Privacy policy for the site and messaging interactions." currentPage="/privacy-policy">
   <div class="terminal-view">
     <div class="terminal-container">
       <div class="window">

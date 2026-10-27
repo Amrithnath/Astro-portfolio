@@ -1,0 +1,40 @@
+---
+import { profile } from '../lib/seo';
+---
+<details class="profile-summary">
+  <summary>Read {profile.contact.name}'s professional profile (no JavaScript required)</summary>
+  <h2>{profile.contact.name}</h2>
+  <p>{profile.contact.title}</p>
+  <p>{profile.summary}</p>
+  <h3>Experience</h3>
+  {profile.experience.map(item => (
+    <section>
+      <h4>{item.position} — {item.company}</h4>
+      <p>{item.startDate} – {item.endDate || 'Present'}</p>
+      <p>{item.description}</p>
+      <ul>{item.achievements.map(achievement => <li>{achievement}</li>)}</ul>
+    </section>
+  ))}
+  <h3>Education</h3>
+  {profile.education.map(item => (
+    <p>{item.degree} in {item.field}, {item.institution} ({item.startDate} – {item.endDate})</p>
+  ))}
+  <h3>Skills</h3>
+  <ul>{profile.skills.map(category => (
+    <li><strong>{category.category}:</strong> {category.skills.map(skill => skill.name).join(', ')}</li>
+  ))}</ul>
+  <h3>Projects</h3>
+  <ul>{profile.projects.map(project => (
+    <li><strong>{project.name}:</strong> {project.description} ({project.technologies.join(', ')})</li>
+  ))}</ul>
+  <p><a href="/resume.md">Read the Markdown resume</a> · <a href="/projects.md">Read projects</a></p>
+</details>
+<style>
+  .profile-summary {
+    margin: 1.5rem auto;
+    padding: 1rem;
+    max-width: 70ch;
+    line-height: 1.6;
+  }
+  summary { cursor: pointer; }
+</style>

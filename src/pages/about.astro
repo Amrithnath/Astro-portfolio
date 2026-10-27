@@ -1,4 +1,5 @@
 ---
+import ProfileSummary from '../components/ProfileSummary.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TerminalView from '../components/TerminalView.astro';
 import ProfessionalView from '../components/ProfessionalView.astro';
@@ -120,6 +121,8 @@ const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary
     showFinalCursor={false}
   />
   
+  <ProfileSummary />
+
   <!-- Professional Theme View -->
   <ProfessionalView 
     title={aboutData.title}
