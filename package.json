@@ -23,6 +23,7 @@
     "check:seo": "node scripts/check-agentic-seo.mjs",
     "check:theme": "node scripts/check-theme-system.mjs",
     "test:e2e": "playwright test",
+    "test:cms-auth": "node --test \"workers/cms-auth/test/*.test.js\"",
     "check:links": "node scripts/check-links.mjs",
     "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links",
     "commitlint": "commitlint",
