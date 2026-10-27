@@ -84,3 +84,20 @@ for (const resource of ['robots.txt', 'llms.txt', 'sitemap-index.xml', 'rss.xml'
     expect((await response.text()).length).toBeGreaterThan(0);
   });
 }
+
+for (const route of ['/', '/resume/']) {
+  test(`${route} terminal output is keyboard-scrollable on mobile`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route);
+    const output = route === '/'
+      ? page.getByRole('region', { name: 'About JSON', exact: true })
+      : page.getByRole('region', { name: 'Resume terminal output', exact: true });
+    await expect(output).toBeVisible();
+    await output.focus();
+    await expect(output).toBeFocused();
+    await output.press(route === '/' ? 'ArrowRight' : 'ArrowDown');
+    await expect.poll(() => output.evaluate(element =>
+      location.pathname === '/' ? element.scrollLeft : element.scrollTop
+    )).toBeGreaterThan(0);
+  });
+}
