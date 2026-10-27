@@ -10,7 +10,7 @@ export interface Props {
   description: string;
   randomAchievement: string;
   stats: Record<string, number | undefined>;
-  contact: { email?: string; github?: string; linkedin?: string };
+  contact: { email?: string; github?: string; linkedin?: string; website?: string };
   terminal: { systemInfo?: { uptime?: string; load?: string } };
   projectItems: any[];
   skillsTreeItems: any[];
@@ -43,28 +43,24 @@ const {
       </div>
       <Prompt command="cat .banner" />
       <div class="output">
-        <div class="ascii-art">
-╔═══════════════════════════════════════╗
+        <pre class="ascii-art">╔═══════════════════════════════════════╗
 ║          AMRITHNATH VIJAYAKUMAR       ║
 ║            SENIOR ENGINEER            ║
-╚═══════════════════════════════════════╝
-        </div>
+╚═══════════════════════════════════════╝</pre>
       </div>
     </>
   )}
 
   <Prompt command="cat about.json" />
   <div class="output">
-    <div class="json-output">
-<span class="json-brace">&#123;</span>
+    <pre class="json-output"><span class="json-brace">&#123;</span>
   <span class="json-key">"name"</span>: <span class="json-string">"{title}"</span>,
   <span class="json-key">"role"</span>: <span class="json-string">"Senior Engineer"</span>,
   <span class="json-key">"description"</span>: <span class="json-string">"{description}"</span>,
   <span class="json-key">"achievements"</span>: <span class="json-string">"{randomAchievement}"</span>,
   <span class="json-key">"experience"</span>: <span class="json-string">"{stats.yearsOfExperience || 6}+ years"</span>,
   <span class="json-key">"status"</span>: <span class="json-string">"Available for new opportunities"</span>
-<span class="json-brace">&#125;</span>
-    </div>
+<span class="json-brace">&#125;</span></pre>
   </div>
 
   <Prompt command="ls -la" />
@@ -80,27 +76,23 @@ const {
 
   <Prompt command="cat stats.json" />
   <div class="output">
-    <div class="json-output">
-<span class="json-brace">&#123;</span>
+    <pre class="json-output"><span class="json-brace">&#123;</span>
   <span class="json-key">"projects_completed"</span>: <span class="json-number">{stats.projectsCompleted || 25}</span>,
   <span class="json-key">"technologies_used"</span>: <span class="json-number">{stats.technologiesUsed || 30}</span>,
   <span class="json-key">"years_experience"</span>: <span class="json-number">{stats.yearsOfExperience || 6}</span>,
   <span class="json-key">"certifications"</span>: <span class="json-number">{stats.certifications || 2}</span>,
   <span class="json-key">"awards"</span>: <span class="json-number">{stats.awards || 4}</span>
-<span class="json-brace">&#125;</span>
-    </div>
+<span class="json-brace">&#125;</span></pre>
   </div>
 
   <Prompt command="cat contact.json" />
   <div class="output">
-    <div class="json-output">
-<span class="json-brace">&#123;</span>
-  <span class="json-key">"email"</span>: <span class="json-string">"{contact.email || 'hello@amrithnath.com'}"</span>,
+    <pre class="json-output"><span class="json-brace">&#123;</span>
+  <span class="json-key">"email"</span>: <span class="json-string">"{contact.email || 'hello@amrithnath.dev'}"</span>,
   <span class="json-key">"github"</span>: <span class="json-string">"{contact.github || 'github.com/amrithnath'}"</span>,
   <span class="json-key">"linkedin"</span>: <span class="json-string">"{contact.linkedin || 'linkedin.com/in/amrithnath'}"</span>,
-  <span class="json-key">"website"</span>: <span class="json-string">"amrithnath.com"</span>
-<span class="json-brace">&#125;</span>
-    </div>
+  <span class="json-key">"website"</span>: <span class="json-string">"{contact.website || 'amrithnath.dev'}"</span>
+<span class="json-brace">&#125;</span></pre>
   </div>
 
   <Prompt command="uptime" />

@@ -316,3 +316,6 @@ body {
 .directory-name, .ls-date, .ls-time, .ls-symlink, .tree-markdown { color: var(--color-info); }
 .ls-links, .tree-sql, .tree-astro { color: var(--color-secondary); }
 .tree-yaml { color: var(--color-danger); }
+
+.output pre.json-output { white-space: pre; }
+.output pre.ascii-art { white-space: pre; margin: var(--space-6) 0; }
