@@ -51,7 +51,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/cdn-cgi/')) return;
+  if (/^\/(?:api|cdn-cgi|admin)(?:\/|$)/.test(url.pathname)) return;
   if (url.pathname === '/sw.js' || url.pathname === '/version.json') return;
 
   if (request.mode === 'navigate') {

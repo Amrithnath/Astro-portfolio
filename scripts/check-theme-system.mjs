@@ -24,7 +24,7 @@ for (const file of files) {
   const ids = [...markup.matchAll(/<[a-z][^>]*\sid\s*=\s*["']([^"']+)["'][^>]*>/gi)]
     .map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, `${file}: duplicate IDs`);
-  if (file.includes('/wedding/')) continue;
+  if (file.includes('/wedding/') || file.includes('/admin/')) continue;
   assert.match(html, /<html\b[^>]*data-theme="terminal"/, `${file}: missing server theme`);
   assert.doesNotMatch(html, /professional-view|personal-view/, `${file}: removed views`);
   for (const match of html.matchAll(/(?:const|var) buildVersion = "([^"]+)"/g)) versions.add(match[1]);

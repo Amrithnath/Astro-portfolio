@@ -2,6 +2,9 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
+// Absolute URL or a site-relative path such as /images/blog/cover.jpg (CMS uploads).
+const imageSource = z.union([z.url(), z.string().regex(/^\/(?![/\\])/)]);
+
 const articleSchema = z.object({
   title: z.string(),
   description: z.string().trim(),
@@ -9,8 +12,8 @@ const articleSchema = z.object({
   updatedDate: z.coerce.date().optional(),
   tags: z.array(z.string()).default([]),
   draft: z.boolean().default(false),
-  img: z.url().optional(),
-  image: z.url().optional(),
+  img: imageSource.optional(),
+  image: imageSource.optional(),
   lang: z.string().optional(),
 });
 

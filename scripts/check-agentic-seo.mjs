@@ -28,6 +28,11 @@ for (const file of htmlFiles) {
     assert.match(html, /data-terminal-fragment/);
     continue;
   }
+  if (file === 'admin/index.html') {
+    assert.equal(parsed.length, 0, 'CMS editor must not gain JSON-LD');
+    assert.match(html, /name="robots" content="noindex, nofollow"/);
+    continue;
+  }
   // Static service-worker fallback in public/; intentionally minimal and noindex.
   if (file === 'offline/index.html') {
     assert.match(html, /name="robots" content="noindex"/);

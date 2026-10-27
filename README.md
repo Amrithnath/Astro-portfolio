@@ -282,7 +282,8 @@ draft: false
 ---
 ```
 
-Do not include `layout:`. Optional article fields: `img` or `image` (absolute image URL),
+Do not include `layout:`. Optional article fields: `img` or `image` (absolute URL or a site path such as
+`/images/blog/cover.jpg`),
 and `lang`. Projects also support optional `link`, `client`, `github`, `live`, `demo`, and
 `tech` (string array). Omitted `tags` defaults to `[]`; omitted `draft` defaults to `false`.
 File paths preserve case and subfolders: `projects/webDev/weather-app.md` publishes at
@@ -290,6 +291,28 @@ File paths preserve case and subfolders: `projects/webDev/weather-app.md` publis
 exclude them from routes, lists, mirrors, LLM discovery, sitemap, and RSS. Published blog
 posts automatically appear in `/rss.xml`; blog and project Markdown mirrors and LLM notes
 are also generated from the collections. The profile compendium is still maintained separately.
+
+### Blog editor (`/admin`)
+
+`/admin` runs [Sveltia CMS](https://sveltiacms.app) (self-hosted, pinned `@sveltia/cms`, config in
+`public/admin/config.yml`). Sign-in uses a GitHub App through the Worker in `workers/cms-auth/`
+(`cms-auth.amrithnath.dev`). Each save commits to a `cms/blog/<slug>` branch and opens a pull
+request, so CI and preview deploys run before you publish (merge). Uploads go to
+`public/images/blog/`.
+
+One-time setup:
+
+1. Create a GitHub App (Settings → Developer settings → GitHub Apps): callback URL
+   `https://cms-auth.amrithnath.dev/callback`, webhook off, **Expire user authorization tokens** on,
+   repository permissions **Contents** and **Pull requests** read/write. Install it on this
+   repository only and generate a client secret.
+2. Create a Cloudflare API token with **Workers Scripts: Edit** (account) and
+   **Workers Routes: Edit** + **DNS: Edit** for the `amrithnath.dev` zone.
+3. Add repository secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+   `CMS_GITHUB_CLIENT_ID` and `CMS_GITHUB_CLIENT_SECRET`, then run the **CMS Auth Worker**
+   workflow. It also redeploys on every change to `workers/cms-auth/`.
+
+Run the Worker tests with `pnpm test:cms-auth`.
 
 ## Versioning and releases
 

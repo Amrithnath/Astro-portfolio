@@ -1,0 +1,19 @@
+---
+// Sveltia CMS editor. Self-hosts the pinned @sveltia/cms bundle (no CDN) and reads
+// /admin/config.yml. Sign-in goes through workers/cms-auth; edits are opened as pull requests.
+import cmsScript from '../../../node_modules/@sveltia/cms/dist/sveltia-cms.js?url';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Content Manager</title>
+    <link href="/admin/config.yml" type="application/yaml" rel="cms-config-url" />
+  </head>
+  <body>
+    <script is:inline src={cmsScript}></script>
+  </body>
+</html>
