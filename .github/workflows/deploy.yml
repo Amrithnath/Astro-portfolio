@@ -10,74 +10,60 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout your repository using git
-        uses: actions/checkout@v4
-      - name: Cache deps
-        id: cache-deps
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: install pnpm
-        uses: pnpm/action-setup@v6
-      - name: install node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: 'pnpm'
-      - name: install deps
-        run: pnpm install --frozen-lockfile
-      - name: build astro
-        run: pnpm build
-      - name: Check built SEO and theme contracts
-        run: pnpm check:seo && pnpm check:theme && pnpm check:links
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v4
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - uses: actions/upload-artifact@v7
         with:
-          name: ${{github.sha}}-dist
-          path: |
-            dist
-      - name: Install dependencies and build your site
-        uses: withastro/action@v6
+          name: ${{ github.sha }}-dist
+          path: dist
+      - uses: actions/upload-pages-artifact@v5
         with:
-             node-version: '26.12.1' # Keep in sync with .nvmrc (Node current release line).
+          path: dist
+
   deploy-ghpages:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
+
   deploy-gcloud-storage:
     if: inputs.name == '2' # only deploy to gcloud if the input is 2
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - name: 'restore cache'
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
-          name: ${{github.sha}}-dist
+          name: ${{ github.sha }}-dist
           path: './dist'
-      - name: 'auth'
-        uses: 'google-github-actions/auth@v2'
+      - uses: 'google-github-actions/auth@v3'
         with:
-          workload_identity_provider: ${{vars.GCP_WORKFLOW_ID_PROVIDER_ID}}
-          service_account: ${{vars.GOOGLE_SERVICE_ACCOUNT_EMAIL}}
-      - name: 'upload-folder'
-        uses: 'google-github-actions/upload-cloud-storage@v2'
+          workload_identity_provider: ${{ vars.GCP_WORKFLOW_ID_PROVIDER_ID }}
+          service_account: ${{ vars.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
+      - uses: 'google-github-actions/upload-cloud-storage@v3'
         with:
           path: './dist'
-          destination: ${{vars.GCLOUD_BUCKET}}
+          destination: ${{ vars.GCLOUD_BUCKET }}
           parent: false
