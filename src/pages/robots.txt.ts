@@ -10,15 +10,16 @@ export const GET: APIRoute = ({ site }) => {
     'Amazonbot', 'Bytespider', 'FacebookBot', 'meta-externalagent',
     'meta-externalfetcher', 'cohere-ai', 'Diffbot', 'YouBot',
   ];
-  // Specific user-agent groups do not inherit wildcard rules, so repeat exclusions.
-  const groups = agents.map(agent => [
-    `User-agent: ${agent}`, 'Allow: /',
+  // One group with multiple user-agent lines (RFC 9309); named agents would not inherit '*'.
+  const group = [
+    ...agents.map(agent => `User-agent: ${agent}`),
+    'Allow: /',
     ...excludedPrefixes.map(path => `Disallow: ${path}`),
-  ].join('\n'));
+  ].join('\n');
   return new Response([
     '# Public portfolio: search, training, and user-fetch agents are welcome.',
     `# LLM discovery: ${new URL('/llms.txt', site).href}`,
-    ...groups,
+    group,
     `Sitemap: ${new URL('/sitemap-index.xml', site).href}`,
     '',
   ].join('\n\n'), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

@@ -15,10 +15,10 @@ export const posts = Object.entries(documents).map(([file, document]) => ({
 
 export const keyPages = [
   { path: '/', label: 'Home', description: profile.contact.title, markdown: '/index.md' },
-  { path: '/about', label: 'About', description: 'Professional background, education, and skills.', markdown: '/about.md' },
-  { path: '/resume', label: 'Resume', description: 'Experience, achievements, skills, and education; interactive resume downloads.', markdown: '/resume.md' },
-  { path: '/projects', label: 'Projects', description: 'Portfolio projects, technologies, and source links.', markdown: '/projects.md' },
-  { path: '/contact', label: 'Contact', description: 'Email and professional profiles.' },
+  { path: '/about/', label: 'About', description: 'Professional background, education, and skills.', markdown: '/about.md' },
+  { path: '/resume/', label: 'Resume', description: 'Experience, achievements, skills, and education; interactive resume downloads.', markdown: '/resume.md' },
+  { path: '/projects/', label: 'Projects', description: 'Portfolio projects, technologies, and source links.', markdown: '/projects.md' },
+  { path: '/contact/', label: 'Contact', description: 'Email and professional profiles.' },
 ].filter(page => isIndexablePath(page.path));
 
 const bullets = (values: string[]) => values.map(value => `- ${value}`).join('\n');
