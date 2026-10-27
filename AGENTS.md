@@ -29,7 +29,7 @@
 - Static `/og/*.png` endpoints render 1200×630 terminal social cards with resvg and bundled OFL Fira Code; `src/lib/og.ts` owns page mapping. Keep SEO image dimensions and build checks aligned.
 - `ServiceWorker.astro` registers `/sw.js?v=<build>` after load, only in production. `src/lib/build-version.ts` supplies one shared version per build.
 - `/admin` (`src/pages/admin/index.astro` + `public/admin/config.yml`) is the Sveltia CMS editor: noindex, exempt from SEO/theme checks, bypassed by the service worker, with its own CSP/COOP in `public/_headers`. Keep `@sveltia/cms` pinned (pnpm `minimumReleaseAge` rejects releases under 24h). CMS saves open PRs from `cms/*` branches; CI skips the PR-title check for those but still runs commitlint, so keep `commit_messages` conventional. Sign-in goes through `workers/cms-auth/` (Cloudflare Worker, deployed by `.github/workflows/cms-auth.yml`; test with `pnpm test:cms-auth`); it must fail closed and only post tokens to `ALLOWED_DOMAINS` origins.
-- Wedding uses its independent `MainHead.astro`; do not change wedding/photography code as part of portfolio theme work. The public `/offline/` fallback is deliberately self-contained and terminal-only.
+- The wedding stack is paused in `project-archive/` (see its README); it is not built, and its hooks in `astro.config.mjs` and `public/_headers` are commented out. Do not change it as part of portfolio work. The public `/offline/` fallback is deliberately self-contained and terminal-only.
 
 ## Navigation And Routing
 - Route additions are manual across multiple surfaces; update every relevant file yourself.

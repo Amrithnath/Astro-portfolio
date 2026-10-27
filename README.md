@@ -85,7 +85,7 @@ pnpm dev            # http://localhost:4321
 └── .github/workflows/   # CI, releases and deploys
 ```
 
-Wedding and photography code (`wedding-*`, `admin-ui/`) is separate and not part of the portfolio.
+Paused projects, such as the wedding upload stack, live in [`project-archive/`](project-archive/README.md).
 
 ## Writing content
 

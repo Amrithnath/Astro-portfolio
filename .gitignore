@@ -2,12 +2,16 @@
 dist/
 .astro/
 admin-ui/dist/
+project-archive/admin-ui/dist/
 admin-ui/.astro/
+project-archive/admin-ui/.astro/
 
 # dependencies
 node_modules/
 admin-ui/node_modules/
+project-archive/admin-ui/node_modules/
 wedding-api/bin/
+project-archive/wedding-api/bin/
 
 # logs
 npm-debug.log*
@@ -34,14 +38,21 @@ test-results/
 .env
 .env.production
 wedding-upload-server/.env
+project-archive/wedding-upload-server/.env
 wedding-upload-server/*.service-account.json
+project-archive/wedding-upload-server/*.service-account.json
 wedding-upload-server/*.credentials.json
+project-archive/wedding-upload-server/*.credentials.json
 wedding-api/.env
+project-archive/wedding-api/.env
 wedding-api/*.service-account.json
+project-archive/wedding-api/*.service-account.json
 wedding-api/*.credentials.json
+project-archive/wedding-api/*.credentials.json
 
 # generated code
 wedding-api/internal/gen/
+project-archive/wedding-api/internal/gen/
 
 # macOS-specific files
 .DS_Store
