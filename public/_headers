@@ -1,0 +1,63 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+# GitHub Pages and GCS ignore this file; those deploy targets cannot set custom headers.
+#
+# CSP notes:
+# - script-src keeps 'unsafe-inline' for now: BaseLayout/index.astro ship inline scripts whose
+#   content embeds per-build hashed asset URLs, BaseLayout uses an inline onload handler for the
+#   Google Fonts stylesheet, and the zone has Rocket Loader + Scrape Shield (email obfuscation)
+#   enabled, which rewrite/inject scripts and require 'unsafe-inline' per Cloudflare's CSP docs.
+# - style-src keeps 'unsafe-inline' because pages render many style="" attributes and Astro inlines
+#   small stylesheets into <style> tags.
+# - static.cloudflareinsights.com / cloudflareinsights.com: Cloudflare Web Analytics beacon.
+# - ajax.cloudflare.com: Rocket Loader.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; media-src 'self'; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), browsing-topics=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), serial=(), usb=(), xr-spatial-tracking=()
+  Cross-Origin-Opener-Policy: same-origin
+  X-Frame-Options: DENY
+
+# Wedding upload page: previews selected photos/videos via blob: URLs and talks to same-origin /api/*.
+/wedding/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+# Content-hashed build output: safe to cache forever.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker must always be revalidated so deploys roll out promptly.
+/sw.js
+  Cache-Control: no-cache
+
+# HTML documents: always revalidate.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/*/
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Files fetched by crawlers and AI agents.
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+/*.md
+  Content-Type: text/markdown; charset=utf-8
+/sitemap*.xml
+  Content-Type: application/xml; charset=utf-8
+
+/manifest.json
+  Content-Type: application/manifest+json; charset=utf-8
+/favicon/site.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+
+# Keep Pages preview deployments out of search indexes.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

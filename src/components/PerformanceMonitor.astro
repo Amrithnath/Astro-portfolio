@@ -1,6 +1,10 @@
 ---
 // Performance monitoring component for Core Web Vitals
+// Changes every build so each deploy registers a new service worker and drops stale caches.
+const swVersion = Date.now().toString(36);
 ---
+
+<template data-sw-version={swVersion}></template>
 
 <script>
 // Performance monitoring - tracks Core Web Vitals
@@ -109,9 +113,12 @@ class PerformanceMonitor {
 const perfMonitor = new PerformanceMonitor();
 
 // Service Worker registration for caching
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    const version =
+      document.querySelector('template[data-sw-version]')?.getAttribute('data-sw-version') || 'dev';
+    navigator.serviceWorker
+      .register(`/sw.js?v=${encodeURIComponent(version)}`, { scope: '/', updateViaCache: 'none' })
       .then(registration => {
         console.log('🎯 SW registered:', registration);
       })
