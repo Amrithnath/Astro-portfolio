@@ -274,7 +274,16 @@ Try: python generator.py generate --format pdf</pre>
 </div>
 
 <script>
+  import type { ResumeCompendium } from '../data/resume-compendium';
+
   class ResumeGenerator {
+    resumeData: Pick<ResumeCompendium, 'contact' | 'summary'> & {
+      skills: Record<string, string[]>;
+      experience: (ResumeCompendium['experience'][number] & { period: string })[];
+      education: (ResumeCompendium['education'][number] & { period: string })[];
+    };
+    sections: Record<string, boolean>;
+
     constructor() {
       this.handleTerminalInput = this.handleTerminalInput.bind(this);
       this.handleToggleChange = this.handleToggleChange.bind(this);
@@ -313,7 +322,7 @@ Try: python generator.py generate --format pdf</pre>
       document.querySelectorAll('.suggestion').forEach(suggestion => {
         suggestion.addEventListener('click', () => {
           const cmd = suggestion.getAttribute('data-cmd');
-          const input = document.getElementById('terminal-input');
+          const input = document.querySelector<HTMLInputElement>('#terminal-input');
           if (input) {
             input.value = cmd;
             input.focus();
@@ -337,7 +346,7 @@ Try: python generator.py generate --format pdf</pre>
       this.updatePreviewFromSections();
     }
     
-    toggleVisualGenerator(open) {
+    toggleVisualGenerator(open?: boolean) {
       const tools = document.getElementById('resume-tools');
       const button = document.getElementById('toggle-visual-generator');
       if (!tools || !button) return false;
@@ -616,7 +625,7 @@ Type 'help' to see available commands.</pre>`;
       
       sections.forEach(section => {
         const sectionElement = document.getElementById(`${section}-section`);
-        const checkbox = document.getElementById(`include-${section}`);
+        const checkbox = document.querySelector<HTMLInputElement>(`#include-${section}`);
         if (sectionElement) sectionElement.hidden = !this.sections[section];
         if (checkbox) checkbox.checked = this.sections[section];
       });

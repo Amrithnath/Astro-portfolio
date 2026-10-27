@@ -18,7 +18,12 @@
     "proto:lint": "PATH=$(go env GOPATH)/bin:$PATH buf lint",
     "admin:dev": "pnpm --dir admin-ui dev",
     "admin:build": "pnpm --dir admin-ui build",
-    "admin:preview": "pnpm --dir admin-ui preview"
+    "admin:preview": "pnpm --dir admin-ui preview",
+    "check": "astro check",
+    "check:seo": "node scripts/check-agentic-seo.mjs",
+    "check:theme": "node scripts/check-theme-system.mjs",
+    "test:e2e": "playwright test",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -28,6 +33,8 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@playwright/test": "^1.64.1",
     "lightningcss": "^1.33.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.153.0"

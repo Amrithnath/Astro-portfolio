@@ -43,6 +43,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: build astro
         run: pnpm build
+      - name: Check built SEO and theme contracts
+        run: pnpm check:seo && pnpm check:theme
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
