@@ -23,7 +23,7 @@ function getRandomDescription(): string {
     resumeCompendium.summary,
     "Senior Engineer passionate about building scalable systems and delivering innovative solutions",
     "Senior Engineer with expertise in cloud architectures and API development",
-    "Senior Engineer maintaining core HashiCorp Cloud Platform services used by hundreds of thousands of users",
+    "Senior Engineer maintaining core HashiCorp Cloud Platform services",
     "Senior Engineer with a passion for open-source technologies and distributed systems"
   ];
   return descriptions[Math.floor(Math.random() * descriptions.length)];

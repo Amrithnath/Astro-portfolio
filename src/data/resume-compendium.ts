@@ -194,7 +194,7 @@ export const resumeCompendium: ResumeCompendium = {
     portfolio: "amrithnath.dev"
   },
   
-  summary: "Senior Engineer in HashiCorp's HCP Core Platform Engineering group at IBM India Software Labs, maintaining services core to the HashiCorp Cloud Platform used by hundreds of thousands of users and integrating HCP with IBM's cloud offerings. 8+ years of experience architecting and delivering cloud-native platforms, distributed systems, and API integrations, with a track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Expert in Go, AWS, and cloud-native platform engineering, with deep experience in developer tooling, and passionate about open-source technologies and AI-powered applications.",
+  summary: "Senior Engineer on HashiCorp's HCP Core Platform team at IBM, building the services behind the HashiCorp Cloud Platform and connecting HCP with IBM Cloud. 8+ years building cloud-native platforms, distributed systems, and APIs. I work mostly in Go and AWS, with a focus on platform engineering and developer tooling.",
   
   experience: [
     {
@@ -205,7 +205,7 @@ export const resumeCompendium: ResumeCompendium = {
       startDate: "2025-10",
       description: "Senior Engineer in the HCP Core Platform Engineering group, maintaining services core to the HashiCorp Cloud Platform (HCP)",
       achievements: [
-        "Maintain services core to the HashiCorp Cloud Platform, powering products used by hundreds of thousands of users",
+        "Maintain core services of the HashiCorp Cloud Platform",
         "Integrate the HashiCorp Cloud Platform with IBM's cloud offerings"
       ],
       technologies: ["Go", "AWS", "Terraform", "Kubernetes", "Developer Tooling"],
