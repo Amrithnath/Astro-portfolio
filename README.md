@@ -4,7 +4,7 @@
 ![Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/lint.yml?branch=main&label=tests)
 ![Quality Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/test.yml?branch=main&label=quality)
 ![GitHub](https://img.shields.io/github/license/Amrithnath/Astro-portfolio)
-![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.23.4-brightgreen)
+![Node.js Version](https://img.shields.io/badge/node-%3E%3D26-brightgreen)
 ![Package Manager](https://img.shields.io/badge/package%20manager-pnpm-orange)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-4×100-brightgreen)
 
@@ -44,8 +44,8 @@ The standalone public offline page stays terminal-only; wedding has its own styl
 
 ### Prerequisites
 
-- Node.js 22.23.4+ (CI tests 22.23.4 and 24)
-- pnpm 8 (lockfile format 6; matches CI)
+- Node.js 26+ (current release line; pinned in `.nvmrc`, CI also builds on the latest Node release)
+- pnpm 10 (pinned via `packageManager`; lockfile format 9)
 
 TypeScript remains on the latest 5.x release (5.9.3). TypeScript 6.0.3 and 7.0.2
 enable stricter defaults that introduce nullability errors in the existing resume data;

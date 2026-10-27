@@ -41,11 +41,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.23.4'
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Lint pull request commits
