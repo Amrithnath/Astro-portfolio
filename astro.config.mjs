@@ -10,7 +10,7 @@ export default defineConfig({
   integrations: [sitemap({ filter: page => isIndexablePath(new URL(page).pathname) })],
   output: 'static',
   build: {
-    inlineStylesheets: 'auto',
+    inlineStylesheets: 'always',
     assets: '_astro'
   },
   image: {
