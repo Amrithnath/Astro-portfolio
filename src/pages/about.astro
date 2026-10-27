@@ -5,7 +5,7 @@ import TerminalView from '../components/TerminalView.astro';
 import { resumeCompendium } from '../data/resume-compendium';
 // Ensure safe data access
 const contactName = resumeCompendium?.contact?.name || 'Amrithnath Vijayakumar';
-const contactTitle = resumeCompendium?.contact?.title || 'Product Development Engineer III';
+const contactTitle = resumeCompendium?.contact?.title || 'Senior Engineer';
 const summary = resumeCompendium?.summary || 'Experienced engineer passionate about building innovative solutions.';
 
 // Skills organized by category for terminal tree display
@@ -45,7 +45,7 @@ const aboutData = {
   contact: resumeCompendium.contact,
   projects: projects.slice(0, 3), // Featured projects
   techStack: skillsForTerminal,
-  achievements: (resumeCompendium.experience?.[0]?.achievements || []).slice(0, 5),
+  achievements: (resumeCompendium.experience?.find(item => item.achievements.length)?.achievements || []).slice(0, 5),
   stats: stats,
   terminal: {
     recentCommands: ["whoami", "cat about.json", "ls -la", "tree skills/", "cat stats.json", "cat contact.json"],

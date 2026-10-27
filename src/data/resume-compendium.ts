@@ -183,7 +183,7 @@ export interface ResumeCompendium {
 export const resumeCompendium: ResumeCompendium = {
   contact: {
     name: "Amrithnath Vijayakumar",
-    title: "Product Development Engineer III | Solutions Engineer",
+    title: "Senior Engineer at IBM India Software Labs (HashiCorp)",
     email: "hello@amrithnath.dev",
     phone: "will share over DM",
     location: "Bangalore, India",
@@ -198,12 +198,24 @@ export const resumeCompendium: ResumeCompendium = {
   
   experience: [
     {
+      id: "exp2",
+      company: "IBM India Software Labs (HashiCorp)",
+      position: "Senior Engineer",
+      location: "Bangalore, India",
+      startDate: "2025-10",
+      description: "Senior Engineer at IBM India Software Labs, working with HashiCorp",
+      achievements: [],
+      type: "full-time",
+      industry: "Enterprise Software/Cloud Infrastructure",
+      isRemote: false
+    },
+    {
       id: "exp1",
       company: "Phenom People Pvt Ltd (previously Tydy)",
       position: "Product Development Engineer III",
       location: "Bangalore, India",
       startDate: "2018-10",
-      endDate: null,
+      endDate: "2025-10",
       description: "Led technical solution design and development for 11+ enterprise projects, directly contributing to $900K gross recurring revenue and 20% YoY revenue growth",
       achievements: [
         "Led technical solution design and development for 11+ enterprise projects, directly contributing to $900K gross recurring revenue and 20% YoY revenue growth",
@@ -213,7 +225,7 @@ export const resumeCompendium: ResumeCompendium = {
         "Drove DevOps improvements, halving deployment times and reducing post-deployment bugs by 25%",
         "Mentored a team of 3 engineers, focusing on rapid prototyping and client-specific solutioning",
         "Regularly collaborated with sales, product, and customer success teams to scope, deliver, and transition technical solutions for enterprise clients",
-        "Working on migrating existing Tydy clients as part of Phenom acquisition process, with KPIs of increasing revenue by 20% from existing clients"
+        "Migrated existing Tydy clients as part of Phenom acquisition process, with KPIs of increasing revenue by 20% from existing clients"
       ],
       technologies: ["JavaScript", "TypeScript", "Node.js", "Python", "AWS", "Docker", "Jenkins", "MySQL", "PostgreSQL", "MongoDB", "Redis"],
       type: "full-time",
