@@ -23,7 +23,7 @@ function getRandomDescription(): string {
     resumeCompendium.summary,
     "Versatile Solutions Engineer passionate about building scalable systems and delivering innovative solutions",
     "Full-stack developer with expertise in cloud architectures and API development",
-    "Product Development Engineer focused on client-facing technical leadership and rapid prototyping",
+    "Platform engineer maintaining core HashiCorp Cloud Platform services used by hundreds of thousands of users",
     "Solutions architect with a passion for open-source technologies and distributed systems"
   ];
   return descriptions[Math.floor(Math.random() * descriptions.length)];
@@ -35,7 +35,7 @@ function getRandomRole(): string {
     resumeCompendium.contact.title,
     "Full-Stack Developer",
     "Solutions Engineer", 
-    "Product Development Engineer",
+    "Platform Engineer",
     "Cloud Architect",
     "API Specialist"
   ];

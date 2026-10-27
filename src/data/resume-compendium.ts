@@ -194,7 +194,7 @@ export const resumeCompendium: ResumeCompendium = {
     portfolio: "amrithnath.dev"
   },
   
-  summary: "Versatile Solutions Engineer with 6+ years of experience architecting and delivering complex IT solutions. Expert in Python scripting and cloud-native architectures, with a proven track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Passionate about integrating open-source technologies, building scalable distributed systems, and enabling innovative AI-powered applications. Strong background in API integration and API development.",
+  summary: "Senior Engineer in HashiCorp's HCP Core Platform Engineering group at IBM India Software Labs, maintaining services core to the HashiCorp Cloud Platform used by hundreds of thousands of users and integrating HCP with IBM's cloud offerings. 8+ years of experience architecting and delivering cloud-native platforms, distributed systems, and API integrations, with a track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Expert in Python and cloud-native architectures, and passionate about open-source technologies and AI-powered applications.",
   
   experience: [
     {
@@ -203,8 +203,11 @@ export const resumeCompendium: ResumeCompendium = {
       position: "Senior Engineer",
       location: "Bangalore, India",
       startDate: "2025-10",
-      description: "Senior Engineer at IBM India Software Labs, working with HashiCorp",
-      achievements: [],
+      description: "Senior Engineer in the HCP Core Platform Engineering group, maintaining services core to the HashiCorp Cloud Platform (HCP)",
+      achievements: [
+        "Maintain services core to the HashiCorp Cloud Platform, powering products used by hundreds of thousands of users",
+        "Integrate the HashiCorp Cloud Platform with IBM's cloud offerings"
+      ],
       type: "full-time",
       industry: "Enterprise Software/Cloud Infrastructure",
       isRemote: false
