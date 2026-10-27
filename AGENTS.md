@@ -2,7 +2,7 @@
 
 ## Source Of Truth
 - Trust `package.json`, `astro.config.mjs`, and `.github/workflows/*` over `README.md` when they disagree.
-- CI is the runtime truth: Node 20/22, pnpm 8, preview on port `4321`. `sandbox.config.json` still says Node 14/port 3000 and is not authoritative.
+- CI is the runtime truth: Node 22.23.4/24 (Astro requires >=22.23.4), pnpm 8, preview on port `4321`. `sandbox.config.json` still says Node 14/port 3000 and is not authoritative.
 
 ## Commands
 - Install with `pnpm install --frozen-lockfile` to match CI.
@@ -11,7 +11,7 @@
 - To mirror CI preview checks, run `PORT=4321 pnpm preview` and smoke-test the route with `curl -f http://localhost:4321/<route>`.
 
 ## Architecture
-- This is a single-package Astro 5 site with `output: 'static'`; do not add SSR-only or server endpoint features to the Astro app.
+- This is a single-package Astro 7 site with `output: 'static'`; do not add SSR-only or server endpoint features to the Astro app.
 - `src/pages/index.astro` is a special homepage entrypoint: it does not use `src/layouts/BaseLayout.astro`, inlines its own terminal tabs, and fetches deferred terminal HTML from `src/pages/terminal-full.astro`.
 - Homepage content is assembled from `src/data/landing-data-service.ts` and `src/data/resume-compendium.ts`, not from one static data file.
 - Most interior routes use `src/layouts/BaseLayout.astro`, which injects `ThemeProvider`, terminal nav/footer, and can replace the page with a WIP screen via `src/data/wip.ts`.

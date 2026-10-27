@@ -37,7 +37,7 @@ jobs:
       - name: install node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '22.23.4'
           cache: 'pnpm'
       - name: install deps
         run: pnpm install --frozen-lockfile
@@ -52,7 +52,7 @@ jobs:
       - name: Install dependencies and build your site
         uses: withastro/action@v3
         with:
-             node-version: 22 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
+             node-version: '22.23.4' # Astro 7 requires Node >=22.23.4.
              package-manager: pnpm # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
              pnpm-version: 8
   deploy-ghpages:

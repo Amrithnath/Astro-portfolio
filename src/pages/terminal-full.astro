@@ -1,10 +1,13 @@
 ---
+import type { MarkdownInstance } from 'astro';
 // Generates the deferred terminal content fragment for the homepage
 import TerminalView from '../components/TerminalView.astro';
 import { generateSeededLandingData } from '../data/landing-data-service';
 
 // Data Fetching: List all Markdown posts
-const projects = await Astro.glob('./project/**/*.md');
+const projects = Object.values(
+  import.meta.glob<MarkdownInstance<Record<string, any>>>('./project/**/*.md', { eager: true })
+);
 const dynamicData = generateSeededLandingData();
 
 const portfolioData = {

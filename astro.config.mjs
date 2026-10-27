@@ -39,19 +39,7 @@ export default defineConfig({
       },
     },
     build: {
-      cssMinify: 'lightningcss',
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'astro-runtime': ['astro/runtime']
-          }
-        }
-      }
-    },
-    css: {
-      lightningcss: {
-        minify: true
-      }
+      cssMinify: 'lightningcss'
     }
   }
 });
