@@ -238,6 +238,11 @@ current version.
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for attributions.
-`workers/cms-auth/` is derived from MIT-licensed
-[Sveltia CMS Authenticator](https://github.com/sveltia/sveltia-cms-auth).
+| What | License |
+| --- | --- |
+| Source code | [Apache License 2.0](LICENSE) |
+| Blog posts (`src/content/blog/`) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Profile, résumé, project write-ups, photos | © Amrithnath Vijayakumar, all rights reserved |
+
+Fork the code freely, but replace the personal content with your own.
+Third-party attributions (Sveltia CMS Authenticator, MIT; Fira Code, OFL 1.1) are listed in [NOTICE](NOTICE).

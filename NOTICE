@@ -1,8 +1,29 @@
 Astro Portfolio
 Copyright 2022-2026 Amrithnath Vijayakumar
 
-This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+The source code in this repository is licensed under the Apache License,
+Version 2.0 (see LICENSE). The Apache license does not cover the content
+listed below.
 
-It includes software derived from Sveltia CMS Authenticator
+Content
+-------
+Blog posts (src/content/blog/) are licensed under the Creative Commons
+Attribution 4.0 International License (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+You may share and adapt them, including commercially, with attribution to
+Amrithnath Vijayakumar and a link to the original post.
+
+Profile, resume, and portfolio content is Copyright Amrithnath Vijayakumar,
+all rights reserved. This includes src/data/, src/content/projects/,
+personal photos, and other images. Fork the code, but replace this content
+with your own.
+
+Third-party components
+----------------------
+workers/cms-auth/ is derived from Sveltia CMS Authenticator
 (https://github.com/sveltia/sveltia-cms-auth), Copyright (c) 2026 Kohei Yoshino,
 licensed under the MIT License. See workers/cms-auth/LICENSE.
+
+src/assets/fonts/FiraCode.ttf is Copyright 2014-2020 The Fira Code Project
+Authors, licensed under the SIL Open Font License 1.1.
+See src/assets/fonts/OFL.txt.

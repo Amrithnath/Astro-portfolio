@@ -89,6 +89,9 @@ if (schemaType) {
     ...(updated && !Number.isNaN(updated.valueOf()) ? { dateModified: updated.toISOString() } : {}),
     ...(keywords ? { keywords } : {}),
     ...(projectUrl ? { sameAs: projectUrl } : {}),
+    ...(schemaType === 'BlogPosting'
+      ? { license: 'https://creativecommons.org/licenses/by/4.0/' }
+      : {}),
   });
 }
 if (path !== '/') {
