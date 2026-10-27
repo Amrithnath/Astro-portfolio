@@ -23,11 +23,12 @@ const { showCursor = true } = Astro.props;
 
 <style>
   .terminal-footer {
+    box-sizing: border-box;
     margin: 16px 0 0 0;
     padding: 0 16px;
     width: 100%;
   }
-  .theme-terminal .terminal .terminal-footer {
+  :global(html) .terminal .terminal-footer {
     margin-top: 16px;
     padding: 0;
     width: auto;

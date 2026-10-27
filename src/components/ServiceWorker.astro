@@ -1,0 +1,15 @@
+---
+import { buildVersion } from '../lib/build-version';
+---
+
+{import.meta.env.PROD && (
+  <script is:inline define:vars={{ buildVersion }}>
+    if ('serviceWorker' in navigator) {
+      const register = () => navigator.serviceWorker
+        .register(`/sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: '/', updateViaCache: 'none' })
+        .catch((error) => console.warn('Service worker registration failed:', error));
+      if (document.readyState === 'complete') register();
+      else window.addEventListener('load', register, { once: true });
+    }
+  </script>
+)}

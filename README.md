@@ -14,12 +14,21 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 
 - ⚡ **Lightning Fast**: Built with Astro for optimal performance (4×100 Lighthouse locally)
 - 📱 **Responsive Design**: Looks great on all devices
-- 🎨 **Modern UI**: Clean and professional design
+- 🎨 **Terminal UI**: One accessible content tree with a token-based, extensible theme registry
 - 🔍 **SEO Optimized**: Built-in SEO best practices
 - 🚀 **Easy Deployment**: Multiple deployment options (GitHub Pages, GCP)
 - 🔧 **Type Safe**: Full TypeScript support
 - 🧪 **Comprehensive Testing**: Automated quality assurance
 - ♿ **Accessibility**: WCAG compliance testing
+
+## Themes
+
+Only the terminal theme is enabled. Pages render content once, with a shared head and
+pre-paint validated theme initialization (including legacy preference migration).
+To add a theme, register it in `src/themes/index.ts`, add scoped CSS tokens, import the
+stylesheet in `BaseHead.astro`, and optionally expose `window.__theme.set(id)` through
+a switcher when multiple themes exist. See [the theme guide](src/themes/README.md).
+The standalone public offline page stays terminal-only; wedding has its own styling.
 
 ## 🛠️ Tech Stack
 

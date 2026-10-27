@@ -1,16 +1,12 @@
 ---
 import type { MarkdownInstance } from 'astro';
+import { defaultTheme } from '../themes';
 // Component Imports
-import SEO from '../components/SEO.astro';
+import BaseHead from '../components/BaseHead.astro';
+import TerminalFooter from '../components/TerminalFooter.astro';
 import ProfileSummary from '../components/ProfileSummary.astro';
 import { profile } from '../lib/seo';
 import TerminalView from '../components/TerminalView.astro';
-import '../styles/global.css';
-// Resolve built CSS asset URLs so the browser gets proper text/css (avoid MIME errors)
-import personalThemeHref from '../styles/personal-theme.css?url';
-import professionalThemeHref from '../styles/professional-theme.css?url';
-import transitionsHref from '../styles/theme-transitions.css?url';
-
 // Dynamic data service
 import { generateSeededLandingData } from '../data/landing-data-service';
 
@@ -55,23 +51,17 @@ const portfolioData = {
   currentRole: dynamicData.currentRole
 };
 
-// CSS Imports (critical path only)
-import '../styles/terminal-theme.css';
 ---
 
-<html lang="en" class="theme-terminal">
+<!DOCTYPE html>
+<html lang="en" data-theme={defaultTheme}>
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<SEO
-			title={`${profile.contact.name} - ${profile.contact.title}`}
-			description={profile.summary}
-		/>
-		<link rel="icon" href="/favicon/favicon.ico" />
-		<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
-		<link rel="manifest" href="/favicon/site.webmanifest" />
+    <BaseHead
+      title={`${profile.contact.name} - ${profile.contact.title}`}
+      description={profile.summary}
+    />
 	</head>
-    <body class="theme-terminal">
+    <body>
         <!-- Terminal Theme: minimal first paint -->
         <div class="terminal-nav">
           <div class="window-header">
@@ -107,14 +97,14 @@ import '../styles/terminal-theme.css';
               suppressAbout={true}
               suppressBanner={true}
               showFinalCursor={false}
-              includeFooter={true}
           />
+          <TerminalFooter />
           <ProfileSummary />
         </main>
 
 
-        <!-- Defer non-critical themes and full terminal content until after load -->
-        <script is:inline data-transitions-url={transitionsHref} data-prof-url={professionalThemeHref} data-pers-url={personalThemeHref}>
+        <!-- Defer full terminal content until after load -->
+        <script is:inline>
           window.addEventListener('load', () => {
             const hydrate = async () => {
               try {
@@ -129,19 +119,7 @@ import '../styles/terminal-theme.css';
                     el.textContent = pool[(seed + idx*3) % pool.length];
                   });
                 })();
-                // Load non-critical CSS lazily (use built asset URLs to avoid MIME/type issues)
-                const ds = (document.currentScript && document.currentScript.dataset) || {};
-                const styles = [ds.transitionsUrl, ds.profUrl, ds.persUrl].filter(Boolean);
-                styles.forEach(href => {
-                  const link = document.createElement('link');
-                  link.rel = 'stylesheet';
-                  link.href = href;
-                  link.media = 'print';
-                  link.onload = () => { link.media = 'all'; };
-                  document.head.appendChild(link);
-                });
-
-                // Fetch full terminal HTML fragment and replace minimal content
+                // Append only the deferred commands, not another terminal shell.
                 const res = await fetch('/terminal-full/?suppressHeader=1&suppressAbout=1', { credentials: 'same-origin' });
                 if (res.ok) {
                   const html = await res.text();

@@ -30,19 +30,19 @@ import { profile } from '../lib/seo';
 </BaseLayout>
 
 <style>
-  .theme-terminal .not-found-links {
+  :global(html) .not-found-links {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
   }
 
-  .theme-terminal .not-found-links a {
+  :global(html) .not-found-links a {
     color: var(--terminal-cyan);
     text-decoration: none;
   }
 
-  .theme-terminal .not-found-links a:hover,
-  .theme-terminal .not-found-links a:focus-visible {
+  :global(html) .not-found-links a:hover,
+  :global(html) .not-found-links a:focus-visible {
     color: var(--terminal-green);
   }
 </style>

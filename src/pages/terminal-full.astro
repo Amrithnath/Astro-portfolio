@@ -1,7 +1,9 @@
 ---
 import type { MarkdownInstance } from 'astro';
+import { defaultTheme } from '../themes';
 // Generates the deferred terminal content fragment for the homepage
 import TerminalView from '../components/TerminalView.astro';
+import BaseHead from '../components/BaseHead.astro';
 import { generateSeededLandingData } from '../data/landing-data-service';
 
 // Data Fetching: List all Markdown posts
@@ -41,9 +43,10 @@ const portfolioData = {
 
 Astro.response.headers.set('Content-Type', 'text/html; charset=utf-8');
 ---
-<meta name="robots" content="noindex, follow" />
-
-<div data-terminal-fragment>
+<!DOCTYPE html>
+<html lang="en" data-theme={defaultTheme}>
+<head><BaseHead title="Terminal content" noindex /></head>
+<body>
   <TerminalView
     title={portfolioData.title}
     description={portfolioData.description}
@@ -54,12 +57,14 @@ Astro.response.headers.set('Content-Type', 'text/html; charset=utf-8');
     achievements={portfolioData.achievements}
     terminal={portfolioData.terminal}
     stats={portfolioData.stats}
+    fragmentOnly={true}
     renderMode="full"
     suppressHeader={true}
     suppressAbout={true}
     suppressBanner={true}
     showFinalCursor={false}
   />
-</div>
+</body>
+</html>
 
 

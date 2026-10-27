@@ -1,18 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>Offline | Amrithnath Vijayakumar</title>
+    <meta name="theme-color" content="#1e1e2e" />
     <style>
+      [data-theme="terminal"] {
+        color-scheme: dark;
+        --color-bg: #1e1e2e;
+        --color-text: #cdd6f4;
+        --color-accent: #89b4fa;
+      }
       body {
         margin: 0;
         min-height: 100vh;
         display: grid;
         place-items: center;
-        background: #0d1117;
-        color: #c9d1d9;
+        background: var(--color-bg);
+        color: var(--color-text);
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       }
       main {
@@ -20,7 +27,7 @@
         max-width: 36rem;
       }
       .prompt {
-        color: #58a6ff;
+        color: var(--color-accent);
       }
       a {
         color: #7ee787;

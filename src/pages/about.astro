@@ -2,41 +2,14 @@
 import ProfileSummary from '../components/ProfileSummary.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TerminalView from '../components/TerminalView.astro';
-import ProfessionalView from '../components/ProfessionalView.astro';
-import PersonalView from '../components/PersonalView.astro';
 import { resumeCompendium } from '../data/resume-compendium';
-import { Image } from "astro:assets"
-import heroImage from  "../assets/hero.jpg"
-import heroImage2 from "../assets/hero-2.jpg"
-import { getImage } from "astro:assets";
-import myBackground from "../assets/mesh-gradient.jpg"
-
-// Get optimized background image
-const optimizedBackground = await getImage({src: myBackground, format: 'avif'})
-
 // Ensure safe data access
 const contactName = resumeCompendium?.contact?.name || 'Amrithnath Vijayakumar';
 const contactTitle = resumeCompendium?.contact?.title || 'Product Development Engineer III';
 const summary = resumeCompendium?.summary || 'Experienced engineer passionate about building innovative solutions.';
 
-// Current role and experience
-const currentRole = resumeCompendium.experience?.[0] || {
-  position: "Product Development Engineer III",
-  company: "Phenom People Pvt Ltd",
-  location: "Bangalore, India",
-  startDate: "2018-10",
-  description: "Leading technical solution design and development",
-  achievements: []
-};
-
 // Skills organized by category for terminal tree display
 const skillsForTerminal = (resumeCompendium.skills || []).reduce((acc, category) => {
-  acc[category.category] = category.skills.map(skill => skill.name);
-  return acc;
-}, {} as Record<string, string[]>);
-
-// Skills organized for professional view
-const skillsForProfessional = (resumeCompendium.skills || []).reduce((acc, category) => {
   acc[category.category] = category.skills.map(skill => skill.name);
   return acc;
 }, {} as Record<string, string[]>);
@@ -70,26 +43,9 @@ const aboutData = {
   title: contactName,
   description: "About me - Professional background, skills, and experience",
   contact: resumeCompendium.contact,
-  summary: summary,
-  currentRole: currentRole,
-  totalExperience: new Date().getFullYear() - 2018,
   projects: projects.slice(0, 3), // Featured projects
-  skills: skillsForProfessional,
   techStack: skillsForTerminal,
-  achievements: (currentRole?.achievements || []).slice(0, 5),
-  awards: resumeCompendium.awards || [],
-  education: resumeCompendium.education?.[0] || {
-    degree: "Bachelor's",
-    field: "Electronics and Communication Engineering",
-    institution: "New Horizon College of Engineering",
-    location: "Bangalore, India",
-    startDate: "2014-08",
-    endDate: "2018-05",
-    activities: []
-  },
-  certifications: resumeCompendium.certifications || [],
-  languages: resumeCompendium.languages || [],
-  interests: resumeCompendium.customSections?.find(s => s.id === 'interests')?.content || ["Technology", "Innovation", "Learning", "Photography"],
+  achievements: (resumeCompendium.experience?.[0]?.achievements || []).slice(0, 5),
   stats: stats,
   terminal: {
     recentCommands: ["whoami", "cat about.json", "ls -la", "tree skills/", "cat stats.json", "cat contact.json"],
@@ -107,7 +63,6 @@ const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription} currentPage="/about">
-  <!-- Terminal Theme View (includes its own TerminalNav) -->
   <TerminalView 
     title={aboutData.title}
     description={aboutData.description}
@@ -122,86 +77,4 @@ const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary
   />
   
   <ProfileSummary />
-
-  <!-- Professional Theme View -->
-  <ProfessionalView 
-    title={aboutData.title}
-    description={aboutData.description}
-    projects={aboutData.projects}
-    skills={aboutData.skills}
-    contact={aboutData.contact}
-    achievements={aboutData.achievements}
-    stats={aboutData.stats}
-    currentRole={aboutData.currentRole}
-  />
-  
-  <!-- Personal Theme View -->
-  <PersonalView 
-    title={aboutData.title}
-    subtitle="Get to know me better"
-    description={`${aboutData.currentRole.position} with ${aboutData.totalExperience}+ years of experience. Passionate about ${aboutData.interests.slice(0, 3).join(', ').toLowerCase()}.`}
-    projects={aboutData.projects}
-    achievements={aboutData.achievements}
-    interests={aboutData.interests}
-    heroImage={heroImage}
-    heroImage2={heroImage2}
-    backgroundImage={optimizedBackground.src}
-  />
 </BaseLayout>
-
-<style>
-  /* Additional styles for about-specific content can go here */
-  
-  /* Professional Theme - About page specific styles */
-  .theme-professional .professional-view .about-section {
-    margin: 3rem 0;
-    padding: 2rem;
-    background: var(--gray-999_40);
-    border-radius: 12px;
-    border: 1px solid var(--gray-800);
-  }
-  
-  .theme-professional .education-section {
-    background: var(--gray-999);
-    padding: 2rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--accent-regular);
-  }
-  
-  .theme-professional .awards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-  
-  .theme-professional .award-card {
-    background: var(--gray-999);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--accent-regular);
-  }
-  
-  /* Personal Theme - About page specific styles */
-  .theme-personal .bio-section {
-    background: var(--gray-999_40);
-    padding: 2rem;
-    border-radius: 12px;
-    margin: 2rem 0;
-  }
-  
-  .theme-personal .interests-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-  
-  .theme-personal .interest-tag {
-    background: var(--accent-regular);
-    color: var(--gray-999);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    font-weight: 600;
-  }
-</style> 

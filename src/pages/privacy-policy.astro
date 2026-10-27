@@ -58,34 +58,34 @@ import { profile } from '../lib/seo';
 </BaseLayout>
 
 <style>
-  .theme-terminal .policy-copy {
+  :global(html) .policy-copy {
     max-width: 70ch;
     color: var(--terminal-fg);
     line-height: 1.8;
   }
 
-  .theme-terminal .policy-copy h1,
-  .theme-terminal .policy-copy h2 {
+  :global(html) .policy-copy h1,
+  :global(html) .policy-copy h2 {
     color: var(--terminal-cyan);
     margin: 1.5rem 0 0.75rem;
     font-size: 1.25rem;
   }
 
-  .theme-terminal .policy-copy h1 {
+  :global(html) .policy-copy h1 {
     margin-top: 0;
     font-size: 1.6rem;
   }
 
-  .theme-terminal .policy-copy p,
-  .theme-terminal .policy-copy ul {
+  :global(html) .policy-copy p,
+  :global(html) .policy-copy ul {
     margin: 0 0 1rem;
   }
 
-  .theme-terminal .policy-copy ul {
+  :global(html) .policy-copy ul {
     padding-left: 1.25rem;
   }
 
-  .theme-terminal .policy-copy a {
+  :global(html) .policy-copy a {
     color: var(--terminal-green);
   }
 </style>

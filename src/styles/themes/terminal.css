@@ -1,0 +1,27 @@
+[data-theme='terminal'] {
+  color-scheme: dark;
+  --color-bg: #1e1e2e;
+  --color-text: #cdd6f4;
+  --color-muted: #9399b2;
+  --color-surface: #313244;
+  --color-border: #45475a;
+  --color-accent: #a6e3a1;
+  --color-link: #89b4fa;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+
+  /* Palette aliases used by terminal content and the resume tools. */
+  --terminal-bg: var(--color-bg);
+  --terminal-fg: var(--color-text);
+  --terminal-text: var(--color-text);
+  --terminal-gray: var(--color-muted);
+  --terminal-bg-secondary: var(--color-surface);
+  --terminal-border: var(--color-border);
+  --terminal-green: var(--color-accent);
+  --terminal-blue: var(--color-link);
+  --terminal-purple: #cba6f7;
+  --terminal-yellow: #f9e2af;
+  --terminal-red: #f38ba8;
+  --terminal-cyan: #94e2d5;
+  --window-bg: var(--color-surface);
+  --window-border: var(--color-border);
+}
