@@ -47,12 +47,12 @@ jobs:
           retention-days: 7
 
   node-compat:
-    name: Build on latest Node release
+    name: Build on Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['node']
+        node-version: ['24', 'node']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

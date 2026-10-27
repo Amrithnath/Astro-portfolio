@@ -44,8 +44,8 @@ The standalone public offline page stays terminal-only; wedding has its own styl
 
 ### Prerequisites
 
-- Node.js 26+ (current release line; pinned in `.nvmrc`, CI also builds on the latest Node release)
-- pnpm 12 (pinned via `packageManager`; build-script approvals live in `pnpm-workspace.yaml` `allowBuilds`; packages younger than 24h are rejected by pnpm’s default `minimumReleaseAge`)
+- Node.js 26 recommended (current release line; pinned in `.nvmrc`). Node 24 LTS is supported (`engines` is `>=24`, used by Vercel) and CI builds on Node 24 and the latest Node release.
+- pnpm 12 (pinned via `packageManager`; build-script approvals live in `pnpm-workspace.yaml` `allowBuilds`; `pmOnFail: ignore` keeps the lockfile readable by pnpm 9/10, e.g. Vercel’s built-in pnpm; packages younger than 24h are rejected by pnpm’s default `minimumReleaseAge`)
 
 TypeScript remains on the latest 5.x release (5.9.3). TypeScript 6.0.3 and 7.0.2
 enable stricter defaults that introduce nullability errors in the existing resume data;
@@ -160,7 +160,7 @@ This project includes comprehensive testing and quality checks:
 - **Security audits**: `pnpm audit --prod` in CI
 
 ### CI/CD Workflows
-- **Portfolio Quality** (`ci.yml`): type checks, build contracts, audit, Playwright + axe on every push/PR, plus a Node 24 compatibility build
+- **Portfolio Quality** (`ci.yml`): type checks, build contracts, audit, Playwright + axe on every push/PR, plus Node 24 and latest-Node compatibility builds
 - **Conventional Commits** (`conventional-commits.yml`): validates PR titles and commit messages
 - **Release** (`release.yml`): release-please version bumps, changelog, `vX.Y.Z` tags, and GitHub releases
 - **Deploy** (`deploy.yml`): builds, checks, and deploys to GitHub Pages and GCP

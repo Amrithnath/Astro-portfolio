@@ -1,4 +1,17 @@
+packages:
+  - .
+
+# pnpm 12+
 allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+
+# pnpm 9/10 (e.g. Vercel's built-in pnpm when Corepack is disabled)
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
+
+# Version pinning lives in package.json packageManager; keep the lockfile single-document for pnpm 9/10.
+pmOnFail: ignore
