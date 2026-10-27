@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
+import ts from 'typescript';
 
 const read = (file) => readFileSync(file, 'utf8');
 function htmlFiles(dir) {
@@ -132,6 +133,7 @@ let printCalls = 0;
 const document = {
   readyState: 'loading',
   getElementById: (id) => elements.get(id),
+  querySelector: (selector) => elements.get(selector.slice(1)),
   querySelectorAll: (selector) => selector.includes('section-toggles')
     ? [...elements.values()].filter((element) => element.id.startsWith('include-')) : [],
   addEventListener: () => {},
@@ -139,7 +141,7 @@ const document = {
   createElement: () => ({ click() { downloads.push(this.download); } }),
 };
 const context = vm.createContext({
-  document, Blob, console, setTimeout: (callback) => callback(),
+  exports: {}, document, Blob, console, setTimeout: (callback) => callback(),
   URL: { createObjectURL(blob) { blobs.push(blob); return 'blob:resume'; }, revokeObjectURL() {} },
   window: { open: () => ({
     document: { write: (html) => { printed = html; }, close() {} },
@@ -147,7 +149,10 @@ const context = vm.createContext({
   }) },
 });
 const script = read('src/components/ResumeGenerator.astro').match(/<script>([\s\S]*?)<\/script>/)[1];
-vm.runInContext(script, context);
+const { outputText } = ts.transpileModule(script, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+});
+vm.runInContext(outputText, context);
 vm.runInContext('initResumeGenerator(); initResumeGenerator();', context);
 const click = (id) => {
   const handlers = elements.get(id).handlers.click;

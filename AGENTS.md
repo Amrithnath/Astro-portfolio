@@ -7,7 +7,10 @@
 ## Commands
 - Install with `pnpm install --frozen-lockfile` to match CI.
 - Use `pnpm dev` for local development.
-- Use `pnpm build` for primary verification. There are no repo scripts for lint, test, or typecheck.
+- Use `pnpm check` for Astro/TypeScript diagnostics and `pnpm build` to generate the static site.
+- Use `pnpm check:seo` and `pnpm check:theme` to validate the built `dist/`; `pnpm verify` builds and runs both checks.
+- Use `pnpm exec playwright install chromium` once, then `pnpm test:e2e` after building for Chromium smoke tests. The test runner starts its own preview on port `4321`; use `PORT=4326 pnpm test:e2e` if that port is occupied.
+- CI also runs `pnpm audit --prod`. There is no lint script.
 - To mirror CI preview checks, run `PORT=4321 pnpm preview` and smoke-test the route with `curl -f http://localhost:4321/<route>`.
 
 ## Architecture
