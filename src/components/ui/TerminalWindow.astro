@@ -1,0 +1,26 @@
+---
+// Terminal window frame: sticky chrome (titlebar, optional tabs/status) plus the body.
+export interface Props {
+  title?: string;
+}
+
+const { title = 'amrith@portfolio:~ — ghostty — 120×30' } = Astro.props;
+---
+
+<div class="window">
+  <div class="window-chrome">
+    <div class="window-header">
+      <div class="window-controls" aria-hidden="true">
+        <div class="control close"></div>
+        <div class="control minimize"></div>
+        <div class="control maximize"></div>
+      </div>
+      <div class="window-title">{title}</div>
+    </div>
+    <slot name="tabs" />
+    <slot name="status" />
+  </div>
+  <div class="terminal">
+    <slot />
+  </div>
+</div>

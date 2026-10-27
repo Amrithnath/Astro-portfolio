@@ -7,11 +7,25 @@
     <title>Offline | Amrithnath Vijayakumar</title>
     <meta name="theme-color" content="#1e1e2e" />
     <style>
+      /* Inline snapshot of src/styles/themes/terminal.css + tokens.css (static page, no bundler). */
       [data-theme="terminal"] {
         color-scheme: dark;
         --color-bg: #1e1e2e;
         --color-text: #cdd6f4;
-        --color-accent: #89b4fa;
+        --color-muted: #9399b2;
+        --color-accent: #a6e3a1;
+        --color-link: #89b4fa;
+        --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+        --space-2: 0.5rem;
+        --space-6: 2rem;
+        --text-base: 0.875rem;
+        --leading-normal: 1.5;
+        --content-width: 72ch;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
       }
       body {
         margin: 0;
@@ -20,17 +34,23 @@
         place-items: center;
         background: var(--color-bg);
         color: var(--color-text);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-family: var(--font-mono);
+        font-size: var(--text-base);
+        line-height: var(--leading-normal);
       }
       main {
-        padding: 2rem;
-        max-width: 36rem;
+        padding: var(--space-6);
+        max-width: var(--content-width);
       }
       .prompt {
         color: var(--color-accent);
       }
       a {
-        color: #7ee787;
+        color: var(--color-link);
+      }
+      a:hover,
+      a:focus-visible {
+        color: var(--color-accent);
       }
     </style>
   </head>

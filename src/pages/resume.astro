@@ -7,15 +7,5 @@ import { profile } from '../lib/seo';
 
 <BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume">
   <ProfileSummary />
-  <!-- Terminal Theme View -->
-  <div class="terminal-view">
-    <div class="terminal-container">
-      <div class="window">
-        <div class="terminal">
-          <ResumeGenerator />
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <ResumeGenerator />
 </BaseLayout>

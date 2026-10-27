@@ -1,6 +1,8 @@
 ---
 // Resume Generator Component
 import { resumeCompendium } from '../data/resume-compendium';
+import Button from './ui/Button.astro';
+import Card from './ui/Card.astro';
 
 const resumeExportData = {
   contact: resumeCompendium.contact,
@@ -99,7 +101,7 @@ Try: python generator.py generate --format pdf</pre>
   <!-- Single-instance controls and preview complement the terminal commands. -->
   <div class="resume-tools">
     <!-- Resume Customization Panel -->
-    <div class="resume-controls">
+    <Card class="resume-controls">
       <h2>Customize Your Resume</h2>
       <p>Select the sections you want to include in your resume:</p>
       
@@ -140,18 +142,12 @@ Try: python generator.py generate --format pdf</pre>
       <div class="export-controls">
         <h3>Download Resume</h3>
         <div class="export-buttons">
-          <button id="export-pdf" class="export-btn pdf-btn">
-            📄 Download PDF
-          </button>
-          <button id="export-md" class="export-btn md-btn">
-            📝 Download Markdown
-          </button>
-          <button id="export-txt" class="export-btn txt-btn">
-            📄 Download Text
-          </button>
+          <Button id="export-pdf" variant="danger">📄 Download PDF</Button>
+          <Button id="export-md">📝 Download Markdown</Button>
+          <Button id="export-txt" variant="success">📄 Download Text</Button>
         </div>
       </div>
-    </div>
+    </Card>
     
     <!-- Resume Preview -->
     <div class="resume-preview">
@@ -729,11 +725,18 @@ Type 'help' to see available commands.</pre>`;
         <head>
           <title>Resume - ${this.resumeData.contact.name}</title>
           <style>
+            :root {
+              --print-text: #333;
+              --print-heading: #2c3e50;
+              --print-muted: #7f8c8d;
+              --print-rule: #3498db;
+              --print-font: Arial, sans-serif;
+            }
             body { 
-              font-family: Arial, sans-serif; 
+              font-family: var(--print-font); 
               line-height: 1.6; 
               margin: 20px;
-              color: #333;
+              color: var(--print-text);
             }
             .resume-header {
               text-align: center;
@@ -742,11 +745,11 @@ Type 'help' to see available commands.</pre>`;
             .resume-name { 
               font-size: 28px; 
               margin-bottom: 5px; 
-              color: #2c3e50;
+              color: var(--print-heading);
             }
             .resume-title { 
               font-size: 16px; 
-              color: #7f8c8d; 
+              color: var(--print-muted); 
               margin-bottom: 20px;
             }
             .resume-contact {
@@ -755,10 +758,10 @@ Type 'help' to see available commands.</pre>`;
             }
             .section-title { 
               font-size: 18px; 
-              border-bottom: 2px solid #3498db; 
+              border-bottom: 2px solid var(--print-rule); 
               padding-bottom: 5px; 
               margin: 25px 0 15px 0;
-              color: #2c3e50;
+              color: var(--print-heading);
             }
             .section-content {
               margin-bottom: 20px;
@@ -817,456 +820,356 @@ Type 'help' to see available commands.</pre>`;
 </script>
 
 <style>
-  .resume-generator {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  /* Terminal Interface Styles */
   .terminal-interface {
-    background: var(--terminal-bg);
-    color: var(--terminal-text);
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    border-radius: 8px;
-    overflow: hidden;
-    max-height: 600px;
     display: flex;
     flex-direction: column;
+    max-height: 37.5rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text);
   }
-  
+
   .terminal-output {
     flex: 1;
-    padding: 20px;
+    max-height: 31rem;
+    padding: var(--space-4);
     overflow-y: auto;
-    max-height: 500px;
-    background: var(--terminal-bg);
+    overflow-x: hidden;
   }
-  
+
   .command-line {
-    margin: 8px 0;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    margin: var(--space-2) 0;
   }
-  
-  .prompt {
-    color: var(--terminal-green);
+
+  .command-line :global(.prompt) {
+    display: inline;
+    margin: 0;
     user-select: none;
   }
-  
-  .command {
-    color: var(--terminal-text);
-    margin-left: 8px;
+
+  .terminal-interface :global(.output) {
+    margin: var(--space-2) 0 var(--space-4);
   }
-  
-  .output {
-    margin: 8px 0 16px 0;
-    color: var(--terminal-cyan);
-  }
-  
-  .output pre {
+
+  .terminal-interface :global(.output pre) {
     margin: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    color: var(--terminal-text);
+    color: var(--color-text);
   }
-  
+
   .terminal-input-line {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    background: var(--terminal-bg);
-    border-top: 1px solid var(--terminal-border);
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
   }
-  
+
+  .terminal-input-line .prompt {
+    display: inline;
+    margin: 0;
+    white-space: nowrap;
+  }
+
   .terminal-input {
     flex: 1;
-    background: transparent;
+    min-width: 0;
     border: none;
-    color: var(--terminal-text);
-    font-family: inherit;
-    font-size: 14px;
     outline: none;
-    margin-left: 8px;
+    background: transparent;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--text-base);
   }
-  
+
   .terminal-suggestions {
-    padding: 12px 20px;
-    background: rgba(0,0,0,0.2);
-    border-top: 1px solid var(--terminal-border);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
   }
-  
+
   .suggestion-title {
-    color: var(--terminal-yellow);
-    font-size: 12px;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
+    color: var(--color-warning);
+    font-size: var(--text-xs);
   }
-  
+
   .suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
   }
-  
+
   .suggestion {
-    background: var(--terminal-bg-secondary);
-    color: var(--terminal-cyan);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-info);
+    font-size: var(--text-xs);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
   }
-  
+
   .suggestion:hover {
-    background: var(--terminal-cyan);
-    color: var(--terminal-bg);
+    background: var(--color-info);
+    color: var(--color-on-accent);
   }
-  
-  /* Resume tools */
+
   .resume-tools {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-    gap: 2rem;
-    margin-top: 2rem;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+    align-items: start;
   }
-  
+
   .resume-controls {
-    background: var(--terminal-bg);
-    padding: 20px;
-    border-radius: 0;
-    border: 1px solid var(--terminal-gray);
-    height: fit-content;
     position: sticky;
-    top: 2rem;
+    top: 7rem;
+    gap: var(--space-3);
+    background: var(--color-bg);
   }
 
   .resume-controls h2 {
-    margin-top: 0;
-    color: var(--terminal-purple);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
-    font-weight: bold;
+    margin: 0;
+    color: var(--color-secondary);
+    font-size: var(--text-md);
   }
 
-  .section-toggles {
-    margin: 1.5rem 0;
+  .resume-controls p {
+    margin: 0;
   }
-  
+
+  .resume-controls h3 {
+    margin: 0;
+    font-size: var(--text-base);
+  }
+
   .toggle-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-2);
   }
-  
+
   .toggle-item {
     display: flex;
     align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
   }
-  
+
   .toggle-item:hover {
-    background-color: var(--color-surface);
+    background: var(--color-surface);
   }
-  
-  .toggle-item input[type="checkbox"] {
-    margin-right: 0.75rem;
-    transform: scale(1.2);
+
+  .toggle-item input[type='checkbox'] {
+    margin: 0;
+    accent-color: var(--color-accent);
   }
-  
+
   .export-controls {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
-    padding-top: 1.5rem;
-    margin-top: 1.5rem;
   }
-  
+
   .export-buttons {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-  
-  .export-btn {
-    padding: 12px 16px;
-    border: 1px solid var(--terminal-gray);
-    border-radius: 0;
-    cursor: pointer;
-    font-weight: normal;
-    transition: all 0.2s;
-    text-align: left;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-  }
-
-  .pdf-btn {
-    background: var(--terminal-red);
-    color: var(--terminal-bg);
-  }
-
-  .pdf-btn:hover {
-    background: var(--terminal-red);
-    transform: none;
-    opacity: 0.8;
-  }
-
-  .md-btn {
-    background: var(--terminal-blue);
-    color: var(--terminal-bg);
-  }
-
-  .md-btn:hover {
-    background: var(--terminal-blue);
-    transform: none;
-    opacity: 0.8;
-  }
-
-  .txt-btn {
-    background: var(--terminal-green);
-    color: var(--terminal-bg);
-  }
-
-  .txt-btn:hover {
-    background: var(--terminal-green);
-    transform: none;
-    opacity: 0.8;
+    gap: var(--space-3);
   }
 
   .resume-preview {
-    background: var(--terminal-bg);
-    border: 1px solid var(--terminal-gray);
-    border-radius: 0;
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
     overflow: hidden;
-    box-shadow: none;
   }
 
   .resume-document {
-    padding: 20px;
-    background: var(--terminal-bg);
-    color: var(--terminal-fg);
-    line-height: 1.5;
-    font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    padding: var(--space-5);
+    color: var(--color-text);
+    line-height: var(--leading-normal);
+    overflow-wrap: anywhere;
   }
 
   .resume-header {
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
-  
+
   .resume-name {
-    font-size: 14px;
-    font-weight: normal;
-    margin: 0 0 0.25rem 0;
-    color: var(--terminal-cyan);
+    margin: 0 0 var(--space-1);
+    color: var(--color-heading);
+    font-size: var(--text-xl);
   }
 
   .resume-title {
-    font-size: 14px;
-    color: var(--terminal-yellow);
-    margin-bottom: 1rem;
-    font-weight: normal;
+    margin-bottom: var(--space-3);
+    color: var(--color-warning);
   }
 
   .resume-contact {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--terminal-gray);
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .contact-item {
-    font-size: 14px;
-    color: var(--terminal-green);
+    color: var(--color-accent);
   }
 
   .resume-section {
-    margin-bottom: 2rem;
-  }
-  
-  .section-title {
-    font-size: 14px;
-    font-weight: normal;
-    color: var(--terminal-purple);
-    border-bottom: 1px solid var(--terminal-gray);
-    padding-bottom: 4px;
-    margin-bottom: 1rem;
-    margin: 16px 0 8px 0;
+    margin-bottom: var(--space-6);
   }
 
-  .bio-text {
-    color: var(--terminal-fg);
-    font-size: 14px;
-    line-height: 1.5;
+  .section-title {
+    margin: var(--space-4) 0 var(--space-2);
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-secondary);
+    font-size: var(--text-md);
+    font-weight: 700;
   }
 
   .skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
+    gap: var(--space-5);
   }
-  
+
   .skill-category-title {
-    font-size: 14px;
-    font-weight: normal;
-    color: var(--terminal-cyan);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--text-base);
   }
 
   .skill-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .skill-tag {
-    background: var(--terminal-gray);
-    color: var(--terminal-bg);
-    padding: 2px 6px;
-    border-radius: 0;
-    font-size: 14px;
-    font-weight: normal;
+    padding: 2px var(--space-2);
+    background: var(--color-muted);
+    color: var(--color-bg);
   }
 
   .experience-item {
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--terminal-gray);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .experience-item:last-child {
+    margin: 0;
+    padding: 0;
     border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
   }
-  
-  .job-header {
+
+  .job-header,
+  .degree-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.25rem;
+    gap: var(--space-1) var(--space-3);
+    margin-bottom: var(--space-1);
   }
-  
-  .job-title {
-    font-size: 14px;
-    font-weight: normal;
-    color: var(--terminal-blue);
+
+  .job-title,
+  .degree-title {
     margin: 0;
+    color: var(--color-link);
+    font-size: var(--text-base);
+    font-weight: 400;
   }
 
-  .job-period {
-    font-size: 14px;
-    color: var(--terminal-gray);
-    font-weight: normal;
+  .job-period,
+  .graduation-year {
+    color: var(--color-muted);
   }
 
-  .company {
-    color: var(--terminal-yellow);
-    font-style: normal;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: normal;
+  .company,
+  .institution {
+    margin-bottom: var(--space-2);
+    color: var(--color-warning);
   }
 
   .job-responsibilities {
     margin: 0;
-    padding-left: 16px;
+    padding-left: var(--space-4);
   }
 
   .job-responsibilities li {
-    margin: 4px 0;
-    color: var(--terminal-fg);
-    font-size: 14px;
-    font-weight: normal;
+    margin: var(--space-1) 0;
   }
 
   .education-item {
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
   }
 
-  .degree-header {
+  .job-technologies {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 0.25rem;
-  }
-  
-  .degree-title {
-    font-size: 14px;
-    font-weight: normal;
-    color: var(--terminal-blue);
-    margin: 0;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
-  .graduation-year {
-    font-size: 14px;
-    color: var(--terminal-gray);
-    font-weight: normal;
+  .tech-tag {
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-info);
+    font-size: var(--text-xs);
   }
 
-  .institution {
-    color: var(--terminal-yellow);
-    font-style: normal;
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: normal;
-  }
-
-  .education-details {
-    color: var(--terminal-fg);
-    font-size: 14px;
-    font-weight: normal;
-  }
-
-  /* Responsive design */
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     .resume-tools {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
-    
+
     .resume-controls {
       position: static;
     }
-    
+
     .export-buttons {
       flex-direction: row;
       flex-wrap: wrap;
     }
   }
-  
-  @media (max-width: 768px) {
-    .resume-generator {
-      padding: 1rem;
-    }
-    
+
+  @media (max-width: 48rem) {
     .resume-document {
-      padding: 1.5rem;
+      padding: var(--space-4);
     }
-    
-    .job-header,
-    .degree-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
+
     .export-buttons {
       flex-direction: column;
     }
-    
-    .skills-grid {
-      grid-template-columns: 1fr;
-    }
-    
+
     .terminal-interface {
-      max-height: 400px;
+      max-height: 25rem;
     }
-    
+
     .terminal-output {
-      max-height: 300px;
+      max-height: 18.75rem;
     }
   }
-</style> 
+</style>
+
+

@@ -1,48 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import TerminalCommand from '../components/TerminalCommand.astro';
+import Prompt from '../components/ui/Prompt.astro';
 import { profile } from '../lib/seo';
 ---
 
 <BaseLayout title={`Not Found | ${profile.contact.name}`} description="The requested page does not exist." currentPage="/404">
-  <div class="terminal-view">
-    <div class="terminal-container">
-      <div class="window">
-        <div class="terminal">
-          <TerminalCommand command="ls /requested/path" />
-          <div class="output">
-            <div class="command-output">ls: cannot access '/requested/path': No such file or directory</div>
-          </div>
-
-          <TerminalCommand command="echo fallback.paths" />
-          <div class="output not-found-links">
-            <a href="/">/</a>
-            <a href="/about">/about</a>
-            <a href="/projects">/projects</a>
-            <a href="/contact">/contact</a>
-          </div>
-
-          <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~</span><span class="symbol">$</span><span class="cursor">█</span></div>
-        </div>
-      </div>
-    </div>
+  <Prompt command="ls /requested/path" />
+  <div class="output">
+    <div class="command-output">ls: cannot access '/requested/path': No such file or directory</div>
   </div>
+
+  <Prompt command="echo fallback.paths" />
+  <div class="output link-row">
+    <a href="/">/</a>
+    <a href="/about">/about</a>
+    <a href="/projects">/projects</a>
+    <a href="/contact">/contact</a>
+  </div>
+
+  <Prompt cursor />
 </BaseLayout>
-
-<style>
-  :global(html) .not-found-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  :global(html) .not-found-links a {
-    color: var(--terminal-cyan);
-    text-decoration: none;
-  }
-
-  :global(html) .not-found-links a:hover,
-  :global(html) .not-found-links a:focus-visible {
-    color: var(--terminal-green);
-  }
-</style>

@@ -1,6 +1,8 @@
-/* Shared baseline; theme colors live in styles/themes/. */
-* {
-  box-sizing: content-box;
+/* Shared baseline; colors live in styles/themes/, scales in styles/tokens.css. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html {
@@ -10,6 +12,15 @@ html {
 
 body {
   margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+[hidden] {
+  display: none !important;
 }
 
 img {
@@ -19,12 +30,41 @@ img {
 
 a {
   color: var(--color-link);
+  transition: color var(--transition-fast);
 }
 
-section h1,
-article h1,
-nav h1,
-aside h1 {
-  font-size: 2rem;
-  line-height: 1.2;
+a:hover,
+a:focus-visible {
+  color: var(--color-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-heading);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  margin: 0 0 var(--space-3);
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+h4 { font-size: var(--text-md); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

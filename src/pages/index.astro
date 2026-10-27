@@ -3,7 +3,7 @@ import { getProjectPreviews } from '../lib/content';
 import { defaultTheme } from '../themes';
 // Component Imports
 import BaseHead from '../components/BaseHead.astro';
-import TerminalFooter from '../components/TerminalFooter.astro';
+import TerminalShell from '../components/TerminalShell.astro';
 import ProfileSummary from '../components/ProfileSummary.astro';
 import { profile } from '../lib/seo';
 import TerminalView from '../components/TerminalView.astro';
@@ -60,26 +60,7 @@ const portfolioData = {
     />
 	</head>
     <body>
-        <!-- Terminal Theme: minimal first paint -->
-        <div class="terminal-nav">
-          <div class="window-header">
-            <div class="window-controls"><div class="control close"></div><div class="control minimize"></div><div class="control maximize"></div></div>
-            <div class="window-title">amrith@portfolio:~ — ghostty — 120×30</div>
-          </div>
-          <div class="terminal-tabs">
-            <a href="/" class="tab active" aria-current="page"><span class="tab-icon">●</span><span class="tab-title">portfolio.sh</span><span class="tab-close">✕</span></a>
-            <a href="/about" class="tab"><span class="tab-icon">○</span><span class="tab-title">about.md</span><span class="tab-close">✕</span></a>
-            <a href="/projects" class="tab"><span class="tab-icon">○</span><span class="tab-title">projects.json</span><span class="tab-close">✕</span></a>
-            <a href="/resume" class="tab"><span class="tab-icon">○</span><span class="tab-title">resume.py</span><span class="tab-close">✕</span></a>
-            <a href="/blog" class="tab"><span class="tab-icon">○</span><span class="tab-title">blog.log</span><span class="tab-close">✕</span></a>
-            <div class="tab-add">+</div>
-          </div>
-          <div class="terminal-status">
-            <div class="status-left"><span class="branch">📁 ~/portfolio</span><span class="git-branch">git:(main)</span><span class="status-indicator">✓</span></div>
-            <div class="status-right"><span class="terminal-mode">INSERT</span><span class="position">Ln 1, Col 1</span></div>
-          </div>
-        </div>
-        <main id="main-content">
+        <TerminalShell currentPage="/">
 		  <TerminalView 
 			  title={portfolioData.title}
 			  description={portfolioData.description}
@@ -96,9 +77,8 @@ const portfolioData = {
               suppressBanner={true}
               showFinalCursor={false}
           />
-          <TerminalFooter />
           <ProfileSummary />
-        </main>
+        </TerminalShell>
 
 
         <!-- Defer full terminal content until after load -->
@@ -121,7 +101,7 @@ const portfolioData = {
                 const res = await fetch('/terminal-full/?suppressHeader=1&suppressAbout=1', { credentials: 'same-origin' });
                 if (res.ok) {
                   const html = await res.text();
-                  const container = document.querySelector('.terminal');
+                  const container = document.querySelector('#main-content');
                   if (container) {
                     // Keep the first few lines already present, append the rest
                     const wrapper = document.createElement('div');

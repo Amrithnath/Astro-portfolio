@@ -1,0 +1,19 @@
+---
+// Link (href) or button. Extra attributes such as id are forwarded.
+export interface Props {
+  href?: string;
+  variant?: 'primary' | 'success' | 'danger' | 'ghost';
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  [attr: string]: unknown;
+}
+
+const { href, variant = 'primary', type = 'button', class: className, ...attrs } = Astro.props;
+const classes = ['btn', variant !== 'primary' && `btn-${variant}`, className];
+---
+
+{href ? (
+  <a class:list={classes} href={href} {...attrs}><slot /></a>
+) : (
+  <button class:list={classes} type={type} {...attrs}><slot /></button>
+)}

@@ -3,7 +3,7 @@ import { getProjectPreviews } from '../lib/content';
 import { profile } from '../lib/seo';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LsOutput from '../components/LsOutput.astro';
-import TerminalCommand from '../components/TerminalCommand.astro';
+import Prompt from '../components/ui/Prompt.astro';
 import CatOutput from '../components/CatOutput.astro';
 
 const projects = await getProjectPreviews();
@@ -72,23 +72,13 @@ ${projects.slice(0, 3).map(project => `
 ---
 
 <BaseLayout title={`All Projects | ${profile.contact.name}`} currentPage="/projects">
-  <!-- Terminal Theme View -->
-  <div class="terminal-view">
-    <div class="terminal-container">
-      <div class="window">
-        <div class="terminal">
-            <div class="command-output">Last login: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} on ttys000</div>
+  <div class="command-output">Last login: {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} on ttys000</div>
 
-            <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~/projects</span><span class="symbol">$</span><span class="command">cat README.md</span></div>
-            <div class="output"><CatOutput type="markdown" content={projectsReadme} /></div>
+  <Prompt path="~/projects" command="cat README.md" />
+  <div class="output"><CatOutput type="markdown" content={projectsReadme} /></div>
 
-            <TerminalCommand command="ls -la ~/projects/" />
-            <div class="output"><LsOutput items={projectsDirectoryItems} totalSize={projects.length + 8} /></div>
+  <Prompt path="~/projects" command="ls -la ~/projects/" />
+  <div class="output"><LsOutput items={projectsDirectoryItems} totalSize={projects.length + 8} /></div>
 
-            <div class="prompt"><span class="user">amrith</span><span class="symbol">@</span><span class="host">portfolio</span><span class="symbol">:</span><span class="path">~/projects</span><span class="symbol">$</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
+  <Prompt path="~/projects" cursor />
 </BaseLayout>

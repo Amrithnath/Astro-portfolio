@@ -1,8 +1,7 @@
 ---
 import BaseHead, { type Props as HeadProps } from '../components/BaseHead.astro';
-import TerminalNav from '../components/TerminalNav.astro';
+import TerminalShell from '../components/TerminalShell.astro';
 import TerminalWip from '../components/TerminalWip.astro';
-import TerminalFooter from '../components/TerminalFooter.astro';
 import { defaultTheme } from '../themes';
 import { isWip } from '../data/wip';
 
@@ -22,10 +21,8 @@ const wip = isWip(currentPage);
     <slot name="head" />
   </head>
   <body>
-    <TerminalNav currentPage={currentPage} />
-    <main id="main-content">
+    <TerminalShell currentPage={currentPage}>
       {wip ? <TerminalWip title={wip.title} note={wip.note} /> : <slot />}
-    </main>
-    <TerminalFooter />
+    </TerminalShell>
   </body>
 </html>
