@@ -1,7 +1,7 @@
 {
-  "name": "@example/portfolio",
+  "name": "amrithnath-portfolio",
   "type": "module",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -18,16 +18,36 @@
     "proto:lint": "PATH=$(go env GOPATH)/bin:$PATH buf lint",
     "admin:dev": "pnpm --dir admin-ui dev",
     "admin:build": "pnpm --dir admin-ui build",
-    "admin:preview": "pnpm --dir admin-ui preview"
+    "admin:preview": "pnpm --dir admin-ui preview",
+    "check": "astro check",
+    "check:seo": "node scripts/check-agentic-seo.mjs",
+    "check:theme": "node scripts/check-theme-system.mjs",
+    "test:e2e": "playwright test",
+    "check:links": "node scripts/check-links.mjs",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links",
+    "commitlint": "commitlint",
+    "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun"
   },
   "dependencies": {
-    "@fontsource/fira-code": "^5.2.6",
-    "astro": "^5.13.1",
-    "sharp": "^0.34.2"
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/fira-code": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^7.4.2",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "lightningcss": "^1.30.0",
-    "typescript": "^5.8.3",
-    "wrangler": "^4.19.1"
-  }
+    "@astrojs/check": "^0.9.12",
+    "@axe-core/playwright": "^4.14.0",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@playwright/test": "^1.64.1",
+    "lightningcss": "^1.33.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.153.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@12.15.0"
 }

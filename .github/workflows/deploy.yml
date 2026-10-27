@@ -7,9 +7,6 @@ on:
         default : "1"
         required: true
         type: string
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -31,18 +28,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        uses: pnpm/action-setup@v6
       - name: install node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: 'pnpm'
       - name: install deps
         run: pnpm install --frozen-lockfile
       - name: build astro
         run: pnpm build
+      - name: Check built SEO and theme contracts
+        run: pnpm check:seo && pnpm check:theme && pnpm check:links
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -50,11 +47,9 @@ jobs:
           path: |
             dist
       - name: Install dependencies and build your site
-        uses: withastro/action@v3
+        uses: withastro/action@v6
         with:
-             node-version: 22 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
-             package-manager: pnpm # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
-             pnpm-version: 8
+             node-version: '26.12.1' # Keep in sync with .nvmrc (Node current release line).
   deploy-ghpages:
     needs: build
     runs-on: ubuntu-latest

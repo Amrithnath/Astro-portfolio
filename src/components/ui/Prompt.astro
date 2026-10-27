@@ -1,0 +1,14 @@
+---
+// Shell prompt line: user@host:path$ [command]
+export interface Props {
+  command?: string;
+  user?: string;
+  host?: string;
+  path?: string;
+  cursor?: boolean;
+}
+
+const { command, user = 'amrith', host = 'portfolio', path = '~', cursor = false } = Astro.props;
+---
+
+<div class="prompt"><span class="user">{user}</span><span class="symbol">@</span><span class="host">{host}</span><span class="symbol">:</span><span class="path">{path}</span><span class="symbol">$</span>{command !== undefined && <span class="command">{command}</span>}{cursor && <span class="cursor" aria-hidden="true">█</span>}</div>

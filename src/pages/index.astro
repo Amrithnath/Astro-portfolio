@@ -1,18 +1,17 @@
 ---
+import { getProjectPreviews } from '../lib/content';
+import { defaultTheme } from '../themes';
 // Component Imports
-import MainHead from '../components/MainHead.astro';
+import BaseHead from '../components/BaseHead.astro';
+import TerminalShell from '../components/TerminalShell.astro';
+import ProfileSummary from '../components/ProfileSummary.astro';
+import { profile } from '../lib/seo';
 import TerminalView from '../components/TerminalView.astro';
-import '../styles/global.css';
-// Resolve built CSS asset URLs so the browser gets proper text/css (avoid MIME errors)
-import personalThemeHref from '../styles/personal-theme.css?url';
-import professionalThemeHref from '../styles/professional-theme.css?url';
-import transitionsHref from '../styles/theme-transitions.css?url';
-
 // Dynamic data service
 import { generateSeededLandingData } from '../data/landing-data-service';
 
-// Data Fetching: List all Markdown posts in the repo.
-const projects = await Astro.glob('./project/**/*.md');
+// Load published project collection entries.
+const projects = await getProjectPreviews();
 
 // Generate dynamic data from resume compendium
 const dynamicData = generateSeededLandingData();
@@ -30,7 +29,7 @@ const allProjects = [
       type: project.type,
       status: project.status
     },
-    url: `/project/${project.id}`,
+    url: project.url || project.github || '/projects/',
     title: project.name
   }))
 ];
@@ -50,41 +49,19 @@ const portfolioData = {
   currentRole: dynamicData.currentRole
 };
 
-// CSS Imports (critical path only)
-import '../styles/terminal-theme.css';
 ---
 
-<html lang="en" class="theme-terminal">
+<!DOCTYPE html>
+<html lang="en" data-theme={defaultTheme}>
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content={`${dynamicData.name}'s portfolio - ${dynamicData.description}`}>
-		<MainHead
-			title={`${dynamicData.name} - ${dynamicData.title}`}
-			description={dynamicData.description}
-		/>
+    <BaseHead
+      title={`${profile.contact.name} - ${profile.contact.title}`}
+      description={profile.summary}
+    />
 	</head>
-    <body class="theme-terminal">
-        <!-- Terminal Theme: minimal first paint -->
-        <div class="terminal-nav">
-          <div class="window-header">
-            <div class="window-controls"><div class="control close"></div><div class="control minimize"></div><div class="control maximize"></div></div>
-            <div class="window-title">amrith@portfolio:~ — ghostty — 120×30</div>
-          </div>
-          <div class="terminal-tabs">
-            <a href="/" class="tab active" aria-current="page"><span class="tab-icon">●</span><span class="tab-title">portfolio.sh</span><span class="tab-close">✕</span></a>
-            <a href="/about" class="tab"><span class="tab-icon">○</span><span class="tab-title">about.md</span><span class="tab-close">✕</span></a>
-            <a href="/projects" class="tab"><span class="tab-icon">○</span><span class="tab-title">projects.json</span><span class="tab-close">✕</span></a>
-            <a href="/resume" class="tab"><span class="tab-icon">○</span><span class="tab-title">resume.py</span><span class="tab-close">✕</span></a>
-            <a href="/blog" class="tab"><span class="tab-icon">○</span><span class="tab-title">blog.log</span><span class="tab-close">✕</span></a>
-            <div class="tab-add">+</div>
-          </div>
-          <div class="terminal-status">
-            <div class="status-left"><span class="branch">📁 ~/portfolio</span><span class="git-branch">git:(main)</span><span class="status-indicator">✓</span></div>
-            <div class="status-right"><span class="terminal-mode">INSERT</span><span class="position">Ln 1, Col 1</span></div>
-          </div>
-        </div>
-        <main id="main-content">
+    <body>
+        <TerminalShell currentPage="/">
+          <h1 class="visually-hidden">Amrithnath Vijayakumar</h1>
 		  <TerminalView 
 			  title={portfolioData.title}
 			  description={portfolioData.description}
@@ -100,59 +77,41 @@ import '../styles/terminal-theme.css';
               suppressAbout={true}
               suppressBanner={true}
               showFinalCursor={false}
-              includeFooter={true}
           />
-        </main>
+          <ProfileSummary />
+        </TerminalShell>
 
 
-        <!-- Defer non-critical themes and full terminal content until after load -->
-        <script is:inline data-transitions-url={transitionsHref} data-prof-url={professionalThemeHref} data-pers-url={personalThemeHref}>
-          window.addEventListener('load', () => {
+        <!-- Defer full terminal content until after load -->
+        <script>
+          function initHomepage() {
+            const container = document.querySelector<HTMLElement>('#main-content');
+            if (location.pathname !== '/' || !container || container.dataset.hydrated) return;
+            container.dataset.hydrated = 'true';
             const hydrate = async () => {
+              if (!container.isConnected) return;
               try {
-                // Randomize ASCII symbols per page view
-                (function randomizeAscii(){
-                  const grid = document.querySelector('.nf-grid');
-                  if (!grid) return;
-                  const symbols = ['#','●','■','◆','▣','▤','✶','▓','@','%','&'];
-                  const seed = (performance.now()|0) % symbols.length;
-                  const pool = symbols.slice(seed).concat(symbols.slice(0, seed));
-                  grid.querySelectorAll('.px:not(.bg)').forEach((el, idx) => {
-                    el.textContent = pool[(seed + idx*3) % pool.length];
-                  });
-                })();
-                // Load non-critical CSS lazily (use built asset URLs to avoid MIME/type issues)
-                const ds = (document.currentScript && document.currentScript.dataset) || {};
-                const styles = [ds.transitionsUrl, ds.profUrl, ds.persUrl].filter(Boolean);
-                styles.forEach(href => {
-                  const link = document.createElement('link');
-                  link.rel = 'stylesheet';
-                  link.href = href;
-                  link.media = 'print';
-                  link.onload = () => { link.media = 'all'; };
-                  document.head.appendChild(link);
+                const grid = container.querySelector('.nf-grid');
+                const symbols = ['#', '●', '■', '◆', '▣', '▤', '✶', '▓', '@', '%', '&'];
+                const seed = (performance.now() | 0) % symbols.length;
+                grid?.querySelectorAll('.px:not(.bg)').forEach((el, index) => {
+                  el.textContent = symbols[(seed + index * 3) % symbols.length];
                 });
-
-                // Fetch full terminal HTML fragment and replace minimal content
                 const res = await fetch('/terminal-full/?suppressHeader=1&suppressAbout=1', { credentials: 'same-origin' });
-                if (res.ok) {
-                  const html = await res.text();
-                  const container = document.querySelector('.terminal');
-                  if (container) {
-                    // Keep the first few lines already present, append the rest
-                    const wrapper = document.createElement('div');
-                    wrapper.innerHTML = html;
-                    const fragment = wrapper.querySelector('[data-terminal-fragment]');
-                    if (fragment) container.appendChild(fragment);
-                  }
-                }
-              } catch (e) {
-                console.warn('Deferred hydration failed', e);
+                if (!res.ok || !container.isConnected) return;
+                const wrapper = new DOMParser().parseFromString(await res.text(), 'text/html');
+                const fragment = wrapper.querySelector('[data-terminal-fragment]');
+                if (fragment && container.isConnected) container.appendChild(fragment);
+              } catch (error) {
+                console.warn('Deferred hydration failed', error);
               }
             };
-            // Slight delay to not compete with LCP
+            // Avoid competing with the initial viewport, including on client-side returns home.
             setTimeout(hydrate, 50);
-          });
+          }
+          if (document.readyState === 'complete') initHomepage();
+          else window.addEventListener('load', initHomepage, { once: true });
+          document.addEventListener('astro:page-load', initHomepage);
         </script>
 	</body>
 </html>

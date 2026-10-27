@@ -1,13 +1,16 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
+import { isIndexablePath } from './src/lib/seo';
 
 const weddingApiTarget = process.env.WEDDING_API_URL || 'http://127.0.0.1:8787';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://your-portfolio-domain.com', // Replace with your actual domain
+  site: 'https://amrithnath.dev',
+  integrations: [sitemap({ filter: page => isIndexablePath(new URL(page).pathname) })],
   output: 'static',
   build: {
-    inlineStylesheets: 'auto',
+    inlineStylesheets: 'always',
     assets: '_astro'
   },
   image: {
@@ -39,19 +42,7 @@ export default defineConfig({
       },
     },
     build: {
-      cssMinify: 'lightningcss',
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'astro-runtime': ['astro/runtime']
-          }
-        }
-      }
-    },
-    css: {
-      lightningcss: {
-        minify: true
-      }
+      cssMinify: 'lightningcss'
     }
   }
 });

@@ -1,0 +1,13 @@
+---
+// Surface card; renders a link when `href` is given. Slot is the card content.
+export interface Props {
+  href?: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+
+const { href, class: className, ...attrs } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag class:list={['card', className]} href={href} {...attrs}><slot /></Tag>

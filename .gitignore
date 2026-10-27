@@ -16,6 +16,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # browser automation artifacts
+playwright-report/
+test-results/
 .playwright-mcp/
 /console-errors.txt
 /*-inspect*.json
@@ -43,3 +45,6 @@ wedding-api/internal/gen/
 
 # macOS-specific files
 .DS_Store
+
+# Lighthouse CI reports
+.lighthouseci/

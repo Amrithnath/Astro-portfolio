@@ -21,10 +21,10 @@ function getRandomItems<T>(array: T[], count: number): T[] {
 function getRandomDescription(): string {
   const descriptions = [
     resumeCompendium.summary,
-    "Versatile Solutions Engineer passionate about building scalable systems and delivering innovative solutions",
-    "Full-stack developer with expertise in cloud architectures and API development",
-    "Product Development Engineer focused on client-facing technical leadership and rapid prototyping",
-    "Solutions architect with a passion for open-source technologies and distributed systems"
+    "Senior Engineer passionate about building scalable systems and delivering innovative solutions",
+    "Senior Engineer with expertise in cloud architectures and API development",
+    "Senior Engineer maintaining core HashiCorp Cloud Platform services",
+    "Senior Engineer with a passion for open-source technologies and distributed systems"
   ];
   return descriptions[Math.floor(Math.random() * descriptions.length)];
 }
@@ -33,11 +33,7 @@ function getRandomDescription(): string {
 function getRandomRole(): string {
   const roles = [
     resumeCompendium.contact.title,
-    "Full-Stack Developer",
-    "Solutions Engineer", 
-    "Product Development Engineer",
-    "Cloud Architect",
-    "API Specialist"
+    "Senior Engineer"
   ];
   return roles[Math.floor(Math.random() * roles.length)];
 }
@@ -50,10 +46,11 @@ function getRandomTechStack(): { [category: string]: string[] } {
   }, {} as { [key: string]: string[] });
 
   // Randomly select 3-5 categories
-  const categories = Object.keys(allSkills);
-  const selectedCategories = getRandomItems(categories, Math.floor(Math.random() * 3) + 3);
-  
-  const techStack: { [category: string]: string[] } = {};
+  const primary = resumeCompendium.skills[0]?.category;
+  const categories = Object.keys(allSkills).filter(category => category !== primary);
+  const selectedCategories = getRandomItems(categories, Math.floor(Math.random() * 3) + 2);
+
+  const techStack: { [category: string]: string[] } = primary ? { [primary]: allSkills[primary] } : {};
   selectedCategories.forEach(category => {
     // Get 3-6 random skills from each category
     const skillCount = Math.floor(Math.random() * 4) + 3;

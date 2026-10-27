@@ -68,7 +68,7 @@ function renderTreeLines(items: TreeItem[], prefix: string = '', isLast: boolean
 }
 ---
 
-<div class="tree-output">
+<div class="tree-output" tabindex="0" role="region" aria-label={title ? `${title} directory tree` : 'Directory tree'}>
   {title && <div class="tree-title">{title}</div>}
   <div class="tree-content" set:html={renderTreeLines(items)} />
   {(totalDirs > 0 || totalFiles > 0) && (

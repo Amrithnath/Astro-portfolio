@@ -183,7 +183,7 @@ export interface ResumeCompendium {
 export const resumeCompendium: ResumeCompendium = {
   contact: {
     name: "Amrithnath Vijayakumar",
-    title: "Product Development Engineer III | Solutions Engineer",
+    title: "Senior Engineer at IBM India Software Labs (HashiCorp)",
     email: "hello@amrithnath.dev",
     phone: "will share over DM",
     location: "Bangalore, India",
@@ -194,16 +194,32 @@ export const resumeCompendium: ResumeCompendium = {
     portfolio: "amrithnath.dev"
   },
   
-  summary: "Versatile Solutions Engineer with 6+ years of experience architecting and delivering complex IT solutions. Expert in Python scripting and cloud-native architectures, with a proven track record of client-facing technical leadership, rapid prototyping, and driving business outcomes. Passionate about integrating open-source technologies, building scalable distributed systems, and enabling innovative AI-powered applications. Strong background in API integration and API development.",
+  summary: "Senior Engineer on HashiCorp's HCP Core Platform team at IBM, building the services behind the HashiCorp Cloud Platform and connecting HCP with IBM Cloud. 8+ years building cloud-native platforms, distributed systems, and APIs. I work mostly in Go and AWS, with a focus on platform engineering and developer tooling.",
   
   experience: [
+    {
+      id: "exp2",
+      company: "IBM India Software Labs (HashiCorp)",
+      position: "Senior Engineer",
+      location: "Bangalore, India",
+      startDate: "2025-10",
+      description: "Senior Engineer in the HCP Core Platform Engineering group, maintaining services core to the HashiCorp Cloud Platform (HCP)",
+      achievements: [
+        "Maintain core services of the HashiCorp Cloud Platform",
+        "Integrate the HashiCorp Cloud Platform with IBM's cloud offerings"
+      ],
+      technologies: ["Go", "AWS", "Terraform", "Kubernetes", "Developer Tooling"],
+      type: "full-time",
+      industry: "Enterprise Software/Cloud Infrastructure",
+      isRemote: false
+    },
     {
       id: "exp1",
       company: "Phenom People Pvt Ltd (previously Tydy)",
       position: "Product Development Engineer III",
       location: "Bangalore, India",
       startDate: "2018-10",
-      endDate: null,
+      endDate: "2025-10",
       description: "Led technical solution design and development for 11+ enterprise projects, directly contributing to $900K gross recurring revenue and 20% YoY revenue growth",
       achievements: [
         "Led technical solution design and development for 11+ enterprise projects, directly contributing to $900K gross recurring revenue and 20% YoY revenue growth",
@@ -213,7 +229,7 @@ export const resumeCompendium: ResumeCompendium = {
         "Drove DevOps improvements, halving deployment times and reducing post-deployment bugs by 25%",
         "Mentored a team of 3 engineers, focusing on rapid prototyping and client-specific solutioning",
         "Regularly collaborated with sales, product, and customer success teams to scope, deliver, and transition technical solutions for enterprise clients",
-        "Working on migrating existing Tydy clients as part of Phenom acquisition process, with KPIs of increasing revenue by 20% from existing clients"
+        "Migrated existing Tydy clients as part of Phenom acquisition process, with KPIs of increasing revenue by 20% from existing clients"
       ],
       technologies: ["JavaScript", "TypeScript", "Node.js", "Python", "AWS", "Docker", "Jenkins", "MySQL", "PostgreSQL", "MongoDB", "Redis"],
       type: "full-time",
@@ -346,8 +362,15 @@ export const resumeCompendium: ResumeCompendium = {
   
   skills: [
     {
-      category: "Programming Languages",
+      category: "Primary Language",
       priority: 1,
+      skills: [
+        { name: "Go", level: "expert", yearsOfExperience: 2, lastUsed: "2026-01" }
+      ]
+    },
+    {
+      category: "Other Languages",
+      priority: 2,
       skills: [
         { name: "JavaScript", level: "expert", yearsOfExperience: 6, lastUsed: "2024-01" },
         { name: "TypeScript", level: "expert", yearsOfExperience: 5, lastUsed: "2024-01" },
@@ -355,7 +378,6 @@ export const resumeCompendium: ResumeCompendium = {
         { name: "Python", level: "expert", yearsOfExperience: 6, lastUsed: "2024-01" },
         { name: "Java", level: "intermediate", yearsOfExperience: 3, lastUsed: "2023-06" },
         { name: "PHP", level: "intermediate", yearsOfExperience: 2, lastUsed: "2022-12" },
-        { name: "Go", level: "beginner", yearsOfExperience: 1, lastUsed: "2023-09" },
         { name: "Zig", level: "beginner", yearsOfExperience: 1, lastUsed: "2023-08" }
       ]
     },

@@ -1,127 +1,29 @@
 ---
-import ThemeProvider from '../components/ThemeProvider.astro';
-// import ThemeSwitcher from '../components/ThemeSwitcher.astro';
-import TerminalNav from '../components/TerminalNav.astro';
+import BaseHead, { type Props as HeadProps } from '../components/BaseHead.astro';
+import TerminalShell from '../components/TerminalShell.astro';
 import TerminalWip from '../components/TerminalWip.astro';
-import TerminalFooter from '../components/TerminalFooter.astro';
+import { defaultTheme } from '../themes';
 import { isWip } from '../data/wip';
-// Keep only terminal CSS on critical path
-import '../styles/terminal-theme.css';
 
-export interface Props {
-  title: string;
-  description?: string;
+export interface Props extends HeadProps {
   currentPage?: string;
+  lang?: string;
+  footerCursor?: boolean;
 }
 
-const { title, description = "Amrith Shanbhag's Portfolio", currentPage = "/" } = Astro.props;
+const { currentPage = '/', lang = 'en', footerCursor = true, ...head } = Astro.props;
 const wip = isWip(currentPage);
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="theme-terminal" data-theme="terminal">
+<html lang={lang} data-theme={defaultTheme}>
   <head>
-    <ThemeProvider />
-    <meta charset="UTF-8" />
-    <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="manifest" href="/favicon/site.webmanifest">
-    <link rel="shortcut icon" href="/favicon/favicon.ico">
-    <title>{title}</title>
-    <!-- Fonts (deferred on home, but OK here) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Defer heavy fonts to after load -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <BaseHead {...head} noindex={wip ? true : head.noindex} />
+    <slot name="head" />
   </head>
-  
-  <body class="theme-terminal">
-    <!-- Page Transition Loader -->
-    <div id="page-transition" class="page-transition">
-      <div class="page-transition-loader"></div>
-    </div>
-    
-    <!-- <ThemeSwitcher /> -->
-    
-    <!-- Terminal Navigation (interior pages only; homepage does not use BaseLayout) -->
-    <TerminalNav currentPage={currentPage} />
-
-    <!-- Page Content -->
-    <main id="main-content">
-      {wip ? (
-        <TerminalWip title={wip.title} note={wip.note} />
-      ) : (
-        <slot />
-      )}
-    </main>
-
-    <!-- Global Terminal Footer for all pages using BaseLayout -->
-    <TerminalFooter />
+  <body>
+    <TerminalShell currentPage={currentPage} footerCursor={wip ? true : footerCursor}>
+      {wip ? <TerminalWip title={wip.title} note={wip.note} /> : <slot />}
+    </TerminalShell>
   </body>
 </html>
-
-<script is:inline>
-  // Page transition handler
-  function initPageTransitions() {
-    const loader = document.getElementById('page-transition');
-    if (!loader) return;
-    
-    // Show loader on navigation start
-    document.addEventListener('astro:before-preparation', () => {
-      loader.classList.add('active');
-    });
-    
-    // Hide loader when page is ready
-    document.addEventListener('astro:page-load', () => {
-      setTimeout(() => {
-        loader.classList.remove('active');
-      }, 200);
-    });
-    
-    // Handle navigation errors
-    document.addEventListener('astro:after-swap', () => {
-      setTimeout(() => {
-        loader.classList.remove('active');
-      }, 100);
-    });
-  }
-  
-  // Initialize transitions
-  initPageTransitions();
-</script>
-
-<style>
-  html {
-    font-family: system-ui, sans-serif;
-  }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-  }
-
-  main {
-    display: block;
-  }
-  
-  /* Remove any default margins that might cause black bars */
-  .terminal-nav {
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Terminal nav visibility is handled by theme switching JS */
-  .theme-terminal .terminal-nav {
-    display: block;
-  }
-  
-  .theme-professional .terminal-nav,
-  .theme-personal .terminal-nav {
-    display: none;
-  }
-</style> 

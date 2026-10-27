@@ -1,0 +1,122 @@
+---
+// Deferred terminal commands shared by the full TerminalView and the homepage fragment.
+import Prompt from './ui/Prompt.astro';
+import LsOutput from './LsOutput.astro';
+import TreeOutput from './TreeOutput.astro';
+import { homeDirectoryItems } from '../data/navigation.ts';
+
+export interface Props {
+  title: string;
+  description: string;
+  randomAchievement: string;
+  stats: Record<string, number | undefined>;
+  contact: { email?: string; github?: string; linkedin?: string; website?: string };
+  terminal: { systemInfo?: { uptime?: string; load?: string } };
+  projectItems: any[];
+  skillsTreeItems: any[];
+  totalDirs: number;
+  totalFiles: number;
+  withIntro?: boolean;
+}
+
+const {
+  title,
+  description,
+  randomAchievement,
+  stats,
+  contact,
+  terminal,
+  projectItems,
+  skillsTreeItems,
+  totalDirs,
+  totalFiles,
+  withIntro = false,
+} = Astro.props;
+---
+
+<div data-terminal-fragment>
+  {withIntro && (
+    <>
+      <Prompt command="whereis amrith" />
+      <div class="output">
+        <div class="command-output">amrith: /home/amrith /usr/local/bangalore /usr/share/india</div>
+      </div>
+      <Prompt command="cat .banner" />
+      <div class="output">
+        <pre class="ascii-art" tabindex="0" role="region" aria-label="Terminal banner">╔═══════════════════════════════════════╗
+║          AMRITHNATH VIJAYAKUMAR       ║
+║            SENIOR ENGINEER            ║
+╚═══════════════════════════════════════╝</pre>
+      </div>
+    </>
+  )}
+
+  <Prompt command="cat about.json" />
+  <div class="output">
+    <pre class="json-output" tabindex="0" role="region" aria-label="About JSON"><span class="json-brace">&#123;</span>
+  <span class="json-key">"name"</span>: <span class="json-string">"{title}"</span>,
+  <span class="json-key">"role"</span>: <span class="json-string">"Senior Engineer"</span>,
+  <span class="json-key">"description"</span>: <span class="json-string">"{description}"</span>,
+  <span class="json-key">"achievements"</span>: <span class="json-string">"{randomAchievement}"</span>,
+  <span class="json-key">"experience"</span>: <span class="json-string">"{stats.yearsOfExperience || 6}+ years"</span>,
+  <span class="json-key">"status"</span>: <span class="json-string">"Open to discussing new opportunities"</span>
+<span class="json-brace">&#125;</span></pre>
+  </div>
+
+  <Prompt command="ls -la" />
+  <div class="output"><LsOutput items={homeDirectoryItems} /></div>
+
+  <Prompt command="tree skills/" />
+  <div class="output">
+    <TreeOutput items={skillsTreeItems} title="skills/" totalDirs={totalDirs} totalFiles={totalFiles} />
+  </div>
+
+  <Prompt path="~/projects" command="ls -lta" />
+  <div class="output"><LsOutput items={projectItems} totalSize={stats.projectsCompleted || 24} /></div>
+
+  <Prompt command="cat stats.json" />
+  <div class="output">
+    <pre class="json-output" tabindex="0" role="region" aria-label="Statistics JSON"><span class="json-brace">&#123;</span>
+  <span class="json-key">"projects_completed"</span>: <span class="json-number">{stats.projectsCompleted || 25}</span>,
+  <span class="json-key">"technologies_used"</span>: <span class="json-number">{stats.technologiesUsed || 30}</span>,
+  <span class="json-key">"years_experience"</span>: <span class="json-number">{stats.yearsOfExperience || 6}</span>,
+  <span class="json-key">"certifications"</span>: <span class="json-number">{stats.certifications || 2}</span>,
+  <span class="json-key">"awards"</span>: <span class="json-number">{stats.awards || 4}</span>
+<span class="json-brace">&#125;</span></pre>
+  </div>
+
+  <Prompt command="cat contact.json" />
+  <div class="output">
+    <pre class="json-output" tabindex="0" role="region" aria-label="Contact JSON"><span class="json-brace">&#123;</span>
+  <span class="json-key">"email"</span>: <span class="json-string">"{contact.email || 'hello@amrithnath.dev'}"</span>,
+  <span class="json-key">"github"</span>: <span class="json-string">"{contact.github || 'github.com/amrithnath'}"</span>,
+  <span class="json-key">"linkedin"</span>: <span class="json-string">"{contact.linkedin || 'linkedin.com/in/amrithnath'}"</span>,
+  <span class="json-key">"website"</span>: <span class="json-string">"{contact.website || 'amrithnath.dev'}"</span>
+<span class="json-brace">&#125;</span></pre>
+  </div>
+
+  <Prompt command="uptime" />
+  <div class="output">
+    <div class="command-output">14:30  up {terminal.systemInfo?.uptime || '365 days'}, 12:45, 1 user, load averages: {terminal.systemInfo?.load || '0.52 0.48 0.51'}</div>
+  </div>
+
+  <Prompt command="uname -a" />
+  <div class="output">
+    <div class="command-output">Darwin portfolio.local 24.2.0 Darwin Kernel Version 24.2.0: Fri Dec  6 18:51:28 PST 2024; root:xnu-11215.61.5~2/RELEASE_ARM64_T6000 arm64 M1 Pro</div>
+  </div>
+
+  <Prompt command="cat .ghostty" />
+  <div class="output">
+    <div class="command-output"># Ghostty Terminal Configuration
+# Fast, feature-rich terminal emulator
+# Using Catppuccin Mocha theme
+theme = "catppuccin-mocha"
+font-family = "JetBrains Mono"
+font-size = 14</div>
+  </div>
+
+  <Prompt command={'echo "Thanks for visiting! 🚀"'} />
+  <div class="output">
+    <div class="command-output">Thanks for visiting! 🚀</div>
+  </div>
+</div>

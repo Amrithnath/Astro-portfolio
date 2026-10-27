@@ -1,0 +1,57 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from './BaseLayout.astro';
+import Prompt from '../components/ui/Prompt.astro';
+import Button from '../components/ui/Button.astro';
+import type { Props as SEOProps } from '../components/SEO.astro';
+
+interface Props {
+  content: Record<string, any>;
+  schemaType: SEOProps['schemaType'];
+}
+
+const { content, schemaType } = Astro.props;
+const imageSource = content.img || content.image;
+---
+
+<BaseLayout
+  title={content.title}
+  description={content.description}
+  lang={content.lang || 'en'}
+  currentPage={Astro.url.pathname}
+  type="article"
+  schemaType={schemaType}
+  published={content.pubDate}
+  modified={content.updatedDate}
+  keywords={content.tags}
+  projectUrl={content.link || content.live || content.demo || content.github}
+>
+  <Prompt path="~/articles" command={`cat ${Astro.url.pathname.replace(/\/$/, '')}.md`} />
+  <article class="prose">
+    <header>
+      <h1>{content.title}</h1>
+      <p>{content.description}</p>
+      {content.tags?.length > 0 && (
+        <ul class="tag-list" aria-label="Tags">
+          {content.tags.map((tag: string) => <li>{tag}</li>)}
+        </ul>
+      )}
+      {imageSource && (
+        <Image
+          src={imageSource}
+          width={1400}
+          height={700}
+          widths={[400, 800, 1400]}
+          sizes="(max-width: 48rem) calc(100vw - 1.5rem), 72ch"
+          format="avif"
+          loading="eager"
+          fetchpriority="high"
+          alt={content.title}
+        />
+      )}
+      {content.link && <p><Button href={content.link} target="_blank" rel="noopener noreferrer">View project</Button></p>}
+    </header>
+    <div class="article-body"><slot /></div>
+    <footer><p><a href="/projects/">View more projects</a></p></footer>
+  </article>
+</BaseLayout>

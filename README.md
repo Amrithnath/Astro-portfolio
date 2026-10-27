@@ -1,10 +1,10 @@
 # 🚀 Astro Portfolio
 
-![Deploy Status](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/deploy.yml?branch=main&label=deploy)
+![Deploy Status](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/ci.yml?branch=main&label=ci)
 ![Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/lint.yml?branch=main&label=tests)
 ![Quality Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/test.yml?branch=main&label=quality)
 ![GitHub](https://img.shields.io/github/license/Amrithnath/Astro-portfolio)
-![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
+![Node.js Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)
 ![Package Manager](https://img.shields.io/badge/package%20manager-pnpm-orange)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-4×100-brightgreen)
 
@@ -14,12 +14,21 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 
 - ⚡ **Lightning Fast**: Built with Astro for optimal performance (4×100 Lighthouse locally)
 - 📱 **Responsive Design**: Looks great on all devices
-- 🎨 **Modern UI**: Clean and professional design
+- 🎨 **Terminal UI**: One accessible content tree with a token-based, extensible theme registry
 - 🔍 **SEO Optimized**: Built-in SEO best practices
 - 🚀 **Easy Deployment**: Multiple deployment options (GitHub Pages, GCP)
 - 🔧 **Type Safe**: Full TypeScript support
 - 🧪 **Comprehensive Testing**: Automated quality assurance
 - ♿ **Accessibility**: WCAG compliance testing
+
+## Themes
+
+Only the terminal theme is enabled. Pages render content once, with a shared head and
+pre-paint validated theme initialization (including legacy preference migration).
+To add a theme, register it in `src/themes/index.ts`, add scoped CSS tokens, import the
+stylesheet in `BaseHead.astro`, and optionally expose `window.__theme.set(id)` through
+a switcher when multiple themes exist. See [the theme guide](src/themes/README.md).
+The standalone public offline page stays terminal-only; wedding has its own styling.
 
 ## 🛠️ Tech Stack
 
@@ -35,8 +44,12 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 
 ### Prerequisites
 
-- Node.js 18+ 
-- pnpm (recommended package manager)
+- Node.js 26 recommended (current release line; pinned in `.nvmrc`). Node 24 LTS is supported (`engines` is `>=24`, used by Vercel) and CI builds on Node 24 and the latest Node release.
+- pnpm 12 (pinned via `packageManager`; build-script approvals live in `pnpm-workspace.yaml` `allowBuilds`; `pmOnFail: ignore` keeps the lockfile readable by pnpm 9/10, e.g. Vercel’s built-in pnpm; packages younger than 24h are rejected by pnpm’s default `minimumReleaseAge`)
+
+TypeScript remains on the latest 5.x release (5.9.3). TypeScript 6.0.3 and 7.0.2
+enable stricter defaults that introduce nullability errors in the existing resume data;
+upgrading that data model is deferred rather than weakening compiler checks.
 
 ### Installation
 
@@ -48,7 +61,7 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 
 2. Install dependencies:
    ```bash
-   pnpm install
+   pnpm install --frozen-lockfile
    ```
 
 3. Start the development server:
@@ -65,6 +78,61 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 | `pnpm dev` | Start development server |
 | `pnpm build` | Build for production |
 | `pnpm preview` | Preview production build locally |
+
+## Lighthouse
+
+Build first with `pnpm build`, then run `pnpm lighthouse` for default mobile
+emulation and `LIGHTHOUSE_DESKTOP=1 pnpm lighthouse` for desktop. The pinned
+`@lhci/cli@0.15.1` runs through `pnpm dlx`, without adding project dependencies.
+Chrome must be installed; set `CHROME_PATH` to select another Chromium executable.
+
+The `lighthouse` CI matrix audits all six routes three times per profile. Accessibility, Best Practices and SEO
+require median scores of **100**; Performance requires **95** (all failures are
+errors). The 95 Performance budget absorbs CI timing variance; local medians
+are 100. JSON/HTML
+reports are uploaded as `lighthouse-mobile` and `lighthouse-desktop` artifacts;
+local reports live in `.lighthouseci/reports/` (ignored by Git).
+
+### Local measurements
+
+Measured on 2026-10-27 using headless Chrome 156: baseline Lighthouse 12.8.2,
+final Lighthouse CI 0.15.1 (Lighthouse 12.6.1). Baselines are one run per route/profile;
+finals are three-run category medians. Values are **Performance / Accessibility /
+Best Practices / SEO**, not a claim about a hosted production deployment.
+
+| Route | Mobile before | Mobile after | Desktop before | Desktop after |
+| --- | --- | --- | --- | --- |
+| `/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/about/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/projects/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/contact/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/resume/` | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+| `/project/webDev/weather-app/` | 99/100/100/100 | 100/100/100/100 | 100/100/100/100 | 100/100/100/100 |
+
+Every non-perfect baseline audit was recorded:
+
+- `first-contentful-paint`: all mobile routes, 1.4–1.5 s.
+- `largest-contentful-paint`: mobile home, about and article, 1.7 s.
+- `render-blocking-resources`: all mobile routes and desktop resume,
+  estimated savings 120–600 ms.
+- `render-blocking-insight`: all route/profile pairs, mobile savings 450–600 ms.
+- `network-dependency-tree-insight`: all route/profile pairs.
+- `uses-responsive-images`: article on both profiles, savings 23–24 KiB.
+- `image-delivery-insight`: article on both profiles, savings 23–29 KiB.
+- `lcp-discovery-insight`: article on both profiles, missing high fetch priority.
+
+Critical CSS is now inline, the two local text font weights are preloaded, and
+article hero images have responsive AVIF candidates and high fetch priority.
+Scrollable JSON, directory trees and resume output have named keyboard-accessible
+regions, with mobile keyboard regression tests. Informational dependency-chain
+and timing diagnostics can remain even when all category scores are 100.
+
+`astro preview` and Lighthouse CI's static server do **not** apply Cloudflare
+`public/_headers`. CSP/HSTS and related header diagnostics are therefore not
+production-header verification; the existing CSP is unchanged. Production scores
+must be measured separately, especially when Cloudflare injects analytics/scripts.
+Intentionally noindex redirect/WIP routes are outside this budget. Lighthouse 100
+is not a substitute for a complete accessibility or security audit.
 
 ## 📁 Project Structure
 
@@ -86,17 +154,15 @@ A modern, responsive portfolio website built with [Astro](https://astro.build/).
 This project includes comprehensive testing and quality checks:
 
 ### Automated Tests
-- **Build Validation**: Ensures successful builds
-- **Security Audits**: Dependency vulnerability scanning
-- **Performance**: Bundle size analysis
-- **Accessibility**: axe-core accessibility testing
-- **Link Validation**: Broken link detection
+- **Type checks**: `pnpm check` (Astro + TypeScript)
+- **Build contracts**: `pnpm verify` builds, then validates SEO/crawler output, the theme system, and internal links
+- **Browser tests**: `pnpm test:e2e` runs Playwright smoke tests and axe-core accessibility checks (WCAG 2.1 AA)
+- **Security audits**: `pnpm audit --prod` in CI
 
 ### CI/CD Workflows
-- **Lint and Test**: Basic build and security checks on every push/PR
-- **Build and Quality Tests**: Comprehensive build validation and performance analysis
-- **Deploy**: Automated deployment to GitHub Pages and GCP
-- **Badge Updates**: Status badge maintenance
+- **Portfolio Quality** (`ci.yml`): gated pipeline. Conventions → CodeQL → quality (audit, type check, build checks, Playwright + axe) → Node 24 build and Lighthouse → deploy (GitHub Pages on `main`; Cloudflare and Vercel once their secrets are set). A failed stage skips the rest; PRs don’t also run push builds, and new pushes cancel old runs.
+- **Release** (`release.yml`): release-please version bumps, changelog, `vX.Y.Z` tags, and GitHub releases
+- **Deploy** (`deploy.yml`): manual redeploy to GitHub Pages or GCP
 
 ## 🚢 Deployment
 
@@ -161,3 +227,74 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 
 
+
+## AI crawler and search discovery
+
+The canonical origin is `https://amrithnath.dev` (`site` in `astro.config.mjs`). All discovery
+files are generated by Astro at build time; there is no server runtime or JavaScript requirement
+for reading the profile:
+
+- `/llms.txt` links the public pages, Markdown mirrors, `/llms-full.txt` (complete profile and article notes), and `/rss.xml` (blog RSS).
+- `/index.md`, `/about.md`, `/resume.md`, `/projects.md`, and Markdown versions of blog/project
+  posts expose readable text. Post mirrors use the original Markdown; profile mirrors use
+  `src/data/resume-compendium.ts`, also used by the resume generator.
+- `src/components/SEO.astro` emits canonical/social metadata, safely serialized schema.org
+  entity/page data, and alternate links to the LLM index and available Markdown mirrors.
+- Home, about, and resume include an expandable semantic profile in their initial HTML. It remains
+  usable without JavaScript; the homepage's deferred terminal fragment and generator still work.
+- `/robots.txt` welcomes search, AI training, search-agent, and user-fetch crawlers, repeating
+  private-route exclusions for each agent. Wedding/photography, admin, API, fragment, and WIP
+  paths are excluded. Robots rules are crawler guidance, **not access control**.
+- The official `@astrojs/sitemap` integration generates the HTML sitemap for this Astro 7 static
+  site. It excludes private, noindex, redirect, and non-HTML routes; RSS is advertised separately.
+
+Shared exclusions and entity helpers live in `src/lib/seo.ts`; update its route policy when
+adding private/noindex pages. Keep new profile facts in the compendium, rather than duplicating
+SEO data. Pages may pass title, description, image, and noindex overrides to their layout.
+The default social image is the existing 512px portfolio favicon; posts use their frontmatter
+image. Wedding pages and their existing head component are deliberately not changed.
+
+Validate generated output with:
+
+```bash
+pnpm build
+node scripts/check-agentic-seo.mjs
+```
+
+`llms.txt`/Markdown improve machine readability but cannot guarantee crawler adoption or citations.
+Cloudflare bot/WAF policies must separately permit the desired crawlers; robots.txt cannot override
+host-level blocking. Theme-only refactors should retain the SEO component and static text fallback.
+
+
+## Adding blog posts and projects
+
+Content Layer collections are defined with Zod schemas in `src/content.config.ts`.
+Add blog Markdown to `src/content/blog/` and project Markdown to `src/content/projects/`:
+
+```yaml
+---
+title: My post
+description: A short summary.
+pubDate: 2026-10-27
+updatedDate: 2026-10-28 # optional
+tags: [Astro]
+draft: false
+---
+```
+
+Do not include `layout:`. Optional article fields: `img` or `image` (absolute image URL),
+and `lang`. Projects also support optional `link`, `client`, `github`, `live`, `demo`, and
+`tech` (string array). Omitted `tags` defaults to `[]`; omitted `draft` defaults to `false`.
+File paths preserve case and subfolders: `projects/webDev/weather-app.md` publishes at
+`/project/webDev/weather-app/`. Drafts are visible in development only; production builds
+exclude them from routes, lists, mirrors, LLM discovery, sitemap, and RSS. Published blog
+posts automatically appear in `/rss.xml`; blog and project Markdown mirrors and LLM notes
+are also generated from the collections. The profile compendium is still maintained separately.
+
+## Versioning and releases
+
+The package version is displayed in the terminal footer and exposed at `/version.json`. Releases
+are managed by Release Please from Conventional Commit messages using the format
+`feat: ✨ add a feature`; the generated `CHANGELOG.md` and `vX.Y.Z` tags are updated through the
+release PR workflow. See [AGENTS.md](AGENTS.md#versioning-and-releases) for commit emoji conventions
+and the one-time 2.0.0 bootstrap instructions.
