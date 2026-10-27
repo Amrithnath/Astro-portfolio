@@ -91,7 +91,7 @@ export const terminalCommands = {
       role: "Full-Stack Developer",
       description: data.bio.short,
       interests: data.personal.roles,
-      status: "Available for new opportunities"
+      status: "Open to discussing new opportunities"
     })
   },
   skills: {
