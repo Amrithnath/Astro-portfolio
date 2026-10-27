@@ -1,10 +1,10 @@
 # 🚀 Astro Portfolio
 
-![Deploy Status](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/deploy.yml?branch=main&label=deploy)
+![Deploy Status](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/ci.yml?branch=main&label=ci)
 ![Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/lint.yml?branch=main&label=tests)
 ![Quality Tests](https://img.shields.io/github/actions/workflow/status/Amrithnath/Astro-portfolio/test.yml?branch=main&label=quality)
 ![GitHub](https://img.shields.io/github/license/Amrithnath/Astro-portfolio)
-![Node.js Version](https://img.shields.io/badge/node-%3E%3D26-brightgreen)
+![Node.js Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)
 ![Package Manager](https://img.shields.io/badge/package%20manager-pnpm-orange)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-4×100-brightgreen)
 
@@ -160,11 +160,9 @@ This project includes comprehensive testing and quality checks:
 - **Security audits**: `pnpm audit --prod` in CI
 
 ### CI/CD Workflows
-- **Portfolio Quality** (`ci.yml`): type checks, build contracts, audit, Playwright + axe on every push/PR, plus Node 24 and latest-Node compatibility builds
-- **Conventional Commits** (`conventional-commits.yml`): validates PR titles and commit messages
+- **Portfolio Quality** (`ci.yml`): gated pipeline. Conventions → CodeQL → quality (audit, type check, build checks, Playwright + axe) → Node 24 build and Lighthouse → deploy (GitHub Pages on `main`; Cloudflare and Vercel once their secrets are set). A failed stage skips the rest; PRs don’t also run push builds, and new pushes cancel old runs.
 - **Release** (`release.yml`): release-please version bumps, changelog, `vX.Y.Z` tags, and GitHub releases
-- **Deploy** (`deploy.yml`): builds, checks, and deploys to GitHub Pages and GCP
-- **Badge Updates**: Status badge maintenance
+- **Deploy** (`deploy.yml`): manual redeploy to GitHub Pages or GCP
 
 ## 🚢 Deployment
 

@@ -1,42 +1,110 @@
 name: Portfolio Quality
 
+# Each stage runs only if the previous one passed: conventions → CodeQL → quality → Node 24 /
+# Lighthouse → deploy. A cheap failure skips the expensive jobs.
 on:
   pull_request:
   push:
+    branches: [main]
+  schedule:
+    - cron: '27 3 * * 1' # weekly CodeQL scan
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
-  quality:
+  conventions:
+    name: Conventions
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            build
+            chore
+            ci
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            security
+            style
+            test
+          subjectPattern: '^(?:✨|🐛|⚡|🔒|♻️?|📝|👷|📦|⬆️?|🔀|🔧|💄|✅|⏪|💥)\s+.+$'
+          subjectPatternError: 'Start the subject with an emoji, e.g. "✨ add a feature".'
+          ignoreLabels: 'autorelease: pending'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Check Astro and TypeScript
-        run: pnpm check
-      - name: Build static site
-        run: pnpm build
-      - name: Check built SEO, theme, and internal link contracts
-        run: pnpm check:seo && pnpm check:theme && pnpm check:links
-      - name: Audit production dependencies
-        run: pnpm audit --prod
-      - name: Install Chromium and system dependencies
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Run browser smoke and accessibility tests
-        run: pnpm test:e2e
-      - name: Upload Playwright report on failure
-        if: failure()
+      - run: pnpm install --frozen-lockfile
+      - name: Commit messages
+        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+
+  codeql:
+    name: CodeQL
+    needs: conventions
+    if: ${{ !cancelled() && needs.conventions.result != 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: actions, javascript-typescript
+          build-mode: none
+      - uses: github/codeql-action/analyze@v4
+        with:
+          output: sarif-results
+      - name: Fail on findings
+        run: node scripts/check-codeql-sarif.mjs sarif-results
+
+  quality:
+    name: Quality
+    needs: codeql
+    if: ${{ !cancelled() && needs.codeql.result == 'success' && github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm check:seo && pnpm check:theme && pnpm check:links
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 3
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -44,60 +112,115 @@ jobs:
             playwright-report/
             test-results/
           if-no-files-found: ignore
-          retention-days: 7
 
-  node-compat:
-    name: Build on Node ${{ matrix.node-version }}
+  node-24:
+    name: Node 24
+    needs: quality
+    if: ${{ !cancelled() && needs.quality.result == 'success' }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ['24', 'node']
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '24'
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Build and verify
-        run: pnpm verify
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
 
   lighthouse:
+    name: Lighthouse (${{ matrix.profile }})
+    needs: quality
+    if: ${{ !cancelled() && needs.quality.result == 'success' }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         profile: [mobile, desktop]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Build static site
-        run: pnpm build
-      - name: Run Lighthouse CI
-        run: pnpm lighthouse
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - run: pnpm lighthouse
         env:
           LIGHTHOUSE_DESKTOP: ${{ matrix.profile == 'desktop' && '1' || '0' }}
-      - name: Upload Lighthouse reports
-        if: always()
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-${{ matrix.profile }}
           path: .lighthouseci/
           include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 7
+          if-no-files-found: ignore
+
+  deploy-pages:
+    name: Deploy (GitHub Pages)
+    needs: [node-24, lighthouse]
+    if: ${{ !cancelled() && needs.node-24.result == 'success' && needs.lighthouse.result == 'success' && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  # Cloudflare and Vercel deploy here, after all gates, instead of from their Git integrations.
+  # Each job skips itself until its secrets are added.
+  deploy-cloudflare:
+    name: Deploy (Cloudflare)
+    needs: [node-24, lighthouse]
+    if: ${{ !cancelled() && needs.node-24.result == 'success' && needs.lighthouse.result == 'success' && github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - if: env.CLOUDFLARE_API_TOKEN == ''
+        run: echo "::notice::Cloudflare secrets not set; skipping."
+      - if: env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - if: env.CLOUDFLARE_API_TOKEN != ''
+        run: >-
+          npx -y wrangler@4 pages deploy dist
+          --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'portfolio' }}
+          --branch=${{ github.head_ref || github.ref_name }}
+
+  deploy-vercel:
+    name: Deploy (Vercel)
+    needs: [node-24, lighthouse]
+    if: ${{ !cancelled() && needs.node-24.result == 'success' && needs.lighthouse.result == 'success' && github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - if: env.VERCEL_TOKEN == ''
+        run: echo "::notice::Vercel secrets not set; skipping."
+      - if: env.VERCEL_TOKEN != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: .vercel/output/static
+      - if: env.VERCEL_TOKEN != ''
+        run: |
+          echo '{"version":3}' > .vercel/output/config.json
+          npx -y vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN" ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
