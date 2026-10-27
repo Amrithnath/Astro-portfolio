@@ -29,7 +29,7 @@ const allProjects = [
       type: project.type,
       status: project.status
     },
-    url: `/project/${project.id}`,
+    url: project.url || project.github || '/projects/',
     title: project.name
   }))
 ];
