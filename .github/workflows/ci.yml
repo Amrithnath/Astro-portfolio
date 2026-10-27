@@ -26,7 +26,9 @@ jobs:
       contents: read
       pull-requests: read
     steps:
+      # Sveltia CMS opens cms/* PRs with its own titles (e.g. "WIP: …"); their commits are still linted.
       - name: PR title
+        if: ${{ !startsWith(github.head_ref, 'cms/') }}
         uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -190,6 +192,8 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'portfolio' }}
+      PAGES_BRANCH: ${{ github.head_ref || github.ref_name }}
     steps:
       - if: env.CLOUDFLARE_API_TOKEN == ''
         run: echo "::notice::Cloudflare secrets not set; skipping."
@@ -201,8 +205,8 @@ jobs:
       - if: env.CLOUDFLARE_API_TOKEN != ''
         run: >-
           npx -y wrangler@4 pages deploy dist
-          --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'portfolio' }}
-          --branch=${{ github.head_ref || github.ref_name }}
+          --project-name="$PAGES_PROJECT"
+          --branch="$PAGES_BRANCH"
 
   deploy-vercel:
     name: Deploy (Vercel)
