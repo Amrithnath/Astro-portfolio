@@ -19,7 +19,7 @@ const test = base.extend<{ browserErrors: void }>({
   }, { auto: true }],
 });
 
-for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/blogs/', '/does-not-exist/']) {
+for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/blogs/', '/photography/', '/does-not-exist/']) {
   test(`${route} loads with the expected terminal cursor`, async ({ page }) => {
     const response = await page.goto(route);
     expect(response?.status()).toBe(route === '/does-not-exist/' ? 404 : 200);
@@ -101,3 +101,24 @@ for (const route of ['/', '/resume/']) {
     )).toBeGreaterThan(0);
   });
 }
+
+test('photography is unlisted and its lightbox opens, cycles and restores focus', async ({ page, request }) => {
+  await page.goto('/photography/');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('a[href^="/photography"]')).toHaveCount(0);
+  expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/photography');
+
+  const links = page.locator('.gallery-link');
+  expect(await links.count()).toBeGreaterThan(1);
+  const dialog = page.locator('dialog.lightbox');
+  const image = dialog.locator('.lightbox-image');
+  await links.first().click();
+  await expect(dialog).toBeVisible();
+  await expect(image).toHaveAttribute('alt', (await links.first().getAttribute('data-alt'))!);
+  await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await page.keyboard.press('ArrowRight');
+  await expect(image).toHaveAttribute('src', (await links.nth(1).getAttribute('data-full'))!);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(links.first()).toBeFocused();
+});

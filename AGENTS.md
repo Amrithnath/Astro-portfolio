@@ -2,15 +2,17 @@
 
 ## Source Of Truth
 - Trust `package.json`, `astro.config.mjs`, and `.github/workflows/*` over `README.md` when they disagree.
-- CI is the runtime truth: Node 26 current release line (pinned in `.nvmrc`); Node 24 must keep working (`engines` `>=24` for Vercel; CI builds on 24 and latest), pnpm 12 (pinned via `packageManager`; dependency build scripts must be allowlisted in `pnpm-workspace.yaml` `allowBuilds` and `onlyBuiltDependencies`; keep `pmOnFail: ignore` so the lockfile stays single-document for pnpm 9/10 on Vercel), preview on port `4321`. `sandbox.config.json` still says Node 14/port 3000 and is not authoritative.
+- CI is the runtime truth: Node 26 current release line (pinned in `.nvmrc`); Node 24 must keep working (`engines` `>=24` for Vercel; CI builds on 24 and latest), pnpm 12 (pinned via `packageManager`; dependency build scripts must be allowlisted in `pnpm-workspace.yaml` `allowBuilds` and `onlyBuiltDependencies`; keep `pmOnFail: ignore` so the lockfile stays single-document for pnpm 9/10 on Vercel), preview on port `4321`.
 
 ## Commands
 - Install with `pnpm install --frozen-lockfile` to match CI.
 - Use `pnpm dev` for local development.
 - Use `pnpm check` for Astro/TypeScript diagnostics and `pnpm build` to generate the static site.
-- Use `pnpm check:seo`, `pnpm check:theme`, and `pnpm check:links` to validate the built `dist/`; `pnpm verify` builds and runs all three.
+- Use `pnpm check:seo`, `pnpm check:theme`, and `pnpm check:links` to validate the built `dist/`; `pnpm verify` builds and runs them plus `pnpm check:headers`.
+- `public/_headers` is the source of truth for response headers. Vercel ignores it, so after editing it run `pnpm sync:headers` to regenerate `vercel.json`; `pnpm check:headers` fails on drift.
 - Use `pnpm exec playwright install chromium` once (or set `PLAYWRIGHT_CHANNEL=chrome` to use installed Chrome, as CI does), then `pnpm test:e2e` after building for Chromium smoke tests and axe-core accessibility checks (`tests/e2e/a11y.spec.ts`, fails on serious/critical WCAG 2.1 AA violations). The test runner starts its own preview on port `4321`; use `PORT=4326 pnpm test:e2e` if that port is occupied.
-- Lighthouse: after building, run `pnpm lighthouse` (mobile) and `LIGHTHOUSE_DESKTOP=1 pnpm lighthouse` (desktop). Chrome/Chromium must be installed (`CHROME_PATH` can select it). Each audits six routes three times; Accessibility, Best Practices and SEO medians must be 100; Performance must be at least 95 (error budget for CI variance). Reports are saved under `.lighthouseci/reports/{mobile,desktop}/`; the next collection replaces raw `.lighthouseci/` runs. The static server does not apply Cloudflare `_headers`, so header diagnostics are informational, not production-header verification.
+- Lighthouse: after building, run `pnpm lighthouse` (mobile) and `LIGHTHOUSE_DESKTOP=1 pnpm lighthouse` (desktop). Chrome/Chromium must be installed (`CHROME_PATH` can select it). Each audits six routes three times; Accessibility, Best Practices and SEO medians must be 100; Performance must be at least 95 (error budget for CI variance). `LIGHTHOUSE_SHARD=<index>/<total>` audits a subset of routes (CI runs 2 shards per profile). Reports are saved under `.lighthouseci/reports/{mobile,desktop}[-<shard>]/`; the next collection replaces raw `.lighthouseci/` runs. The static server does not apply Cloudflare `_headers`, so header diagnostics are informational, not production-header verification.
+- Dependabot (`.github/dependabot.yml`) opens weekly grouped npm and Actions PRs with a 1-day cooldown matching pnpm `minimumReleaseAge`.
 - CI (`.github/workflows/ci.yml`, "Portfolio Quality") runs fail-fast in parallel: Conventions, CodeQL, Build and Node 24 together; E2E and Lighthouse after Build (they reuse its `dist` artifact); deploys after all pass. A failing gate cancels the run via `gh run cancel`, so new gate jobs need `actions: write` and the same final step. Runs on PRs and pushes to `main`. There is no lint script.
 - To mirror CI preview checks, run `PORT=4321 pnpm preview` and smoke-test the route with `curl -f http://localhost:4321/<route>`.
 
@@ -32,6 +34,8 @@
 - The wedding stack is paused in `project-archive/` (see its README); it is not built, and its hooks in `astro.config.mjs` and `public/_headers` are commented out. Do not change it as part of portfolio work. The public `/offline/` fallback is deliberately self-contained and terminal-only.
 
 ## Navigation And Routing
+- New pages ship **unlisted** until the owner says otherwise: deploy them, but add the prefix to `excludedPrefixes` in `src/lib/seo.ts` (noindex, robots Disallow, no sitemap/LLM entry), add an `X-Robots-Tag` block to `public/_headers` (then `pnpm sync:headers`), add it to the unlisted loop in `scripts/check-agentic-seo.mjs`, and do not link it from `TerminalNav`, `navigation.ts` or any other page. `/photography/` is currently unlisted.
+- `/photography/` renders the `photos` collection (`src/content/photos/*.yml` → `src/assets/photos/`), editable as the CMS "Photography" collection. `pnpm check:photos` rejects originals with GPS EXIF and uncatalogued images; Astro derivatives are metadata-free.
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
 - Update `src/components/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`).
 - Update `src/data/navigation.ts` if the route should appear in terminal `ls` output.

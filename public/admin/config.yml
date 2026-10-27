@@ -1,5 +1,5 @@
 # Sveltia CMS configuration for /admin. https://sveltiacms.app/en/docs
-# Every save opens (or updates) a pull request on a cms/blog/<slug> branch, so the full CI
+# Every save opens (or updates) a pull request on a cms/<collection>/<slug> branch, so the full CI
 # pipeline and preview deploys run before anything reaches main.
 backend:
   name: github
@@ -8,11 +8,11 @@ backend:
   base_url: https://cms-auth.amrithnath.dev
   auth_methods: [oauth]
   commit_messages:
-    create: 'docs(blog): 📝 create {{slug}}'
-    update: 'docs(blog): 📝 update {{slug}}'
-    delete: 'docs(blog): 📝 delete {{slug}}'
-    uploadMedia: 'docs(blog): 📝 upload {{path}}'
-    deleteMedia: 'docs(blog): 📝 delete {{path}}'
+    create: 'docs({{collection}}): 📝 create {{slug}}'
+    update: 'docs({{collection}}): 📝 update {{slug}}'
+    delete: 'docs({{collection}}): 📝 delete {{slug}}'
+    uploadMedia: 'docs(cms): 📝 upload {{path}}'
+    deleteMedia: 'docs(cms): 📝 delete {{path}}'
 
 publish_mode: editorial_workflow
 site_url: https://amrithnath.dev
@@ -54,3 +54,41 @@ collections:
       - { name: img, label: Cover image, widget: image, required: false }
       - { name: lang, label: Language code, widget: string, required: false }
       - { name: body, label: Body, widget: markdown }
+
+  # Unlisted gallery at /photography/ (not linked from the site). Images are committed to
+  # src/assets/photos; Astro serves resized AVIF/WebP copies without metadata, but the originals
+  # are public in the repo, so export without GPS/location data (pnpm check:photos enforces it).
+  - name: photos
+    label: Photography
+    label_singular: Photo
+    folder: src/content/photos
+    extension: yml
+    format: yaml
+    create: true
+    slug: '{{slug}}'
+    identifier_field: title
+    media_folder: /src/assets/photos
+    public_folder: ../../assets/photos
+    preview_path: photography/
+    summary: '{{title}}'
+    sortable_fields:
+      fields: [date, title]
+      default: { field: date, direction: descending }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: image, label: Photo, widget: image, choose_url: false }
+      - { name: alt, label: Alt text (describe the photo), widget: text }
+      - { name: caption, label: Caption, widget: text, required: false }
+      - { name: location, label: Location, widget: string, required: false }
+      - name: date
+        label: Taken
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        required: false
+      - { name: camera, label: Camera, widget: string, required: false }
+      - { name: lens, label: Lens, widget: string, required: false }
+      - { name: settings, label: Settings (e.g. 35mm · f/1.8 · 1/250s · ISO 100), widget: string, required: false }
+      - { name: tags, label: Tags, widget: list, required: false, default: [] }
+      - { name: featured, label: Featured (shown first), widget: boolean, default: false, required: false }
+      - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }

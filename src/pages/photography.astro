@@ -1,0 +1,235 @@
+---
+// Unlisted: reachable by URL only. '/photography' is in excludedPrefixes (noindex, robots
+// Disallow, no sitemap/LLM entries) and is intentionally absent from TerminalNav and `ls`.
+import type { ImageMetadata } from 'astro';
+import { Picture, getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/ui/Prompt.astro';
+import { getPhotos } from '../lib/content';
+import { formatMonth } from '../lib/format-date';
+import { profile } from '../lib/seo';
+
+const entries = await getPhotos();
+const photos = await Promise.all(
+  entries.map(async ({ id, data }) => {
+    // image() always resolves a local asset; Astro 7 types its `format` as optional.
+    const image = data.image as ImageMetadata;
+    const full = await getImage({ src: image, width: Math.min(image.width, 2400), format: 'webp' });
+    const meta = [data.camera, data.lens, data.settings].filter(Boolean).join(' · ');
+    return { id, data, image, full: full.src, meta };
+  }),
+);
+const year = new Date().getFullYear();
+---
+
+<BaseLayout
+  title={`Photography | ${profile.contact.name}`}
+  description={`Photographs by ${profile.contact.name}.`}
+  currentPage="/photography"
+>
+  <h1 class="visually-hidden">Photography</h1>
+  <Prompt command="ls ~/photography --sort=featured,date" />
+  <div class="output">
+    {
+      photos.length ? (
+        <ul class="gallery" role="list">
+          {photos.map(({ id, data, image, full, meta }, index) => (
+            <li class="gallery-item">
+              <figure>
+                <a
+                  class="gallery-link"
+                  href={full}
+                  data-index={index}
+                  data-full={full}
+                  data-title={data.title}
+                  data-alt={data.alt}
+                  data-caption={[data.caption, data.location, meta].filter(Boolean).join(' — ')}
+                  aria-label={`View ${data.title} full size`}
+                >
+                  <Picture
+                    src={image}
+                    alt={data.alt}
+                    formats={['avif', 'webp']}
+                    widths={[480, 800, 1200]}
+                    sizes="(max-width: 48rem) 100vw, (max-width: 64rem) 50vw, 33vw"
+                    loading={index < 3 ? 'eager' : 'lazy'}
+                    fetchpriority={index === 0 ? 'high' : undefined}
+                    class="gallery-image"
+                  />
+                </a>
+                <figcaption>
+                  <span class="gallery-title" id={`photo-${id}`}>{data.title}</span>
+                  {data.location && <span class="gallery-meta">{data.location}</span>}
+                  {data.date && (
+                    <time class="gallery-meta" datetime={data.date.toISOString()}>
+                      {formatMonth(data.date.toISOString().slice(0, 7))}
+                    </time>
+                  )}
+                  {meta && <span class="gallery-meta">{meta}</span>}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="command-output">total 0 — the first prints are still developing.</div>
+      )
+    }
+  </div>
+
+  <Prompt command="cat LICENSE" />
+  <div class="output">
+    <div class="command-output">
+      © {year} {profile.contact.name}. All photographs are all rights reserved; please ask before
+      reusing them.
+    </div>
+  </div>
+
+  <dialog class="lightbox" aria-label="Photo viewer">
+    <figure class="lightbox-figure">
+      <img class="lightbox-image" alt="" decoding="async" />
+      <figcaption class="lightbox-caption"></figcaption>
+    </figure>
+    <div class="lightbox-controls">
+      <button type="button" class="btn" data-action="prev" aria-label="Previous photo">‹ prev</button>
+      <button type="button" class="btn" data-action="close" aria-label="Close viewer">✕ close</button>
+      <button type="button" class="btn" data-action="next" aria-label="Next photo">next ›</button>
+    </div>
+  </dialog>
+</BaseLayout>
+
+<style>
+  .gallery {
+    columns: 3 18rem;
+    column-gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery-item {
+    break-inside: avoid;
+    margin-bottom: var(--space-4);
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  .gallery-link {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    transition: border-color var(--transition-fast);
+  }
+
+  .gallery-link:hover,
+  .gallery-link:focus-visible {
+    border-color: var(--color-accent);
+  }
+
+  .gallery-link :global(.gallery-image) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    padding-top: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .gallery-title {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .gallery-meta {
+    color: var(--color-muted);
+  }
+
+  .lightbox {
+    width: min(96vw, 110rem);
+    max-height: 96vh;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .lightbox::backdrop {
+    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  }
+
+  .lightbox-image {
+    display: block;
+    max-width: 100%;
+    max-height: calc(96vh - 8rem);
+    margin: 0 auto;
+    object-fit: contain;
+  }
+
+  .lightbox-caption {
+    justify-content: center;
+    color: var(--color-muted);
+    text-align: center;
+  }
+
+  .lightbox-controls {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+</style>
+
+<script>
+  function initGallery() {
+    const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.gallery-link')];
+    if (!dialog || !links.length || dialog.dataset.ready) return;
+    dialog.dataset.ready = 'true';
+    const image = dialog.querySelector<HTMLImageElement>('.lightbox-image')!;
+    const caption = dialog.querySelector<HTMLElement>('.lightbox-caption')!;
+    let current = 0;
+    let opener: HTMLElement | null = null;
+
+    const show = (index: number) => {
+      current = (index + links.length) % links.length;
+      const { full = '', alt = '', title = '', caption: text = '' } = links[current].dataset;
+      image.src = full;
+      image.alt = alt;
+      caption.textContent = text ? `${title} — ${text}` : title;
+    };
+
+    links.forEach((link, index) =>
+      link.addEventListener('click', (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        event.preventDefault();
+        opener = link;
+        show(index);
+        dialog.showModal();
+      }),
+    );
+    dialog.addEventListener('click', (event) => {
+      const action = (event.target as HTMLElement).closest<HTMLElement>('[data-action]')?.dataset.action;
+      if (action === 'prev') show(current - 1);
+      else if (action === 'next') show(current + 1);
+      else if (action === 'close' || event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') show(current - 1);
+      if (event.key === 'ArrowRight') show(current + 1);
+    });
+    dialog.addEventListener('close', () => opener?.focus());
+  }
+
+  document.addEventListener('astro:page-load', initGallery);
+  initGallery();
+</script>

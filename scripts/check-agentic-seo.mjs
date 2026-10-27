@@ -104,6 +104,13 @@ assert.doesNotMatch(sitemap, /wedding|photograph|terminal-full|work-in-progress|
 for (const file of ['404.html', 'work-in-progress/index.html', 'blog/index.html', 'blogs/index.html']) {
   assert.match(head(read(file)), /name="robots" content="noindex, follow"/);
 }
+// Unlisted pages ship to production but stay out of navigation and search until announced.
+for (const unlisted of ['photography']) {
+  assert.match(head(read(`${unlisted}/index.html`)), /name="robots" content="noindex, follow"/);
+  for (const file of htmlFiles.filter(file => !file.startsWith(`${unlisted}/`))) {
+    assert.doesNotMatch(read(file), new RegExp(`href="(https://amrithnath\\.dev)?/${unlisted}`), `${file} links to unlisted /${unlisted}`);
+  }
+}
 const robots = read('robots.txt');
 for (const group of robots.split(/\n\n/).filter(group => group.startsWith('User-agent:'))) {
   assert.match(group, /Allow: \//);
