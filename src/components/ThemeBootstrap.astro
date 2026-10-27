@@ -2,17 +2,20 @@
 import { defaultTheme, themes } from '../themes';
 ---
 
-<script is:inline define:vars={{ themes, defaultTheme }}>
+<script is:inline data-astro-rerun define:vars={{ themes, defaultTheme }}>
   (() => {
-    const root = document.documentElement;
+    if (window.__theme) {
+      window.__theme.set(window.__theme.current);
+      return;
+    }
     const key = 'portfolio-theme';
     const legacyKey = 'portfolio-layout-theme';
     const findTheme = (id) => themes.find((theme) => theme.id === id);
     const apply = (id, persist = true) => {
       const theme = findTheme(id);
       if (!theme) return false;
-      root.dataset.theme = theme.id;
-      root.style.colorScheme = theme.colorScheme;
+      document.documentElement.dataset.theme = theme.id;
+      document.documentElement.style.colorScheme = theme.colorScheme;
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.themeColor);
       if (persist) {
         try { localStorage.setItem(key, theme.id); } catch { /* Storage may be disabled. */ }
@@ -28,7 +31,7 @@ import { defaultTheme, themes } from '../themes';
       localStorage.removeItem(legacyKey);
     } catch { /* The server-rendered default also works without storage or JavaScript. */ }
     window.__theme = Object.freeze({
-      get current() { return root.dataset.theme; },
+      get current() { return document.documentElement.dataset.theme; },
       set: (id) => apply(id),
     });
     apply(selected);

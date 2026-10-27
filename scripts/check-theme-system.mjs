@@ -79,6 +79,36 @@ for (const saved of [
   assert.equal(context.__theme.current, 'terminal');
 }
 assert.equal(themeContext({}, true).context.__theme.set('terminal'), true);
+const swapped = themeContext();
+swapped.context.document.documentElement = { dataset: { theme: 'terminal' }, style: {} };
+const themeApi = swapped.context.__theme;
+vm.runInNewContext(bootstrap, swapped.context);
+assert.equal(swapped.context.__theme, themeApi, 'Swaps must reuse the theme API and storage listener');
+assert.equal(swapped.context.document.documentElement.style.colorScheme, 'dark');
+
+const palette = Object.fromEntries([...read('src/styles/themes/terminal.css')
+  .matchAll(/--color-([a-z-]+):\s*(#[0-9a-f]{6});/g)].map(([, token, color]) => [token, color]));
+const luminance = (hex) => {
+  const channels = hex.slice(1).match(/../g).map(value => {
+    const channel = parseInt(value, 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+};
+for (const foreground of ['text', 'muted', 'accent', 'link', 'secondary', 'heading', 'success', 'warning', 'danger', 'info']) {
+  for (const background of ['bg', 'surface']) {
+    const a = luminance(palette[foreground]);
+    const b = luminance(palette[background]);
+    assert.ok((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5,
+      `${foreground} on ${background}: WCAG AA text contrast`);
+  }
+}
+for (const file of ['index.html', 'about/index.html', 'projects/index.html', 'contact/index.html', 'resume/index.html']) {
+  const html = read(join('dist', file));
+  assert.match(html, /class="skip-link" href="#main-content"/);
+  assert.match(html, /<main id="main-content" tabindex="-1"/);
+  assert.equal((html.match(/<h1\b/g) || []).length, 1, `${file}: one page heading`);
+}
 
 // Exercise the actual resume script against the real serialized build data without browser dependencies.
 const resumeHtml = read('dist/resume/index.html');

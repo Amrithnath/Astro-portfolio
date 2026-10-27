@@ -21,6 +21,8 @@
 - Markdown project/blog layouts delegate to `src/layouts/ArticleLayout.astro` and then `BaseLayout`; preserve their article SEO props.
 - `src/components/BaseHead.astro` owns SEO, theme bootstrap, token/shell CSS, icons, manifest, and production-only service worker registration. The homepage, redirects, and `/terminal-full/` also use it; do not duplicate head logic or content for themes.
 - `/terminal-full/` is a noindex HTML document; the homepage extracts only `[data-terminal-fragment]`, containing commands without a second terminal shell or footer.
+- `BaseHead` enables Astro ClientRouter only on indexable portfolio pages; page scripts must initialize on `astro:page-load` and guard against duplicate handlers. Theme bootstrap reruns safely after swaps.
+- Static `/og/*.png` endpoints render 1200×630 terminal social cards with resvg and bundled OFL Fira Code; `src/lib/og.ts` owns page mapping. Keep SEO image dimensions and build checks aligned.
 - `ServiceWorker.astro` registers `/sw.js?v=<build>` after load, only in production. `src/lib/build-version.ts` supplies one shared version per build.
 - Wedding uses its independent `MainHead.astro`; do not change wedding/photography code as part of portfolio theme work. The public `/offline/` fallback is deliberately self-contained and terminal-only.
 

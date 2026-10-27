@@ -85,18 +85,18 @@ Try: python generator.py generate --format pdf</pre>
     
     <div class="terminal-input-line">
       <span class="prompt">amrith@portfolio:~/resume$ </span>
-      <input type="text" id="terminal-input" class="terminal-input" placeholder="Type 'help' for commands..." autocomplete="off" spellcheck="false" />
+      <input type="text" id="terminal-input" aria-label="Resume terminal command" class="terminal-input" placeholder="Type 'help' for commands..." autocomplete="off" spellcheck="false" />
     </div>
     
     <div class="terminal-suggestions">
       <div class="suggestion-title">💡 Try these commands:</div>
       <div class="suggestions">
-        <span class="suggestion" data-cmd="help">help</span>
-        <span class="suggestion" data-cmd="sections">sections</span>
-        <span class="suggestion" data-cmd="preview">preview</span>
-        <span class="suggestion" data-cmd="generate pdf">generate pdf</span>
-        <span class="suggestion" data-cmd="export md">export md</span>
-        <span class="suggestion" data-cmd="gui">gui</span>
+        <button type="button" class="suggestion" data-cmd="help">help</button>
+        <button type="button" class="suggestion" data-cmd="sections">sections</button>
+        <button type="button" class="suggestion" data-cmd="preview">preview</button>
+        <button type="button" class="suggestion" data-cmd="generate pdf">generate pdf</button>
+        <button type="button" class="suggestion" data-cmd="export md">export md</button>
+        <button type="button" class="suggestion" data-cmd="gui">gui</button>
       </div>
     </div>
   </div>
@@ -169,7 +169,7 @@ Try: python generator.py generate --format pdf</pre>
         <!-- Header Section -->
         <div class="resume-section" id="contact-section">
           <div class="resume-header">
-            <h1 class="resume-name">{resumeCompendium.contact.name}</h1>
+            <p class="resume-name">{resumeCompendium.contact.name}</p>
             <div class="resume-title">{resumeCompendium.contact.title}</div>
           </div>
           <div class="resume-contact">
@@ -918,7 +918,7 @@ Type 'help' to see available commands.</pre>`;
     flex: 1;
     min-width: 0;
     border: none;
-    outline: none;
+    outline-offset: 3px;
     background: transparent;
     color: var(--color-text);
     font-family: inherit;
@@ -944,6 +944,9 @@ Type 'help' to see available commands.</pre>`;
   }
 
   .suggestion {
+    border: 1px solid var(--color-border);
+    font-family: inherit;
+    text-align: left;
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     background: var(--color-bg);

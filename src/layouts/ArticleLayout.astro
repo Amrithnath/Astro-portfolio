@@ -20,7 +20,6 @@ const image = imageSource
 <BaseLayout
   title={content.title}
   description={content.description}
-  image={imageSource}
   lang={content.lang || 'en'}
   currentPage={Astro.url.pathname}
   type="article"
@@ -40,7 +39,7 @@ const image = imageSource
           {content.tags.map((tag: string) => <li>{tag}</li>)}
         </ul>
       )}
-      {image && <img src={image.src} width={image.attributes.width} height={image.attributes.height} alt={content.title} />}
+      {image && <img src={image.src} width={image.attributes.width} height={image.attributes.height} decoding="async" alt={content.title} />}
       {content.link && <p><Button href={content.link} target="_blank" rel="noopener noreferrer">View project</Button></p>}
     </header>
     <div class="article-body"><slot /></div>

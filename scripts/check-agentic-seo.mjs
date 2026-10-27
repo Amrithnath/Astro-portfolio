@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 
 const read = path => readFileSync(join('dist', path), 'utf8');
 const htmlFiles = readdirSync('dist', { recursive: true }).filter(file => file.endsWith('.html'));
@@ -47,6 +48,23 @@ for (const file of htmlFiles) {
     assert.ok(metadata.includes(`property="og:${field}"`), `${file}: missing OG ${field}`);
   }
   assert.match(metadata, /name="twitter:card"/);
+  const image = metadata.match(/property="og:image" content="([^"]+)"/)?.[1];
+  assert.ok(image, `${file}: missing image URL`);
+  assert.match(metadata, /property="og:image:width" content="1200"/);
+  assert.match(metadata, /property="og:image:height" content="630"/);
+  assert.match(metadata, /property="og:image:type" content="image\/png"/);
+  assert.ok(metadata.includes(`name="twitter:image" content="${image}"`));
+  const png = readFileSync(join('dist', new URL(image).pathname));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 1200);
+  assert.equal(png.readUInt32BE(20), 630);
+  // Detect failed bundled-font loading: the terminal background alone is not a valid card.
+  const { data, info } = await sharp(png).raw().toBuffer({ resolveWithObject: true });
+  let foreground = 0;
+  for (let pixel = 0; pixel < data.length; pixel += info.channels) {
+    if (Math.max(data[pixel], data[pixel + 1], data[pixel + 2]) > 120) foreground++;
+  }
+  assert.ok(foreground > 1000, `${file}: OG text did not render`);
   assert.match(metadata, /title="LLMs"/);
   assert.match(metadata, /type="application\/rss\+xml"[^>]*href="https:\/\/amrithnath\.dev\/rss\.xml"/);
   const alternate = metadata.match(/type="text\/markdown"[^>]*href="([^"]+)"/);
@@ -72,7 +90,8 @@ assert.ok(graphs.get('blog/bluetooth-dystopia/index.html')
   .some(item => item['@type'] === 'BlogPosting'));
 assert.ok(graphs.get('project/webDev/weather-app/index.html')
   .some(item => item['@type'] === 'SoftwareSourceCode'));
-assert.match(read('index.html'), /fetch\('\/terminal-full\//);
+assert.match(readFileSync('src/pages/index.astro', 'utf8'), /fetch\('\/terminal-full\//);
+assert.match(read('index.html'), /terminal-full/);
 assert.ok(read('index.html').includes('Raspberry Pi Weather Station'));
 
 const sitemap = read('sitemap-0.xml');
