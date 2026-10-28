@@ -328,14 +328,15 @@ test('photography remains browsable without JavaScript', async ({ browser, baseU
 test('projects can be filtered by technology and announce the result count', async ({ page }) => {
   await page.goto('/projects/');
   const card = page.locator('.project-card');
-  await expect(card).toHaveCount(1);
+  await expect(card).toHaveCount(2);
   const filter = page.getByRole('button', { name: /--tech dev/ });
   await expect(filter).toBeVisible();
   await expect(filter).toHaveAttribute('aria-pressed', 'false');
   await filter.click();
   await expect(filter).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects --tech dev');
-  await expect(page.locator('#project-count')).toHaveText('Showing 1 of 1 projects');
+  await expect(page.locator('#project-count')).toHaveText('Showing 1 of 2 projects');
+  await expect(card.filter({ visible: true })).toHaveCount(1);
   await filter.click();
   await expect(filter).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects');
