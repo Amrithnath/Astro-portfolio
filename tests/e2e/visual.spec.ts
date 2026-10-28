@@ -36,7 +36,11 @@ for (const theme of ['terminal', 'light'] as const) {
       }
       await page.evaluate(() => document.fonts.ready.then(() => undefined));
       await page.locator('img').evaluateAll(images =>
-        Promise.all(images.map(image => (image as HTMLImageElement).decode().catch(() => undefined)))
+        // Offscreen lazy images never load, so decode() would hang; only wait for eager/loaded ones.
+        Promise.all(images
+          .map(image => image as HTMLImageElement)
+          .filter(image => image.complete || image.loading !== 'lazy')
+          .map(image => image.decode().catch(() => undefined)))
       );
 
       await page.locator('.command-output').filter({ hasText: /^up \d/ }).evaluateAll(elements => {
