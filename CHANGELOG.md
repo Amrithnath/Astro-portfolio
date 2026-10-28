@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.7.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.6.0...v2.7.0) (2026-10-28)
+
+
+### ✨ Features
+
+* **terminal:** ✨ contextual side panes, perf monitor and carbon badge ([#79](https://github.com/Amrithnath/Astro-portfolio/issues/79)) ([2b76d11](https://github.com/Amrithnath/Astro-portfolio/commit/2b76d11fc031bb2e477490210016bdace924871c))
+* **theme:** ✨ warm light theme, highlighted commands and wide-screen panes ([bc93bdb](https://github.com/Amrithnath/Astro-portfolio/commit/bc93bdbec0cbe4f1f9dcae09173e66eb4b3233a5))
+* **theme:** ✨ warm light theme, highlighted commands and wide-screen panes ([f55e5d0](https://github.com/Amrithnath/Astro-portfolio/commit/f55e5d095167252cb970a48f71b7a5d0637fdf87))
+
 ## [2.6.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.5.1...v2.6.0) (2026-10-28)
 
 
