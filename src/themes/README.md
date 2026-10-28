@@ -1,7 +1,7 @@
 # Portfolio themes
 
-Only `terminal` is enabled. Themes change tokens and optional component styling, not
-content trees: render every component once and keep IDs unique.
+`terminal` (dark) and `light` (warm paper/ink) are enabled. Themes change tokens and optional
+component styling, not content trees: render every component once and keep IDs unique.
 
 ## Add a theme
 
@@ -19,17 +19,20 @@ content trees: render every component once and keep IDs unique.
 3. For optional overrides, use `[data-theme='<id>'] .component` in global CSS, or
    `:global([data-theme='<id>']) .component` inside an Astro component's scoped style.
    Never reintroduce hidden alternate views, repeated IDs, or theme-dependent data.
-4. A future switcher should list registry labels and call `window.__theme.set(id)`;
-   hide/omit it while `themes.length < 2`. The API returns false for invalid IDs,
-   exposes the selected id as `window.__theme.current`, updates color-scheme and
-   theme-color, and emits `portfolio:theme-change` with `{ theme: id }` in `detail`.
+4. The statusline switcher in `ThemeSwitcher.astro` lists the registry plus auto;
+   hide/omit it while `themes.length < 2`. Call `window.__theme.set(id)` to select.
+   The API returns false for invalid IDs, exposes the resolved id as `window.__theme.current`
+   and the choice as `preference`, updates color-scheme and theme-color, and emits `portfolio:theme-change` with `{ theme: id, preference }` in `detail`.
+   `set('auto')` or `auto()` clears storage and follows the system scheme live.
 
 `ThemeBootstrap.astro` is a synchronous inline head script in `BaseHead.astro`. It
 validates `portfolio-theme` against serialized registry IDs before paint, migrates a
 valid `portfolio-layout-theme` only if the new key is absent, removes the old key,
-and falls back to the default on invalid values or unavailable storage. Changes
-persist when storage is available and synchronize between tabs. Server HTML and CSS
-provide the terminal default even without JavaScript.
+and follows the system scheme on invalid values or unavailable storage. Changes
+persist when storage is available and synchronize between tabs. Auto is represented
+by no stored key; explicit choices store `terminal` or `light`. The switcher uses
+native pressed buttons, initializes on `astro:page-load`, and stays hidden without JS.
+Server HTML and CSS provide the terminal default even without JavaScript.
 
 `BaseHead` also preserves SEO, icons/manifest and production service worker setup.
 Blog/project articles reuse `BaseLayout`/`TerminalShell` with `.prose`. The homepage uses the same `TerminalShell` and

@@ -196,3 +196,87 @@ test('projects render an empty write-up state when no article is linked', async 
   await expect(page.getByRole('heading', { name: 'Write-ups' })).toBeVisible();
   await expect(page.getByText('No write-ups are linked to this project yet.')).toBeVisible();
 });
+
+for (const choice of ['dark', 'light'] as const) {
+  test(`${choice} selection persists through reload and ClientRouter navigation`, async ({ page }) => {
+    await page.goto('/');
+    const switcher = page.getByRole('group', { name: 'Color theme', exact: true });
+    await expect(switcher).toHaveCount(1);
+    await switcher.getByRole('button', { name: choice, exact: true }).click();
+    const id = choice === 'dark' ? 'terminal' : 'light';
+    await expect(page.locator('html')).toHaveAttribute('data-theme', id);
+    expect(await page.evaluate(() => localStorage.getItem('portfolio-theme'))).toBe(id);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', id);
+    await expect(switcher.getByRole('button', { name: choice, exact: true }))
+      .toHaveAttribute('aria-pressed', 'true');
+    await page.locator('.terminal-tabs a[href="/about"]').click();
+    await expect(page).toHaveURL(/\/about\/?$/);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', id);
+    await expect(switcher).toHaveCount(1);
+    await expect(switcher.getByRole('button', { name: choice, exact: true }))
+      .toHaveAttribute('aria-pressed', 'true');
+    await switcher.getByRole('button', { name: choice === 'dark' ? 'light' : 'dark', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', choice === 'dark' ? 'light' : 'terminal');
+  });
+}
+
+test('auto follows live system changes and the switcher is keyboard-accessible on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+  const switcher = page.getByRole('group', { name: 'Color theme', exact: true });
+  const auto = switcher.getByRole('button', { name: 'auto', exact: true });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  const dark = switcher.getByRole('button', { name: 'dark', exact: true });
+  await dark.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await auto.focus();
+  await page.keyboard.press('Space');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  expect(await page.evaluate(() => localStorage.getItem('portfolio-theme'))).toBeNull();
+  const bounds = await switcher.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320);
+  await page.locator('.terminal-tabs a[href="/about"]').click();
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await page.reload();
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('theme choices synchronize across tabs, including reset to auto', async ({ page, context }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  const other = await context.newPage();
+  await other.emulateMedia({ colorScheme: 'light' });
+  await other.goto('/about/');
+  const switcher = page.getByRole('group', { name: 'Color theme', exact: true });
+  await switcher.getByRole('button', { name: 'dark', exact: true }).click();
+  await expect(other.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await expect(other.getByRole('button', { name: 'dark', exact: true }))
+    .toHaveAttribute('aria-pressed', 'true');
+  await other.getByRole('button', { name: 'auto', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(switcher.getByRole('button', { name: 'auto', exact: true }))
+    .toHaveAttribute('aria-pressed', 'true');
+  await other.close();
+});
+
+test('without JavaScript the switcher is hidden and terminal remains the default', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, colorScheme: 'light' });
+  const page = await context.newPage();
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'terminal');
+  await expect(page.locator('[data-theme-switcher]')).toBeHidden();
+  await context.close();
+});

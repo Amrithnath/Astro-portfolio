@@ -53,13 +53,13 @@ a.card:focus-visible {
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: opacity var(--transition-fast), border-color var(--transition-fast);
+  transition: border-color var(--transition-fast);
 }
 
 .btn:hover,
 .btn:focus-visible {
   color: var(--color-on-accent);
-  opacity: 0.85;
+  border-color: var(--color-text);
 }
 
 .btn-success {

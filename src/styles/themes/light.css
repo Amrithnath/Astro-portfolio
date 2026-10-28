@@ -1,0 +1,49 @@
+/* Warm paper and ink: a light terminal palette with AA semantic foregrounds. */
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* Core semantic tokens */
+  --color-bg: #f5f2e9;
+  --color-text: #303446;
+  --color-muted: #53586a;
+  --color-surface: #e9e5da;
+  --color-border: #bec0c8;
+  --color-accent: #286044;
+  --color-link: #234f9b;
+  --color-secondary: #713e89;
+  --color-heading: #205d66;
+  --color-on-accent: #f5f2e9;
+  --font-mono: 'Fira Code', 'Consolas', 'Courier New', monospace;
+
+  /* Status colors */
+  --color-success: #286044;
+  --color-warning: #765008;
+  --color-danger: #a32d41;
+  --color-info: #205d66;
+
+  /* Overlays and shadows */
+  --color-overlay: rgba(83, 88, 106, 0.06);
+  --color-overlay-strong: rgba(83, 88, 106, 0.1);
+  --color-shadow: rgba(48, 52, 70, 0.12);
+
+  /* Window chrome */
+  --window-bg: var(--color-surface);
+  --window-border: var(--color-border);
+  --window-control-close: #b33341;
+  --window-control-min: #896000;
+  --window-control-max: #286044;
+
+  /* Palette aliases used by terminal content and the resume tools. */
+  --terminal-bg: var(--color-bg);
+  --terminal-fg: var(--color-text);
+  --terminal-text: var(--color-text);
+  --terminal-gray: var(--color-muted);
+  --terminal-bg-secondary: var(--color-surface);
+  --terminal-border: var(--color-border);
+  --terminal-green: var(--color-accent);
+  --terminal-blue: var(--color-link);
+  --terminal-purple: var(--color-secondary);
+  --terminal-yellow: var(--color-warning);
+  --terminal-red: var(--color-danger);
+  --terminal-cyan: var(--color-info);
+}
