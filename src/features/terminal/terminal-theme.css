@@ -407,6 +407,9 @@ body {
 /* tmux-style side panes (see SidePanes.astro): only on screens wide enough to leave real gutters. */
 .side-pane { display: none; }
 
+.carbon-badge .carbon-value { color: var(--color-accent); font-weight: 600; }
+.carbon-badge .carbon-source { color: var(--color-muted); }
+
 @media (min-width: 110rem) {
   .side-pane {
     --pane-width: calc((100vw - var(--shell-width)) / 2);
@@ -516,6 +519,17 @@ body {
   .pane-fetch dd { margin: 0; color: var(--color-text); overflow-wrap: anywhere; }
   .pane-fetch .pane-fetch-title { grid-column: 1 / -1; color: var(--color-link); }
   .pane-fetch .pane-fetch-rule { grid-column: 1 / -1; color: var(--color-muted); }
+
+  /* top -p $$ and carbon --estimate */
+  .pane-stats {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0 var(--space-3);
+    margin: 0;
+  }
+  .pane-stats dt { color: var(--color-muted); }
+  .pane-stats dd { margin: 0; color: var(--color-text); font-variant-numeric: tabular-nums; }
+  .pane-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); }
 
   /* htop */
   .htop-group { margin: var(--space-2) 0 var(--space-1); color: var(--color-heading); font-weight: 600; }

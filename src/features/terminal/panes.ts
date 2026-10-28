@@ -109,12 +109,7 @@ export function skillMeters(
   if (matches.length) return [{ category: 'Used here', meters: matches.slice(0, limit).map(meter) }];
   const top = flat
     .map((skill, index) => ({ skill, index }))
-    .sort(
-      (a, b) =>
-        LEVEL_PERCENT[b.skill.level] - LEVEL_PERCENT[a.skill.level] ||
-        (b.skill.yearsOfExperience ?? 0) - (a.skill.yearsOfExperience ?? 0) ||
-        a.index - b.index
-    )
+    .sort((a, b) => LEVEL_PERCENT[b.skill.level] - LEVEL_PERCENT[a.skill.level] || a.index - b.index)
     .slice(0, limit)
     .map(({ skill }) => meter(skill));
   return [{ category: 'Top skills', meters: top }];

@@ -126,6 +126,25 @@ test('side panes vary with page content', async ({ page }) => {
   await expect(right.locator('.pane-fetch')).toHaveCount(0);
 });
 
+test('perf monitor and carbon badge measure locally without contacting Website Carbon off production', async ({ page }) => {
+  const carbonRequests: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('websitecarbon.com')) carbonRequests.push(request.url());
+  });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/about/', { waitUntil: 'load' });
+  const monitor = page.locator('[data-perf-mon]');
+  await expect(monitor).toBeVisible();
+  await expect(monitor.locator('[data-metric="ttfb"]')).toHaveText(/\d+(\.\d+)? m?s/);
+  await expect(monitor.locator('[data-metric="requests"]')).toHaveText(/^[1-9]\d*$/);
+  await expect(monitor.locator('[data-metric="co2-cold"]')).toHaveText(/^\d+\.\d+ g \((A\+|[A-F])\)$/);
+  const badge = page.locator('[data-carbon-badge]');
+  await expect(badge).toBeVisible();
+  await expect(badge.locator('[data-carbon-value]')).toHaveText(/^\d+\.\d+ g of CO₂\/view$/);
+  await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated in your browser');
+  expect(carbonRequests).toEqual([]);
+});
+
 test('about exposes the skills tree and a hidden crawler-readable profile', async ({ page }) => {
   await page.goto('/about/');
   await expect(page.getByText('primary-language/', { exact: true })).toBeVisible();

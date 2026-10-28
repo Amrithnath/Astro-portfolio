@@ -51,8 +51,10 @@ They vary with the page through the `panes` prop (`PaneContext`) passed by pages
   places and tags instead of the career graph.
 - **Right (`1:whoami`)**: `neofetch --short` contact details (latest photos on photography routes),
   `htop` skill meters (bar fill is years relative to the most-practised skill, colour is the level;
-  articles show matching tech/tags, `/resume` shows every category) and `tail -f ~/.now`, which stays
-  hidden while `/now` is a placeholder.
+  articles show matching tech/tags, `/resume` shows every category), a live `top -p $$` monitor and
+  `carbon --estimate --live` (Performance API and Sustainable Web Design v4 via `perf.ts`; ticks once
+  a second only while wide, visible and motion is allowed) and `tail -f ~/.now`, which stays hidden
+  while `/now` is a placeholder.
 
 They sit below the sticky chrome (`--chrome-height`), scroll independently, are outside `<main>`
 (not indexed) and are hidden on narrower screens and in print. Only link listed routes there, except

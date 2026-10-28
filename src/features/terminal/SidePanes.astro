@@ -143,6 +143,28 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
     </>
   )}
 
+  <div class="perf-mon" data-perf-mon hidden>
+    <Prompt command="top -p $$" />
+    <dl class="pane-stats">
+      <dt>ttfb</dt><dd data-metric="ttfb">n/a</dd>
+      <dt>fcp</dt><dd data-metric="fcp">n/a</dd>
+      <dt>lcp</dt><dd data-metric="lcp">n/a</dd>
+      <dt>cls</dt><dd data-metric="cls">n/a</dd>
+      <dt>reqs</dt><dd data-metric="requests">n/a</dd>
+      <dt>xfer</dt><dd data-metric="transferred">n/a</dd>
+      <dt>dom</dt><dd data-metric="dom">n/a</dd>
+      <dt data-metric-label="heap">heap</dt><dd data-metric="heap">n/a</dd>
+      <dt>uptime</dt><dd data-metric="uptime">n/a</dd>
+    </dl>
+    <Prompt command="carbon --estimate --live" />
+    <dl class="pane-stats">
+      <dt>view</dt><dd data-metric="co2-view">n/a</dd>
+      <dt>cold</dt><dd data-metric="co2-cold">n/a</dd>
+      <dt>session</dt><dd data-metric="co2-session">n/a</dd>
+    </dl>
+    <p class="pane-muted pane-note">Estimated in your browser from transferred bytes (Sustainable Web Design v4, global grid 494 gCO₂e/kWh).</p>
+  </div>
+
   <Prompt command={panes.allSkills ? 'htop --tree' : 'htop'} />
   <div class="htop">
     {skills.map(group => (
@@ -169,3 +191,102 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
     </>
   )}
 </aside>
+
+<script>
+  import { carbonEstimate, formatBytes, formatMs, transferTotals } from './perf';
+
+  const root = document.querySelector<HTMLElement>('[data-perf-mon]');
+  if (root && !root.dataset.ready) {
+    root.dataset.ready = 'true';
+    root.hidden = false;
+    const wide = window.matchMedia('(min-width: 110rem)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sessionKey = 'portfolio-session-bytes';
+    const set = (name: string, value: string) => {
+      const element = root.querySelector<HTMLElement>(`[data-metric="${name}"]`);
+      if (element && element.textContent !== value) element.textContent = value;
+    };
+    const readSession = () => {
+      try {
+        return Number(sessionStorage.getItem(sessionKey)) || 0;
+      } catch {
+        return 0;
+      }
+    };
+    let previousPages = readSession();
+    const co2 = (bytes: number) => {
+      const { grams, rating } = carbonEstimate(bytes);
+      return `${grams.toFixed(grams < 0.01 ? 4 : 3)} g (${rating})`;
+    };
+
+    let lcp: number | undefined;
+    let cls = 0;
+    const observe = (type: string, onEntry: (entry: PerformanceEntry) => void) => {
+      try {
+        new PerformanceObserver(list => list.getEntries().forEach(onEntry)).observe({ type, buffered: true });
+      } catch {
+        // Unsupported entry type: the metric stays n/a.
+      }
+    };
+    observe('largest-contentful-paint', entry => (lcp = entry.startTime));
+    observe('layout-shift', entry => {
+      const shift = entry as PerformanceEntry & { value: number; hadRecentInput: boolean };
+      if (!shift.hadRecentInput) cls += shift.value;
+    });
+
+    const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
+    if (!memory) {
+      root.querySelector('[data-metric-label="heap"]')?.remove();
+      root.querySelector('[data-metric="heap"]')?.remove();
+    }
+
+    let transferred = 0;
+    const render = () => {
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+      const paint = performance.getEntriesByName('first-contentful-paint')[0];
+      const totals = transferTotals(navigation ? [navigation, ...resources] : resources);
+      transferred = totals.transferred;
+      set('ttfb', formatMs(navigation?.responseStart));
+      set('fcp', formatMs(paint?.startTime));
+      set('lcp', formatMs(lcp));
+      set('cls', cls.toFixed(3));
+      set('requests', String(resources.length + (navigation ? 1 : 0)));
+      set('transferred', formatBytes(totals.transferred));
+      set('dom', String(document.getElementsByTagName('*').length));
+      if (memory) set('heap', formatBytes(memory.usedJSHeapSize));
+      set('uptime', `${Math.floor(performance.now() / 1000)} s`);
+      set('co2-view', co2(totals.transferred));
+      set('co2-cold', co2(totals.firstVisit));
+      set('co2-session', co2(previousPages + totals.transferred));
+    };
+
+    let timer: number | undefined;
+    const schedule = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+      render();
+      if (wide.matches && !reducedMotion.matches && document.visibilityState === 'visible') {
+        timer = window.setInterval(render, 1000);
+      }
+    };
+    wide.addEventListener('change', schedule);
+    reducedMotion.addEventListener('change', schedule);
+    document.addEventListener('visibilitychange', schedule);
+    window.addEventListener('load', schedule);
+    window.addEventListener('pagehide', () => {
+      render();
+      try {
+        sessionStorage.setItem(sessionKey, String(previousPages + transferred));
+      } catch {
+        // Storage blocked: the session total restarts on each page.
+      }
+    });
+    // Back/forward cache restores already counted this page; rebase on later pages' totals.
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) previousPages = Math.max(0, readSession() - transferred);
+      schedule();
+    });
+    schedule();
+  }
+</script>
