@@ -23,7 +23,7 @@
     "check": "astro check",
     "check:seo": "node scripts/check-agentic-seo.mjs",
     "check:theme": "node scripts/check-theme-system.mjs",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=chromium",
     "test:cms-auth": "node --test \"workers/cms-auth/test/*.test.js\"",
     "check:links": "node scripts/check-links.mjs",
     "check:headers": "node scripts/sync-vercel-headers.mjs --check",
@@ -34,7 +34,8 @@
     "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun",
     "test:photos": "node --test tests/photos/*.test.mjs",
     "photos:ingest": "node scripts/photos-ingest.mjs",
-    "photos:locate": "node scripts/photos-locate.mjs"
+    "photos:locate": "node scripts/photos-locate.mjs",
+    "test:visual": "playwright test --project=visual-desktop --project=visual-mobile"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

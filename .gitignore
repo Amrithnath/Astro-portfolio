@@ -67,3 +67,6 @@ project-archive/wedding-api/internal/gen/
 
 # Release build archive (attached to GitHub releases, never committed)
 portfolio-dist.zip
+
+# Disposable macOS visual checks; CI baselines are Linux/Chrome only.
+tests/e2e/__screenshots__/darwin/
