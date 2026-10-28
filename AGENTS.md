@@ -54,7 +54,7 @@
 - `/now/` (`src/pages/now.astro`, single-entry `now` collection at `src/content/now/now.md`, CMS *Pages → Now*) is unlisted and currently placeholder text. Do not invent personal content for it.
 - `/uses/` (`src/pages/uses.astro`, single-entry `uses` collection at `src/content/uses/uses.md`, CMS *Pages → Uses*) follows the same pattern: unlisted, placeholder gear lists. Do not invent gear.
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
-- Update `src/features/terminal/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`).
+- Update `src/features/terminal/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`). Tabs are `portfolio.sh`, `about.md`, `projects.json`, `resume.py`, `blog.log` and `scan.sh` (`/privacy-check/`); they scroll horizontally on narrow screens.
 - Update `src/features/terminal/navigation.ts` if the route should appear in terminal `ls` output.
 - `/blog/` (`src/pages/blog/index.astro`) is the real blog index (published posts newest first, empty state when none). `/blogs` is a single edge 301 to `/blog/` via `public/_redirects`, mirrored into `vercel.json` by `pnpm sync:headers`; `src/pages/blogs.astro` is only a meta-refresh fallback for local preview. Add new redirects to `public/_redirects`, not as redirect pages.
 
@@ -74,6 +74,10 @@
 ## Formatting
 - `.prettierrc` expects semicolons, single quotes, 2-space indentation, `printWidth: 100`, and `prettier-plugin-astro`.
 - Prettier is not listed in `package.json`; do not assume a formatter script or local Prettier install exists.
+
+## Scoped Agents
+- `.github/agents/*.agent.md` defines Copilot custom agents with narrow ownership: `security` (headers, CSP, workers, dependencies), `a11y` (axe/WCAG in both themes), `frontend` (pages, components, themes, nav), `seo` (metadata, JSON-LD, feeds, crawl policy), `performance` (budgets, service worker, perf monitor, carbon), `content` (collections, resume data, CMS) and `ci-release` (workflows, Release Please, commitlint).
+- Pick the agent whose scope matches the task (`/agent <name>` in Copilot CLI); for cross-cutting work, run them in separate worktrees and merge through PRs. Keep each profile's paths and validation commands in sync when moving files or changing scripts.
 
 ## Versioning And Releases
 - `package.json` and `.release-please-manifest.json` are the source of the current application version. The site footer reads that version at build time, and `/version.json` reports it with the build commit and timestamp; its response must remain revalidated (`public/_headers`).
