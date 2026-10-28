@@ -249,10 +249,33 @@ Latest local medians, measured 2026-10-27 (Performance / Accessibility / Best Pr
 | `/`, `/about/`, `/projects/`, `/contact/`, `/resume/` | 100/100/100/100 | 100/100/100/100 |
 | `/project/webDev/weather-app/` | 100/100/100/100 | 100/100/100/100 |
 
-The local servers don't apply Cloudflare's `public/_headers`, so header checks (CSP, HSTS) only
-count on the deployed site. `public/_headers` is the single source of truth: after editing it, run
-`pnpm sync:headers` so Vercel (which reads `vercel.json`, not `_headers`) serves the same headers.
-`pnpm verify` and CI fail if the two drift.
+### Security headers and CSP
+
+`public/_headers` is the response-header source of truth; run `pnpm sync:headers` after edits
+so Vercel serves identical headers. `pnpm verify` rejects drift and checks every built HTML file.
+
+The `HTML-CSP` comment in that file supplies the script policy. An Astro build hook injects it
+after the charset and before scripts/styles in every non-admin head, with SHA-256 hashes of inline
+scripts, including the blocking pre-paint theme bootstrap. A build-wide allowlist supports
+ClientRouter swaps and deferred terminal content; JSON-LD is inert data, not executable script.
+Astro 7's built-in CSP currently does not support ClientRouter, so we do not enable it.
+The response policy deliberately omits `default-src`/`script-src`: a second policy without the
+build hashes would block scripts even when the meta allows them. The meta supplies both, plus
+all resource restrictions; header-only `frame-ancestors` remains in the response. Scripts have
+no `unsafe-inline` or `unsafe-eval`; `script-src-attr 'none'` forbids event handlers.
+
+`style-src 'unsafe-inline'` remains necessary for Shiki/other inline style attributes, Astro
+scoped styles and the resume print popup's inherited policy. Removing it would break rendering;
+script hashes do not authorize style attributes. The separate Sveltia `/admin/` CSP is unchanged.
+
+Build output marks scripts `data-cfasync="false"` to bypass Rocket Loader. `Cache-Control:
+no-transform` prevents Cloudflare email obfuscation and automatic analytics injection from
+rewriting HTML; keep edge HTML/script rewriting disabled (including future minifiers).
+The explicit, privacy-aware `Analytics.astro` loader is allowed. No remote settings are changed.
+
+Preview/Lighthouse do not apply response headers, but **do** enforce the built meta CSP.
+Playwright additionally injects the response CSP from `public/_headers` and checks violation
+events/console errors through navigation, themes, photography, resume exports and print.
 
 ## CI/CD and deployment
 

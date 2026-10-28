@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test as base } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test as base } from './csp-fixture';
 
 // Keep the guard active through deferred loading, interactions, and fixture teardown.
 const test = base.extend<{ browserErrors: void }>({

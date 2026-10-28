@@ -1,5 +1,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { fileURLToPath } from 'node:url';
+import { injectCsp } from './scripts/csp.mjs';
 import { isIndexablePath } from './src/lib/seo';
 
 // Archived: wedding API proxy target (see project-archive/README.md).
@@ -8,7 +10,13 @@ import { isIndexablePath } from './src/lib/seo';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://amrithnath.dev',
-  integrations: [sitemap({ filter: page => isIndexablePath(new URL(page).pathname) })],
+  integrations: [
+    sitemap({ filter: page => isIndexablePath(new URL(page).pathname) }),
+    {
+      name: 'portfolio-csp',
+      hooks: { 'astro:build:done': async ({ dir }) => injectCsp(fileURLToPath(dir)) },
+    },
+  ],
   output: 'static',
   markdown: {
     shikiConfig: {

@@ -29,12 +29,13 @@
     "check:headers": "node scripts/sync-vercel-headers.mjs --check",
     "check:photos": "node scripts/check-photos.mjs",
     "sync:headers": "node scripts/sync-vercel-headers.mjs",
-    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos && pnpm check:csp",
     "commitlint": "commitlint",
     "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun",
     "test:photos": "node --test tests/photos/*.test.mjs",
     "photos:ingest": "node scripts/photos-ingest.mjs",
-    "photos:locate": "node scripts/photos-locate.mjs"
+    "photos:locate": "node scripts/photos-locate.mjs",
+    "check:csp": "node --test tests/csp/*.test.mjs && node scripts/check-csp.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -54,6 +55,7 @@
     "aws4fetch": "1.0.20",
     "exifr": "7.1.3",
     "lightningcss": "^1.33.0",
+    "parse5": "^8.0.1",
     "typescript": "^6.0.3",
     "wrangler": "^4.153.0",
     "yaml": "2.9.1"
