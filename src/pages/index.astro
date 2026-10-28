@@ -111,7 +111,6 @@ const portfolioData = {
           }
           if (document.readyState === 'complete') initHomepage();
           else window.addEventListener('load', initHomepage, { once: true });
-          document.addEventListener('astro:page-load', initHomepage);
         </script>
 	</body>
 </html>

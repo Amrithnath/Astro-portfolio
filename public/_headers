@@ -2,17 +2,20 @@
 # GitHub Pages and GCS ignore this file; those deploy targets cannot set custom headers.
 #
 # CSP notes:
-# - script-src keeps 'unsafe-inline' for now: BaseLayout/index.astro ship inline scripts whose
-#   content embeds per-build hashed asset URLs, BaseLayout uses an inline onload handler for the
-#   Google Fonts stylesheet, and the zone has Rocket Loader + Scrape Shield (email obfuscation)
-#   enabled, which rewrite/inject scripts and require 'unsafe-inline' per Cloudflare's CSP docs.
-# - style-src keeps 'unsafe-inline' because pages render many style="" attributes and Astro inlines
-#   small stylesheets into <style> tags.
-# - static.cloudflareinsights.com / cloudflareinsights.com: Cloudflare Web Analytics beacon.
-# - ajax.cloudflare.com: Rocket Loader.
+# - The build injects this HTML-CSP template before every non-admin page's scripts, adding a
+#   shared SHA-256 allowlist of inline scripts. Do not put script-src or default-src in the
+#   response policy: policies intersect, so a header without these hashes would block inline JS.
+# - Header-only frame-ancestors and resource restrictions remain below on both deploy targets.
+# - style-src needs unsafe-inline for Shiki/other style attributes, Astro scoped style tags, and
+#   the resume print window (which inherits CSP). Script attributes are always forbidden.
+# - Scripts opt out of Rocket Loader with data-cfasync=false. Cache-Control: no-transform
+#   prevents email obfuscation and automatic beacon injection from changing the hashed HTML.
+#   Keep edge rewriting disabled; Analytics.astro owns the allowed explicit beacon.
+# HTML-CSP: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com HASHES; script-src-attr 'none'
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://cloudflareinsights.com https://views.amrithnath.dev; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Cache-Control: no-transform
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -43,6 +46,16 @@
   X-Robots-Tag: noindex, nofollow
 /now/*
   X-Robots-Tag: noindex, nofollow
+/uses
+  X-Robots-Tag: noindex, nofollow
+/uses/*
+  X-Robots-Tag: noindex, nofollow
+
+# Search uses only same-origin Pagefind assets; its meta CSP alone adds 'wasm-unsafe-eval'.
+/search
+  X-Robots-Tag: noindex, nofollow
+/search/*
+  X-Robots-Tag: noindex, nofollow
 
 # Content-hashed build output: safe to cache forever.
 /_astro/*
@@ -59,9 +72,9 @@
 
 # HTML documents: always revalidate.
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
 /*/
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
 
 # Files fetched by crawlers and AI agents.
 /robots.txt

@@ -168,17 +168,13 @@ for (const light of [false, true]) {
   blocked.systemChange(!light);
   assert.equal(blocked.context.__theme.current, light ? 'terminal' : 'light');
   for (const preference of ['auto', ...registry.themes.map(theme => theme.id)]) {
-    const swapped = themeContext({}, { light });
-    swapped.context.__theme.set(preference);
-    swapped.context.document.documentElement = { dataset: { theme: 'terminal' }, style: {} };
-    const themeApi = swapped.context.__theme;
-    vm.runInNewContext(bootstrap, swapped.context);
-    assert.equal(swapped.context.__theme, themeApi, 'Swaps must reuse the API and listeners');
-    assert.equal(themeApi.preference, preference);
-    assert.equal(themeApi.current, preference === 'auto' ? systemTheme : preference);
-    assert.equal(swapped.storage.has('portfolio-theme'), preference !== 'auto');
-    swapped.systemChange(!light);
-    assert.equal(themeApi.current, preference === 'auto' ? (light ? 'terminal' : 'light') : preference);
+    const previous = themeContext({}, { light });
+    previous.context.__theme.set(preference);
+    // Every navigation is a full page load: the next document starts from the server default.
+    const next = themeContext(Object.fromEntries(previous.storage), { light });
+    assert.equal(next.root.dataset.theme, preference === 'auto' ? systemTheme : preference,
+      'The saved preference is applied before first paint on the next page');
+    assert.equal(next.context.__theme.preference, preference);
   }
 }
 

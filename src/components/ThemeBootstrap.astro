@@ -2,12 +2,8 @@
 import { defaultTheme, themes } from '../themes';
 ---
 
-<script is:inline data-astro-rerun define:vars={{ themes, defaultTheme }}>
+<script is:inline define:vars={{ themes, defaultTheme }}>
   (() => {
-    if (window.__theme) {
-      window.__theme.set(window.__theme.preference);
-      return;
-    }
     const key = 'portfolio-theme';
     const legacyKey = 'portfolio-layout-theme';
     const findTheme = (id) => themes.find((theme) => theme.id === id);

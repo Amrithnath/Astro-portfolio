@@ -26,7 +26,7 @@ const escape = (s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
 const toSource = (path) => path.split('*').map(escape).join('(.*)');
 
 const headers = [];
-for (const { path, headers: values, detach } of rules) {
+for (const { path, headers: values } of rules) {
   // Absolute-URL rules target *.pages.dev previews only.
   if (!path.startsWith('/')) continue;
   // Headers another rule detaches (`! Name`) skip that rule's paths, mirroring Cloudflare.
@@ -34,12 +34,14 @@ for (const { path, headers: values, detach } of rules) {
   const plain = [];
   const excluded = new Map();
   for (const header of values) {
-    const owners = detachedBy.filter((r) => r.detach.includes(header.key.toLowerCase()));
+    // Scoped overrides detach inherited global headers, not sibling route overrides.
+    const owners = path === '/*'
+      ? detachedBy.filter((r) => r.detach.includes(header.key.toLowerCase()))
+      : [];
     if (!owners.length) {
       plain.push(header);
       continue;
     }
-    if (path !== '/*') throw new Error(`Detaching from ${path} is not supported`);
     const prefixes = owners.map((r) => escape(r.path.replace(/\*$/, '').replace(/^\//, '')));
     const source = `/((?!${prefixes.join('|')}).*)`;
     excluded.set(source, [...(excluded.get(source) || []), header]);

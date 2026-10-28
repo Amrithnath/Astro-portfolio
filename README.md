@@ -55,6 +55,7 @@ pnpm dev            # http://localhost:4321
 | `pnpm check:photos` | Fail if a gallery photo has GPS data or no catalogue entry |
 | `pnpm test:e2e` | Playwright smoke and accessibility tests (run after a build) |
 | `pnpm test:cms-auth` | Unit tests for the CMS sign-in Worker |
+| `pnpm test:views` | Unit tests for the article view counter Worker |
 | `pnpm lighthouse` | Lighthouse CI against `dist/` (`LIGHTHOUSE_DESKTOP=1` for desktop) |
 | `pnpm commitlint --from <base> --to <head>` | Check commit messages |
 
@@ -82,6 +83,7 @@ pnpm dev            # http://localhost:4321
 │   └── themes/          # Theme registry
 ├── public/              # Static files, _headers, service worker, CMS config
 ├── workers/cms-auth/    # Cloudflare Worker for CMS sign-in
+├── workers/views/       # Cloudflare Worker + D1 for article view counts
 ├── scripts/             # Build output checks
 ├── tests/e2e/           # Playwright tests
 └── .github/workflows/   # CI, releases and deploys
@@ -175,7 +177,20 @@ ordered itinerary stops; `src/content/albums/example-trip.yml` is a draft templa
 GPS-bearing originals and uncatalogued assets. Astro emits metadata-free AVIF/WebP derivatives.
 Optional fields include caption, date, camera, lens, settings, tags, albums, featured and draft.
 Use exactly one image source: local `image` **or** R2 `remote: { key, width, height, placeholder? }`.
-Photo IDs `tags`, `places` and `albums` are reserved and fail the build.
+Photo IDs `tags`, `places`, `albums`, `map`, `prints`, `feed`, `feed.xml`, `rss` and `rss.xml` are reserved.
+
+**Extras (still unlisted):** places link to `/photography/map/`, an inline SVG with no third-party
+requests. One linked marker per named place uses reviewed, coarse coordinates; the text list is
+available without JavaScript. Unknown locations stay unset. The bundled simplified Natural Earth
+110m land outline is public domain (source, version and licence in `src/data/world-land.json`).
+`/photography/rss.xml` lists published photos newest first (undated last), with metadata-free
+WebP media links; only the photography index advertises it. The optional `exiftool`-style photo
+panel shows camera, lens, taken date and exposure fields, never GPS or serial numbers. Ingest fills
+`focalLength` (mm), `aperture` (f-number), `exposureTime` (seconds) and `iso` when available;
+these are also editable in the CMS. Photos with no EXIF information have no panel.
+`/photography/prints/` is explicitly **PLACEHOLDER**: the owner must supply print availability,
+prices/delivery and licensing terms before treating it as an offer. Contact uses the profile email;
+all photos remain © the owner, all rights reserved unless stated otherwise.
 
 **R2 ingest (no local Cloudflare login required):**
 
@@ -219,6 +234,12 @@ A [now page](https://nownownow.com/about) about what you're focused on at the mo
 *Pages → Now* in `/admin`: set `updated` and `location`, write the sections in Markdown, and turn
 off `placeholder` to remove the draft banner.
 
+### Uses page (`/uses/`)
+
+A [uses page](https://uses.tech) listing your hardware, software and camera gear. It is also
+**unlisted**. Edit `src/content/uses/uses.md` or *Pages → Uses* in `/admin`, replace the TODO
+items, and turn off `placeholder`.
+
 ## Testing and quality
 
 | Check | Command |
@@ -226,11 +247,39 @@ off `placeholder` to remove the draft banner.
 | Types | `pnpm check` |
 | Build contracts (SEO, theme, links) | `pnpm verify` |
 | Browser and accessibility (WCAG 2.1 AA via axe) | `pnpm test:e2e` |
+| Visual regression (separate baselines) | `pnpm test:visual` |
 | CMS sign-in Worker | `pnpm test:cms-auth` |
+| View counter Worker | `pnpm test:views` |
 | Photography helpers and offline ingest | `pnpm test:photos` |
 | Photo originals/catalogue privacy | `pnpm check:photos` |
 | Photo ingest (offline rehearsal) | `pnpm photos:ingest -- <files-or-dirs> --dry-run --out .photos-output` |
 | Dependencies | `pnpm audit` |
+
+### Visual regression
+
+Build first, then run `pnpm test:visual`. Twenty viewport snapshots cover home (after
+its deferred terminal fragment loads), resume, a blog post, projects and 404, in terminal/light
+and desktop/mobile. Animations/carets are disabled, fonts/images are awaited, and random homepage
+copy/glyphs, dates and build metadata are masked. Pixel differences have a 1% budget.
+Regular `pnpm test:e2e` never requires snapshots.
+
+**CI truth is Ubuntu + Google Chrome**, shared by the visual gate and **Update visual baselines**
+(`.github/workflows/visual-baselines.yml`). Snapshots live in
+`tests/e2e/__screenshots__/{platform}/{project}/`; never substitute macOS or Chromium
+images for Linux/Chrome. Missing Linux images skip individually with a workflow notice; existing
+images are still checked, and failures upload the `visual-diffs` artifact.
+
+**One-time bootstrap / intentional UI updates:** once this workflow exists on the default branch,
+open Actions → Update visual baselines → Run workflow and select the target branch. It builds,
+generates all Linux PNGs, verifies a second run, and commits them back with `GITHUB_TOKEN`
+(`contents: write`). Review the committed images before merging. Protected branches may
+reject the push: use a writable feature branch. Token-created commits do not trigger CI, so then
+manually run **Portfolio Quality** on that branch. The workflow never accepts fork code with a
+write token. Chrome/Ubuntu upgrades may also require reviewed baseline refreshes.
+
+For disposable local checks on macOS, use `pnpm test:visual --update-snapshots` and then
+`pnpm test:visual` (set `PLAYWRIGHT_CHANNEL=chrome` for installed Chrome). Darwin
+snapshots are ignored by Git and are not CI baselines.
 
 ### Lighthouse
 
@@ -249,10 +298,34 @@ Latest local medians, measured 2026-10-27 (Performance / Accessibility / Best Pr
 | `/`, `/about/`, `/projects/`, `/contact/`, `/resume/` | 100/100/100/100 | 100/100/100/100 |
 | `/project/webDev/weather-app/` | 100/100/100/100 | 100/100/100/100 |
 
-The local servers don't apply Cloudflare's `public/_headers`, so header checks (CSP, HSTS) only
-count on the deployed site. `public/_headers` is the single source of truth: after editing it, run
-`pnpm sync:headers` so Vercel (which reads `vercel.json`, not `_headers`) serves the same headers.
-`pnpm verify` and CI fail if the two drift.
+### Security headers and CSP
+
+`public/_headers` is the response-header source of truth; run `pnpm sync:headers` after edits
+so Vercel serves identical headers. `pnpm verify` rejects drift and checks every built HTML file.
+
+The `HTML-CSP` comment in that file supplies the script policy. An Astro build hook injects it
+after the charset and before scripts/styles in every non-admin head, with SHA-256 hashes of inline
+scripts, including the blocking pre-paint theme bootstrap. A build-wide allowlist keeps one stable
+policy across pages and deferred terminal content; JSON-LD is inert data, not executable script.
+Navigation uses full page loads with native view transitions (no ClientRouter), so the theme
+bootstrap runs before first paint on every page.
+The response policy deliberately omits `default-src`/`script-src`: a second policy without the
+build hashes would block scripts even when the meta allows them. The meta supplies both, plus
+all resource restrictions; header-only `frame-ancestors` remains in the response. Scripts have
+no `unsafe-inline` or `unsafe-eval`; `script-src-attr 'none'` forbids event handlers.
+
+`style-src 'unsafe-inline'` remains necessary for Shiki/other inline style attributes, Astro
+scoped styles and the resume print popup's inherited policy. Removing it would break rendering;
+script hashes do not authorize style attributes. The separate Sveltia `/admin/` CSP is unchanged.
+
+Build output marks scripts `data-cfasync="false"` to bypass Rocket Loader. `Cache-Control:
+no-transform` prevents Cloudflare email obfuscation and automatic analytics injection from
+rewriting HTML; keep edge HTML/script rewriting disabled (including future minifiers).
+The explicit, privacy-aware `Analytics.astro` loader is allowed. No remote settings are changed.
+
+Preview/Lighthouse do not apply response headers, but **do** enforce the built meta CSP.
+Playwright additionally injects the response CSP from `public/_headers` and checks violation
+events/console errors through navigation, themes, photography, resume exports and print.
 
 ## CI/CD and deployment
 
@@ -260,8 +333,8 @@ count on the deployed site. `public/_headers` is the single source of truth: aft
 
 1. **At once:** Conventions (PRs only: PR title and commit messages), CodeQL, Build (audit, type
    check, build, SEO/theme/link/header checks) and Node 24.
-2. **As soon as Build is done:** E2E (Playwright + axe on the runner's Chrome) and Lighthouse
-   (mobile and desktop, each split into two URL shards).
+2. **As soon as Build is done:** E2E (Playwright + axe), Visual regression (both on the runner's
+   Chrome) and Lighthouse (mobile and desktop, each split into two URL shards).
 3. **Deploy**, once every check has passed: GitHub Pages on `main`, plus Cloudflare Pages and Vercel
    once their secrets are set.
 
@@ -270,7 +343,9 @@ It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 
 Other workflows:
 
+- **Update visual baselines** (`visual-baselines.yml`): manual Ubuntu/Chrome snapshot refresh; see Testing.
 - **CMS Auth Worker** (`cms-auth.yml`): tests and deploys `workers/cms-auth/`.
+- **Views Worker** (`views.yml`): tests `workers/views/`, applies its D1 migrations and deploys it.
 - **Photo ingest** (`photos.yml`): manual; publishes R2 inbox photos and opens a draft metadata PR.
 - **Locate photos** (`photos-locate.yml`): on photo PRs, resolves Maps links and place names.
 - **Release** (`release.yml`): Release Please versioning, changelog, tags and GitHub releases.
@@ -292,7 +367,44 @@ never on previews or localhost, and is skipped for visitors who send Global Priv
 Not Track. Leave the variable unset to ship no analytics. Don't also enable Cloudflare Pages' own
 analytics injection, or page views are counted twice.
 
+### View counts
+
+Blog posts and projects can show `views: 123` under the description. The count comes from
+`workers/views/`, a Cloudflare Worker with a D1 table of `path → count` at
+`views.amrithnath.dev`. `GET /views?path=/blog/x/` reads a count; `POST /views` with
+`{"path":"/blog/x/"}` adds one.
+
+- Only `/blog/…/` and `/project/…/` paths (max 160 characters) are accepted. New rows are created
+  only for pages that return 200 on `SITE_URL`.
+- CORS is limited to the exact origins in `ALLOWED_ORIGINS` (`workers/views/wrangler.toml`). No
+  cookies; IP, user agent and referrer are never read or stored.
+- Each browser counts a page once (a `localStorage` flag), only on `amrithnath.dev`. Previews and
+  localhost only read. `Sec-GPC: 1` / `DNT: 1` visitors are never counted, by the page or the Worker.
+- The site renders the counter only when `PUBLIC_VIEWS_URL` is set at build time. Otherwise there
+  is no markup, script or request.
+
+**One-time setup**
+
+1. Create the database: `npx wrangler d1 create portfolio-views`, and note its `database_id`.
+2. Make sure the `CLOUDFLARE_API_TOKEN` secret (see the CMS setup) also has **D1: Edit**
+   (account). `CLOUDFLARE_ACCOUNT_ID` is reused.
+3. Add repository variables `VIEWS_D1_DATABASE_ID=<database_id>` and
+   `VIEWS_URL=https://views.amrithnath.dev`.
+4. Run the **Views Worker** workflow. It applies `workers/views/migrations/`, deploys the Worker
+   and creates the `views.amrithnath.dev` custom domain (DNS record included).
+5. Rebuild the site (push to `main` or rerun **Portfolio Quality**) so `VIEWS_URL` is built in.
+
+The CSP already allows `https://views.amrithnath.dev` in `connect-src`. To use another host,
+update `public/_headers` (then `pnpm sync:headers`), `wrangler.toml` and `VIEWS_URL`.
+
 ## Search and AI discovery
+
+`/search/?q=Bluetooth` is an unlisted, browser-side site search. `pnpm build` runs Pagefind
+after Astro and writes `dist/pagefind/`; use `pnpm preview` to test it (the dev server has no
+index). Queries and index requests stay on this site, with no external search service, cookies,
+or credentials; the search page also omits analytics. Only public, indexable main content is indexed: unlisted photography, now, search,
+admin, fragments, redirects and offline pages are excluded. Search supports both themes and
+keyboard use; its WebAssembly CSP exception is scoped to `/search/*`. No owner setup is needed.
 
 The canonical origin is `https://amrithnath.dev`. Everything below is generated at build time.
 

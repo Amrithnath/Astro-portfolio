@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test as base } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test as base } from './csp-fixture';
 
 // Keep the guard active through deferred loading, interactions, and fixture teardown.
 const test = base.extend<{ browserErrors: void }>({
@@ -143,7 +144,7 @@ test('photography flag filters update the prompt and lightbox sees only visible 
   await expect(page.locator('[data-filter-prompt]')).toContainText('--album landscapes');
 });
 
-for (const route of ['tags/', 'tags/landscape/', 'places/', 'albums/', 'albums/landscapes/', 'pine-ridge/']) {
+for (const route of ['tags/', 'tags/landscape/', 'places/', 'map/', 'prints/', 'albums/', 'albums/landscapes/', 'pine-ridge/']) {
   test('photography/' + route + ' stays unlisted and renders connected pages', async ({ page }) => {
     await page.goto('/photography/' + route);
     await expect(page.locator('h1')).toBeVisible();
@@ -158,7 +159,22 @@ for (const route of ['tags/', 'tags/landscape/', 'places/', 'albums/', 'albums/l
       await expect(page.getByRole('link', { name: 'Landscapes', exact: true })).toHaveAttribute('href', '/photography/albums/landscapes/');
       await expect(page.getByRole('navigation', { name: 'Adjacent photos' })).toContainText('Golden hour');
     }
-    if (route === 'places/') await expect(page.getByText('No places added yet.')).toBeVisible();
+    if (route === 'places/') {
+      await expect(page.getByText('No places added yet.')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'View the places map' })).toHaveAttribute('href', '/photography/map/');
+    }
+    if (route === 'pine-ridge/') {
+      await expect(page.getByRole('region', { name: 'Photo information' })).toHaveCount(0);
+    }
+    if (route === 'map/') {
+      await expect(page.getByText('No places with coordinates added yet.')).toBeVisible();
+      await expect(page.getByRole('group', { name: 'Photography places' })).toBeVisible();
+    }
+    if (route === 'prints/') {
+      await expect(page.getByText('PLACEHOLDER — details have not been set by the photographer.')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'hello@amrithnath.dev' })).toHaveAttribute('href', 'mailto:hello@amrithnath.dev');
+      await expect(page.getByText(/All photographs ©/)).toContainText('All rights reserved unless explicitly stated otherwise.');
+    }
   });
 }
 
@@ -198,7 +214,7 @@ test('projects render an empty write-up state when no article is linked', async 
 });
 
 for (const choice of ['dark', 'light'] as const) {
-  test(`${choice} selection persists through reload and ClientRouter navigation`, async ({ page }) => {
+  test(`${choice} selection persists through reload and navigation`, async ({ page }) => {
     await page.goto('/');
     const switcher = page.getByRole('group', { name: 'Color theme', exact: true });
     await expect(switcher).toHaveCount(1);
@@ -220,6 +236,26 @@ for (const choice of ['dark', 'light'] as const) {
     await expect(page.locator('html')).toHaveAttribute('data-theme', choice === 'dark' ? 'light' : 'terminal');
   });
 }
+
+test('light theme never flashes the default theme during home to about navigation', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('portfolio-theme', 'light');
+    // Record the theme at first paint and at every later change on each document.
+    const seen: string[] = [];
+    (window as unknown as { __seen: string[] }).__seen = seen;
+    requestAnimationFrame(() => seen.push('paint:' + document.documentElement.dataset.theme));
+    new MutationObserver(() => seen.push(document.documentElement.dataset.theme ?? ''))
+      .observe(document, { attributes: true, subtree: true, attributeFilter: ['data-theme'] });
+  });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.locator('.terminal-tabs a[href="/about"]').click();
+  await expect(page).toHaveURL(/\/about\/?$/);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __seen: string[] }).__seen))
+    .toEqual(['light', 'paint:light']);
+  expect(await page.evaluate(() => document.documentElement.style.colorScheme)).toBe('light');
+});
 
 test('auto follows live system changes and the switcher is keyboard-accessible on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -289,4 +325,90 @@ test('now page is unlisted and flags its placeholder content', async ({ page, re
   await expect(page.getByRole('heading', { name: 'Photography', level: 2 })).toBeVisible();
   expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/now');
   expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /now');
+});
+
+test('uses page is unlisted and flags its placeholder content', async ({ page, request }) => {
+  await page.goto('/uses/');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('What I use');
+  await expect(page.getByRole('note')).toContainText('placeholder');
+  await expect(page.getByRole('heading', { name: 'Photography gear', level: 2 })).toBeVisible();
+  expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/uses');
+  expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /uses');
+});
+
+test('photo RSS is linked only inside photography and includes usable image media', async ({ page, request }) => {
+  await page.goto('/photography/');
+  await expect(page.getByRole('link', { name: 'Photo RSS feed' })).toHaveAttribute('href', '/photography/rss.xml');
+  const response = await request.get('/photography/rss.xml');
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toContain('xml');
+  const xml = await response.text();
+  const feed = await page.evaluate((source) => {
+    const document = new DOMParser().parseFromString(source, 'application/xml');
+    return {
+      errors: document.querySelectorAll('parsererror').length,
+      items: [...document.querySelectorAll('item')].map((item) => ({
+        title: item.querySelector('title')?.textContent,
+        description: item.querySelector('description')?.textContent,
+        link: item.querySelector('link')?.textContent,
+        image: item.getElementsByTagNameNS('http://search.yahoo.com/mrss/', 'content')[0]?.getAttribute('url'),
+      })),
+    };
+  }, xml);
+  expect(feed.errors).toBe(0);
+  expect(feed.items).toHaveLength(2);
+  for (const item of feed.items) {
+    expect(item.title).toBeTruthy();
+    expect(item.description).toBeTruthy();
+    expect(item.link).toMatch(/^https:\/\/amrithnath\.dev\/photography\/[\w-]+\/$/);
+    const imagePath = new URL(item.image!).pathname;
+    expect(imagePath).toMatch(/\.webp$/);
+    expect((await request.get(imagePath)).status()).toBe(200);
+  }
+  for (const resource of ['/robots.txt', '/llms.txt', '/sitemap-0.xml']) {
+    expect(await (await request.get(resource)).text()).not.toContain('/photography/rss.xml');
+  }
+  await page.goto('/');
+  await expect(page.locator('a[href^="/photography"], link[href*="/photography"]')).toHaveCount(0);
+});
+
+test('places map is self-contained and available without JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    const external: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== new URL(baseURL!).origin) external.push(request.url());
+    });
+    await page.goto(baseURL + '/photography/places/');
+    await page.getByRole('link', { name: 'View the places map' }).click();
+    await expect(page.locator('svg .land')).toHaveAttribute('d', /^M/);
+    await expect(page.getByText('No places with coordinates added yet.')).toBeVisible();
+    await expect(page.locator('svg image, svg script, svg use, iframe')).toHaveCount(0);
+    expect(external).toEqual([]);
+  } finally { await context.close(); }
+});
+
+test('article view counter only runs when PUBLIC_VIEWS_URL was set at build time', async ({ page }) => {
+  const viewRequests: string[] = [];
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === '/views') viewRequests.push(`${request.method()} ${request.url()}`);
+  });
+  await page.route(/\/views(\?|$)/, route => route.fulfill({
+    json: { path: '/project/webDev/weather-app/', count: 1234 },
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  }));
+  await page.goto('/project/webDev/weather-app/');
+  await page.waitForLoadState('networkidle');
+  const counter = page.locator('[data-view-count]');
+  if (!(await counter.count())) {
+    // CI default: no VIEWS_URL variable, so no markup and no network calls.
+    expect(viewRequests).toEqual([]);
+    return;
+  }
+  // Off the production hostname the counter only reads, never increments.
+  await expect(counter).toHaveText('views: 1,234');
+  expect(viewRequests).toHaveLength(1);
+  expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
 });

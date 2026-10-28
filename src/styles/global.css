@@ -84,6 +84,9 @@ h4 { font-size: var(--text-md); }
 .skip-link:focus { transform: translateY(0); }
 #main-content { scroll-margin-top: 10rem; }
 
+/* Native cross-document transitions; each page load applies the theme before first paint. */
+@view-transition { navigation: auto; }
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root) { animation: none !important; }

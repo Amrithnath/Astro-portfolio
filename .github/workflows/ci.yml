@@ -1,7 +1,7 @@
 name: Portfolio Quality
 
 # Fail fast, fail all. The gates run in parallel: Conventions, CodeQL, Build and Node 24 start
-# together; e2e and Lighthouse start as soon as Build has uploaded dist/. A failing gate cancels the
+# together; E2E, Visual and Lighthouse start as soon as Build has uploaded dist/. A failing gate cancels the
 # whole run, and deploys only start once every gate has passed.
 on:
   pull_request:
@@ -120,6 +120,7 @@ jobs:
       - run: pnpm build
         env:
           PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+          PUBLIC_VIEWS_URL: ${{ vars.VIEWS_URL }}
       - run: pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos
       - uses: actions/upload-artifact@v7
         with:
@@ -199,6 +200,46 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           REPO: ${{ github.repository }}
 
+  visual:
+    name: Visual regression
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      # Match the Ubuntu/Chrome baseline-update workflow, not macOS or bundled Chromium.
+      - run: pnpm test:visual
+        env:
+          PLAYWRIGHT_CHANNEL: chrome
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-diffs
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+      - name: Cancel the run on failure
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+
   lighthouse:
     name: Lighthouse (${{ matrix.profile }} ${{ matrix.shard }}/2)
     needs: build
@@ -242,7 +283,7 @@ jobs:
 
   deploy-pages:
     name: Deploy (GitHub Pages)
-    needs: [conventions, codeql, build, node-24, e2e, lighthouse]
+    needs: [conventions, codeql, build, node-24, e2e, visual, lighthouse]
     # Conventions is skipped on push, so require "no failures" rather than "all succeeded".
     if: ${{ !cancelled() && !failure() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -267,7 +308,7 @@ jobs:
   # Each job skips itself until its secrets are added.
   deploy-cloudflare:
     name: Deploy (Cloudflare)
-    needs: [conventions, codeql, build, node-24, e2e, lighthouse]
+    needs: [conventions, codeql, build, node-24, e2e, visual, lighthouse]
     if: ${{ !cancelled() && !failure() && github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     env:
@@ -291,7 +332,7 @@ jobs:
 
   deploy-vercel:
     name: Deploy (Vercel)
-    needs: [conventions, codeql, build, node-24, e2e, lighthouse]
+    needs: [conventions, codeql, build, node-24, e2e, visual, lighthouse]
     if: ${{ !cancelled() && !failure() && github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     env:

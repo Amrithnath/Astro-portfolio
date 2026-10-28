@@ -15,6 +15,7 @@ const albums = await getPublishedCollection('albums');
   currentPage="/photography"
 >
   <h1>Photography</h1><PhotoNav />
+  <p><a href="/photography/rss.xml">Photo RSS feed</a></p>
   <Prompt command="ls ~/photography --sort=featured,date" />
   <Gallery entries={entries} albums={albums} filtering />
   <p>

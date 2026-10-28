@@ -5,6 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { parse } from 'yaml';
+import { assertPhotoIds } from '../src/lib/photos.ts';
 
 const assetsDir = 'src/assets/photos';
 const entriesDir = 'src/content/photos';
@@ -12,6 +13,8 @@ const images = readdirSync(assetsDir).filter((file) =>
   /\.(avif|jpe?g|png|tiff?|webp)$/i.test(file)
 );
 const entries = readdirSync(entriesDir).filter((file) => /\.ya?ml$/.test(file));
+
+assertPhotoIds(entries.map((file) => ({ id: file.replace(/\.ya?ml$/, '') })));
 
 // Minimal TIFF walk: IFD0 → GPS IFD (tag 0x8825) → latitude (0x0002) / longitude (0x0004).
 function hasGpsCoordinates(exif) {

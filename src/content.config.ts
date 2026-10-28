@@ -115,6 +115,10 @@ const photos = defineCollection({
         camera: z.string().optional(),
         lens: z.string().optional(),
         settings: z.string().optional(),
+        focalLength: z.number().positive().optional(),
+        aperture: z.number().positive().optional(),
+        exposureTime: z.number().positive().optional(),
+        iso: z.number().int().positive().optional(),
         tags: z.array(z.string()).default([]).transform(normalizeTags),
         albums: z.array(reference('albums')).default([]),
         featured: z.boolean().default(false),
@@ -162,4 +166,13 @@ const now = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, photos, albums, now };
+// Single-entry collection for the unlisted /uses page (src/content/uses/uses.md).
+const uses = defineCollection({
+  loader: glob({ base: './src/content/uses', pattern: 'uses.md' }),
+  schema: z.object({
+    updated: z.coerce.date(),
+    placeholder: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, projects, photos, albums, now, uses };

@@ -45,6 +45,7 @@ jobs:
       - run: pnpm build
         env:
           PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+          PUBLIC_VIEWS_URL: ${{ vars.VIEWS_URL }}
       - name: Archive site build
         run: cd dist && zip -qr ../portfolio-dist.zip .
       - name: Attach build to release
