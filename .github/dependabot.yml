@@ -4,25 +4,36 @@ updates:
     directory: /
     schedule:
       interval: weekly
+      day: monday
     cooldown:
       default-days: 1
+    open-pull-requests-limit: 10
     commit-message:
       prefix: 'build'
     ignore:
       # astro check rejects TypeScript 7; revisit once @astrojs/check supports it.
       - dependency-name: typescript
         versions: ['>=7']
+    # One weekly PR for every npm update (majors included) so they land and get tested together.
     groups:
-      npm-minor-patch:
-        update-types: [minor, patch]
+      npm-all:
+        patterns: ['*']
+        update-types: [major, minor, patch]
+      npm-security:
+        applies-to: security-updates
+        patterns: ['*']
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
     cooldown:
       default-days: 1
     commit-message:
       prefix: 'ci'
     groups:
       actions:
+        patterns: ['*']
+      actions-security:
+        applies-to: security-updates
         patterns: ['*']
