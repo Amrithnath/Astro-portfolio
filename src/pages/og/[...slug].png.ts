@@ -3,9 +3,9 @@ import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
-import terminalTheme from '../../styles/themes/terminal.css?raw';
-import { contentPath, getPublishedCollection } from '../../lib/content';
-import { ogHeight, ogPages, ogWidth } from '../../lib/og';
+import terminalTheme from '../../features/theme/styles/themes/terminal.css?raw';
+import { contentPath, getPublishedCollection } from '../../features/content/content';
+import { ogHeight, ogPages, ogWidth } from '../../features/seo/og';
 
 export const prerender = true;
 

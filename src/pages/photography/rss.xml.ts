@@ -1,9 +1,9 @@
 import rss from '@astrojs/rss';
 import { getImage } from 'astro:assets';
 import type { APIRoute } from 'astro';
-import { getPhotos } from '../../lib/content';
-import { newestPublishedPhotos, remoteImage } from '../../lib/photos';
-import { profile } from '../../lib/seo';
+import { getPhotos } from '../../features/content/content';
+import { newestPublishedPhotos, remoteImage } from '../../features/photos/photos';
+import { profile } from '../../features/seo/seo';
 
 export const prerender = true;
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => ({

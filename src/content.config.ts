@@ -1,8 +1,8 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { coarseCoordinate, normalizeTags } from './lib/photos';
-import { isGoogleMapsUrl, isShortMapsUrl, parseGoogleMapsUrl } from './lib/geo';
+import { coarseCoordinate, normalizeTags } from './features/photos/photos';
+import { isGoogleMapsUrl, isShortMapsUrl, parseGoogleMapsUrl } from './features/photos/geo';
 
 // Absolute URL or a site-relative path such as /images/blog/cover.jpg (CMS uploads).
 const imageSource = z.union([z.url(), z.string().regex(/^\/(?![/\\])/)]);

@@ -6,15 +6,15 @@ import sharp from 'sharp';
 import exifr from 'exifr';
 import { AwsClient } from 'aws4fetch';
 import { stringify } from 'yaml';
-import { derivativeWidths } from '../src/data/photos-config.ts';
-import { normalizeTags, reservedPhotoIds, shutterSpeed, slugify } from '../src/lib/photos.ts';
+import { derivativeWidths } from '../src/features/photos/config.ts';
+import { normalizeTags, reservedPhotoIds, shutterSpeed, slugify } from '../src/features/photos/photos.ts';
 import {
   isGoogleMapsUrl,
   isShortMapsUrl,
   parseGoogleMapsUrl,
   resolveGoogleMapsUrl,
   reverseGeocode,
-} from '../src/lib/geo.ts';
+} from '../src/features/photos/geo.ts';
 
 const imagePattern = /\.(jpe?g|png|tiff?|webp|avif|heic)$/i;
 const round = (value) => Math.round(value * 100) / 100;

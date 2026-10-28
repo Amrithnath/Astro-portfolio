@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { excludedPrefixes } from '../lib/seo';
+import { excludedPrefixes } from '../features/seo/seo';
 
 export const prerender = true;
 export const GET: APIRoute = ({ site }) => {

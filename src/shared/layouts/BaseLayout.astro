@@ -1,0 +1,29 @@
+---
+import BaseHead, { type Props as HeadProps } from '../components/BaseHead.astro';
+import TerminalShell from '../../features/terminal/TerminalShell.astro';
+import TerminalWip from '../../features/terminal/TerminalWip.astro';
+import { defaultTheme } from '../../features/theme';
+import { isWip } from '../../features/terminal/wip';
+
+export interface Props extends HeadProps {
+  currentPage?: string;
+  lang?: string;
+  footerCursor?: boolean;
+}
+
+const { currentPage = '/', lang = 'en', footerCursor = true, ...head } = Astro.props;
+const wip = isWip(currentPage);
+---
+
+<!DOCTYPE html>
+<html lang={lang} data-theme={defaultTheme}>
+  <head>
+    <BaseHead {...head} noindex={wip ? true : head.noindex} />
+    <slot name="head" />
+  </head>
+  <body>
+    <TerminalShell currentPage={currentPage} footerCursor={wip ? true : footerCursor}>
+      {wip ? <TerminalWip title={wip.title} note={wip.note} /> : <slot />}
+    </TerminalShell>
+  </body>
+</html>

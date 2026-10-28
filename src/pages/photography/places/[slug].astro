@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Gallery from '../../../components/photos/Gallery.astro';
-import PhotoNav from '../../../components/photos/PhotoNav.astro';
-import { getPhotos } from '../../../lib/content';
-import { placeIndex } from '../../../lib/photos';
-import { geocoderAttribution } from '../../../lib/geo';
+import BaseLayout from '../../../shared/layouts/BaseLayout.astro';
+import Gallery from '../../../features/photos/Gallery.astro';
+import PhotoNav from '../../../features/photos/PhotoNav.astro';
+import { getPhotos } from '../../../features/content/content';
+import { placeIndex } from '../../../features/photos/photos';
+import { geocoderAttribution } from '../../../features/photos/geo';
 export async function getStaticPaths() {
   return placeIndex(await getPhotos()).map((entry) => ({
     params: { slug: entry.slug },

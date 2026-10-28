@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Prompt from '../../components/ui/Prompt.astro';
-import Card from '../../components/ui/Card.astro';
-import { contentPath, getPublishedCollection } from '../../lib/content';
-import { profile } from '../../lib/seo';
+import BaseLayout from '../../shared/layouts/BaseLayout.astro';
+import Prompt from '../../shared/ui/Prompt.astro';
+import Card from '../../shared/ui/Card.astro';
+import { contentPath, getPublishedCollection } from '../../features/content/content';
+import { profile } from '../../features/seo/seo';
 
 const posts = (await getPublishedCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());

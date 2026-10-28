@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { parse } from 'yaml';
-import { assertPhotoIds } from '../src/lib/photos.ts';
+import { assertPhotoIds } from '../src/features/photos/photos.ts';
 
 const assetsDir = 'src/assets/photos';
 const entriesDir = 'src/content/photos';

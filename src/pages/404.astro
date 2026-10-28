@@ -1,7 +1,7 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Prompt from '../components/ui/Prompt.astro';
-import { profile } from '../lib/seo';
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import Prompt from '../shared/ui/Prompt.astro';
+import { profile } from '../features/seo/seo';
 ---
 
 <BaseLayout title={`Not Found | ${profile.contact.name}`} description="The requested page does not exist." currentPage="/404">

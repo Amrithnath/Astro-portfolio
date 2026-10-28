@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Gallery from '../../../components/photos/Gallery.astro';
-import PhotoImage from '../../../components/photos/PhotoImage.astro';
-import PhotoNav from '../../../components/photos/PhotoNav.astro';
-import { getPhotos, getPublishedCollection } from '../../../lib/content';
-import { albumPhotos, dateGroups } from '../../../lib/photos';
+import BaseLayout from '../../../shared/layouts/BaseLayout.astro';
+import Gallery from '../../../features/photos/Gallery.astro';
+import PhotoImage from '../../../features/photos/PhotoImage.astro';
+import PhotoNav from '../../../features/photos/PhotoNav.astro';
+import { getPhotos, getPublishedCollection } from '../../../features/content/content';
+import { albumPhotos, dateGroups } from '../../../features/photos/photos';
 export async function getStaticPaths() {
   const photos = await getPhotos();
   return (await getPublishedCollection('albums')).map((album) => ({

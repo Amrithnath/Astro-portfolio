@@ -10,7 +10,7 @@ import {
   parseGoogleMapsUrl,
   resolveGoogleMapsUrl,
   reverseGeocode,
-} from '../../src/lib/geo.ts';
+} from '../../src/features/photos/geo.ts';
 import { main as locateMain, resolveLocation } from '../../scripts/photos-locate.mjs';
 import { locate } from '../../scripts/photos-ingest.mjs';
 

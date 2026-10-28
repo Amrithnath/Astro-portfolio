@@ -1,0 +1,32 @@
+---
+import { profile } from '../seo/seo';
+import { formatRange } from '../../shared/lib/format-date';
+---
+<!-- Crawler-readable profile for agents that do not run JavaScript; hidden from visitors. -->
+<section class="profile-summary" hidden>
+  <h2>{profile.contact.name}</h2>
+  <p>{profile.contact.title}</p>
+  <p>{profile.summary}</p>
+  <h3>Experience</h3>
+  {profile.experience.map(item => (
+    <section>
+      <h4>{item.position} — {item.company}</h4>
+      <p>{formatRange(item.startDate, item.endDate)}</p>
+      <p>{item.description}</p>
+      <ul>{item.achievements.map(achievement => <li>{achievement}</li>)}</ul>
+    </section>
+  ))}
+  <h3>Education</h3>
+  {profile.education.map(item => (
+    <p>{item.degree} in {item.field}, {item.institution} ({formatRange(item.startDate, item.endDate)})</p>
+  ))}
+  <h3>Skills</h3>
+  <ul>{profile.skills.map(category => (
+    <li><strong>{category.category}:</strong> {category.skills.map(skill => skill.name).join(', ')}</li>
+  ))}</ul>
+  <h3>Projects</h3>
+  <ul>{profile.projects.map(project => (
+    <li><strong>{project.name}:</strong> {project.description} ({project.technologies.join(', ')})</li>
+  ))}</ul>
+  <p><a href="/resume.md">Read the Markdown resume</a> · <a href="/projects.md">Read projects</a></p>
+</section>

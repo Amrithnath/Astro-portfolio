@@ -1,0 +1,56 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+import { remoteImage } from './photos';
+import { derivativeWidths } from './config';
+interface Props {
+  photo: CollectionEntry<'photos'>;
+  eager?: boolean;
+  sizes?: string;
+  priority?: boolean;
+}
+const { photo, eager = false, sizes = '100vw', priority = false } = Astro.props;
+const { image, remote, alt } = photo.data;
+const resolved = remote ? remoteImage(remote) : undefined;
+---
+
+{
+  remote && resolved ? (
+    <picture>
+      <source type="image/avif" srcset={resolved.avif} sizes={sizes} />
+      <source type="image/webp" srcset={resolved.webp} sizes={sizes} />
+      <img
+        src={resolved.src}
+        width={remote.width}
+        height={remote.height}
+        alt={alt}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
+        style={remote.placeholder ? 'background:' + remote.placeholder : undefined}
+      />
+    </picture>
+  ) : (
+    image && (
+      <Picture
+        src={image as ImageMetadata}
+        alt={alt}
+        formats={['avif', 'webp']}
+        widths={[...new Set(derivativeWidths.map((w) => Math.min(w, image.width)))]}
+        sizes={sizes}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
+      />
+    )
+  )
+}
+<style>
+  picture {
+    display: block;
+  }
+  picture :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { fullProfileMarkdown, getPosts } from '../lib/profile-markdown';
+import { fullProfileMarkdown, getPosts } from '../features/seo/profile-markdown';
 
 export const prerender = true;
 export const GET: APIRoute = async ({ site }) => {
