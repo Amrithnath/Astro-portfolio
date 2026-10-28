@@ -4,6 +4,7 @@ import TerminalWindow from './ui/TerminalWindow.astro';
 import TerminalNav from './TerminalNav.astro';
 import TerminalFooter from './TerminalFooter.astro';
 import ThemeSwitcher from './ThemeSwitcher.astro';
+import { isIndexablePath } from '../lib/seo';
 
 export interface Props {
   currentPage?: string;
@@ -27,6 +28,11 @@ const { currentPage = '/', footerCursor = true } = Astro.props;
       <ThemeSwitcher />
     </div>
   </div>
-  <main id="main-content" tabindex="-1"><slot /></main>
+  <main
+    id="main-content"
+    tabindex="-1"
+    data-pagefind-body={isIndexablePath(Astro.url.pathname) || undefined}
+    data-pagefind-ignore={!isIndexablePath(Astro.url.pathname) || undefined}
+  ><slot /></main>
 </TerminalWindow>
 <TerminalFooter showCursor={footerCursor} />

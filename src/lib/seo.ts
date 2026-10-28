@@ -18,6 +18,7 @@ export const excludedPrefixes = [
   '/wedding',
   '/photography',
   '/now',
+  '/search',
   '/photos',
   '/admin',
   '/api',

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const routes = ['/', '/about/', '/projects/', '/contact/', '/resume/', '/photography/', '/photography/tags/landscape/', '/photography/albums/landscapes/', '/photography/pine-ridge/', '/now/', '/work-in-progress/', '/does-not-exist/'];
+const routes = ['/', '/about/', '/projects/', '/contact/', '/resume/', '/photography/', '/photography/tags/landscape/', '/photography/albums/landscapes/', '/photography/pine-ridge/', '/now/', '/search/', '/search/?q=Bluetooth', '/work-in-progress/', '/does-not-exist/'];
 
 for (const colorScheme of ['light', 'dark'] as const) {
   for (const route of routes) {

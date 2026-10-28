@@ -1,0 +1,75 @@
+import { readFileSync } from 'node:fs';
+import { expect, test } from '@playwright/test';
+
+const headers = readFileSync('public/_headers', 'utf8');
+const searchCsp = headers.match(/\/search\/\*\n  ! Content-Security-Policy\n  Content-Security-Policy: (.+)/)![1];
+
+for (const colorScheme of ['dark', 'light'] as const) {
+  test(`search finds a post under its production CSP (${colorScheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+    // Astro preview does not apply _headers. Exercise the real scoped policy in the browser.
+    await page.route('**/search/?*', async route => {
+      const response = await route.fetch();
+      await route.fulfill({ response, headers: { ...response.headers(), 'content-security-policy': searchCsp } });
+    });
+    const failures: string[] = [];
+    page.on('pageerror', error => failures.push(error.message));
+    await page.goto('/search/?q=headphone');
+    await expect(page.getByRole('searchbox', { name: 'Search this site' })).toHaveValue('headphone');
+    await expect(page.getByRole('status')).toContainText(/\d+ results? for/);
+    await expect(page.getByRole('link', { name: 'Bring back the headphone jack, seriously.' }))
+      .toHaveAttribute('href', '/blog/bluetooth-dystopia/');
+    await expect(page.locator('[data-search-results] a[href^="/photography/"]')).toHaveCount(0);
+    await expect(page.locator('[data-search-results] a[href^="/now/"]')).toHaveCount(0);
+    expect(failures).toEqual([]);
+
+    const query = page.getByRole('searchbox', { name: 'Search this site' });
+    await query.fill('zzzznonexistentquery');
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('No results for “zzzznonexistentquery”.');
+    await expect(page.locator('[data-search-results] li')).toHaveCount(0);
+    await expect(page).toHaveURL(/q=zzzznonexistentquery/);
+    await query.fill('');
+    await expect(page.getByRole('status')).toHaveText('Enter a query to search.');
+    await expect(page).not.toHaveURL(/\?q=/);
+  });
+}
+
+test('index contains public pages, never unlisted or nonindexable documents', async ({ page }) => {
+  await page.goto('/search/');
+  const urls = await page.evaluate(async () => {
+    const path = '/pagefind/pagefind.js';
+    const pagefind = await import(/* @vite-ignore */ path);
+    const { results } = await pagefind.search(null);
+    return Promise.all(results.map(async (result: { data: () => Promise<{ url: string }> }) => (await result.data()).url));
+  });
+  expect(urls).toEqual(expect.arrayContaining(['/', '/about/', '/projects/', '/resume/', '/blog/bluetooth-dystopia/', '/project/webDev/weather-app/']));
+  expect(urls.some(url => /^\/(?:photography|now|search|admin|terminal-full|offline|404|work-in-progress)(?:\/|$)/.test(url) || ['/blog/', '/blogs/'].includes(url))).toBe(false);
+});
+
+test('search lazily loads its index and handles unavailable assets', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', request => {
+    if (new URL(request.url()).pathname.startsWith('/pagefind/')) requests.push(request.url());
+  });
+  await page.goto('/search/');
+  await expect(page.getByRole('status')).toHaveText('Enter a query to search.');
+  expect(requests).toEqual([]);
+  await page.route('**/pagefind/**', route => route.abort());
+  await page.getByRole('searchbox').fill('headphone');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Search is unavailable.');
+});
+
+test('header overrides isolate search WebAssembly from the site and CMS', () => {
+  const { headers: rules } = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
+    headers: { source: string; headers: { key: string; value: string }[] }[];
+  };
+  for (const path of ['/about/', '/search/', '/admin/']) {
+    const policies = rules.filter(rule => new RegExp('^' + rule.source + '$').test(path))
+      .flatMap(rule => rule.headers.filter(header => header.key === 'Content-Security-Policy'));
+    expect(policies).toHaveLength(1);
+    expect(policies[0].value.includes("'wasm-unsafe-eval'")).toBe(path === '/search/');
+    expect(policies[0].value.includes('https://unpkg.com')).toBe(path === '/admin/');
+  }
+});
