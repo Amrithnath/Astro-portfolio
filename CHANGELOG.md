@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.1](https://github.com/Amrithnath/Astro-portfolio/compare/v2.5.0...v2.5.1) (2026-10-28)
+
+
+### 👷 CI
+
+* **changes:** 👷 run only the gates a change can affect ([e4ab32d](https://github.com/Amrithnath/Astro-portfolio/commit/e4ab32d49ffea6fe2e6210644320c9b9bfd93709))
+* **changes:** 👷 run only the gates a change can affect ([a409a4b](https://github.com/Amrithnath/Astro-portfolio/commit/a409a4be298a0518d20e0e0fe09c7ce5e6c4567b))
+* **conventions:** 👷 install only commitlint on the slim runner ([c13c0ec](https://github.com/Amrithnath/Astro-portfolio/commit/c13c0ecd0be5e9fc61f3dc483e95a6d146ebd527))
+* **conventions:** 👷 install only commitlint on the slim runner ([8b5025f](https://github.com/Amrithnath/Astro-portfolio/commit/8b5025f893b59e972f2e0be98e28ceab22b5cc1e))
+* **release:** 👷 skip redundant gates for release PRs and right-size runners ([e3067d8](https://github.com/Amrithnath/Astro-portfolio/commit/e3067d8e02832736d0245279624e0e4f72f4f166))
+
 ## [2.5.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.4.0...v2.5.0) (2026-10-28)
 
 
