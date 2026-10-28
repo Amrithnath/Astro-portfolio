@@ -8,6 +8,7 @@ import boldFont from '@fontsource/fira-code/files/fira-code-latin-700-normal.wof
 import SEO, { type Props as SEOProps } from './SEO.astro';
 import ThemeBootstrap from './ThemeBootstrap.astro';
 import ServiceWorker from './ServiceWorker.astro';
+import Analytics from './Analytics.astro';
 import { defaultTheme, themes } from '../themes';
 import '../styles/tokens.css';
 import '../styles/themes/terminal.css';
@@ -35,3 +36,4 @@ const theme = themes.find(({ id }) => id === defaultTheme)!;
 <link rel="shortcut icon" href="/favicon/favicon.ico" />
 <link rel="manifest" href="/favicon/site.webmanifest" />
 <ServiceWorker />
+<Analytics />

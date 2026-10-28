@@ -118,6 +118,8 @@ jobs:
       - run: pnpm audit --prod
       - run: pnpm check
       - run: pnpm build
+        env:
+          PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
       - run: pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos
       - uses: actions/upload-artifact@v7
         with:

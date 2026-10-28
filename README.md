@@ -220,6 +220,13 @@ Other workflows:
 Once CI deploys to Cloudflare and Vercel, turn off their own Git auto-deploys. Otherwise they build
 every push without the gates.
 
+**Analytics.** Set the repository variable `CF_BEACON_TOKEN` to a Cloudflare Web Analytics site
+token and CI builds it in as `PUBLIC_CF_BEACON_TOKEN`. That turns on cookieless, privacy-friendly
+page-view counts, viewable in the Cloudflare dashboard. The beacon only loads on `amrithnath.dev`,
+never on previews or localhost, and is skipped for visitors who send Global Privacy Control or Do
+Not Track. Leave the variable unset to ship no analytics. Don't also enable Cloudflare Pages' own
+analytics injection, or page views are counted twice.
+
 ## Search and AI discovery
 
 The canonical origin is `https://amrithnath.dev`. Everything below is generated at build time.
