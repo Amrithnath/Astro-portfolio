@@ -5,11 +5,11 @@ import { profile } from '../features/seo/seo';
 ---
 
 <BaseLayout title={`Privacy Policy | ${profile.contact.name}`} description="What amrithnath.dev does and does not collect: no cookies, forms or tracking, plus how analytics, view counts and the carbon badge work." currentPage="/privacy-policy">
-  <Prompt command="cat privacy-policy.md" />
+  <Prompt command="cat privacy-policy.txt" />
   <div class="output">
-    <article class="prose">
+    <article class="prose plain-text">
       <h1>Privacy Policy</h1>
-      <p><strong>Effective Date:</strong> 28 Oct 2026</p>
+      <p class="txt-meta">Effective date: 28 Oct 2026</p>
 
       <p>I'm {profile.contact.name}, and amrithnath.dev is my personal website. This policy explains what happens to information about you when you visit it. In short: I don't run accounts, contact forms, newsletters or messaging services, I don't set cookies, and I don't sell or share anything about you.</p>
 
@@ -50,3 +50,51 @@ import { profile } from '../features/seo/seo';
     </article>
   </div>
 </BaseLayout>
+
+<style>
+  /* Read like a plain .txt file: body-size uppercase headings with rules, 80 columns, dash bullets. */
+  .plain-text {
+    max-width: 80ch;
+  }
+  .plain-text :is(h1, h2, h3) {
+    margin: var(--space-6) 0 var(--space-2);
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: normal;
+    color: var(--color-heading);
+  }
+  .plain-text h1 {
+    margin-top: 0;
+  }
+  .plain-text :is(h1, h2) {
+    text-transform: uppercase;
+  }
+  .plain-text :is(h1, h2)::after {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--color-muted);
+    font-weight: 400;
+    font-variant-ligatures: none;
+  }
+  .plain-text h1::after {
+    content: '================================================================================';
+  }
+  .plain-text h2::after {
+    content: '--------------------------------------------------------------------------------';
+  }
+  .plain-text h3 {
+    margin-top: var(--space-4);
+  }
+  .plain-text h3::before {
+    content: '» ';
+    color: var(--color-muted);
+  }
+  .plain-text ul {
+    padding-left: 2ch;
+    list-style: '- ';
+  }
+  .txt-meta {
+    color: var(--color-muted);
+  }
+</style>
