@@ -173,7 +173,7 @@ test('photography remains browsable without JavaScript', async ({ browser, baseU
     await expect(page.locator('h1')).toHaveText('sunset');
     await expect(page.locator('.gallery-item')).toHaveCount(1);
   } finally { await context.close(); }
-
+});
 
 test('projects can be filtered by technology and announce the result count', async ({ page }) => {
   await page.goto('/projects/');
