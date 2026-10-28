@@ -1,7 +1,7 @@
 import { assertPhotoIds } from './photos';
 import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
 
-export function getPublishedCollection<C extends CollectionKey>(collection: C) {
+export function getPublishedCollection<C extends Exclude<CollectionKey, 'now'>>(collection: C) {
   return getCollection(collection, ({ data }) => !import.meta.env.PROD || !data.draft);
 }
 

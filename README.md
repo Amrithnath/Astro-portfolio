@@ -156,8 +156,17 @@ without JavaScript, the grid and linked tag/place pages still work.
 
 Use the **Photography** and **Albums and trips** collections in `/admin` to edit metadata.
 Tags are normalized to lowercase kebab-case and deduplicated. Location is an optional object:
-`{ name, region?, country, lat?, lng? }`; coordinates must have **at most two decimals**
+`{ name, region?, country?, lat?, lng?, maps? }`; coordinates must have **at most two decimals**
 (roughly 1 km, not precise GPS). Leave unknown locations unset; do not guess.
+
+**Locations from links and metadata.** Paste a Google Maps link into `maps` (CMS: *Google Maps
+link*), preferably to the town or landmark rather than your exact spot. Full links
+(`google.com/maps/place/…`, `/@lat,lng`, `?q=lat,lng`) fill in the name and rounded
+coordinates at build time. Short `maps.app.goo.gl` links need expanding: the **Locate photos**
+workflow does this on photo PRs (`pnpm photos:locate` locally). It also fills missing
+name/region/country from coordinates via OpenStreetMap, then **removes the pasted link**, keeping
+only the rounded location. Ingest reads GPS from EXIF and names the place the same way. Place
+pages credit OpenStreetMap (ODbL).
 Photos reference any number of albums. Trips are albums with `kind: trip`, date ranges and
 ordered itinerary stops; `src/content/albums/example-trip.yml` is a draft template.
 
@@ -180,16 +189,17 @@ Photo IDs `tags`, `places` and `albums` are reserved and fail the build.
    requests write permissions) so ingest PRs trigger CI. Otherwise enable Actions to create PRs;
    PRs created using `GITHUB_TOKEN` do **not** trigger CI automatically.
 4. Drag-drop originals into the private inbox using Cloudflare's dashboard from any device.
-   Run **Photo ingest** in GitHub Actions, optionally selecting an existing album slug and
-   comma-separated tags. It downloads originals privately, strips metadata, uploads AVIF/WebP
+   Run **Photo ingest** in GitHub Actions, optionally selecting an existing album slug,
+   comma-separated tags and a Google Maps link for the whole batch. Otherwise the location comes
+   from EXIF GPS (rounded, then named via OpenStreetMap). It downloads originals privately, strips metadata, uploads AVIF/WebP
    widths 480/800/1200/1600/2400 (never upscaled), and opens a metadata-only PR. After the PR
    succeeds, originals move to `archive/` **in the private inbox**, not the public bucket.
-5. In the PR/CMS, replace TODO alt text and location name/country (or remove unknown location),
+5. In the PR/CMS, replace TODO alt text, check the place name (or remove an unwanted location),
    review rounded coordinates/tags/album membership, then set `draft: false` to publish.
    Ingested entries default to drafts. Existing entries are never overwritten; move or rename
    duplicate inbox files before retrying. Do not delete the archive until you have a backup.
 
-Local rehearsal (no network, no credentials):
+Local rehearsal (no credentials; add `--geocode` or `--maps <link>` to try locations, which uses the network):
 
 ```sh
 pnpm photos:ingest -- ./my-photos --album landscapes --tags landscape,sunset --dry-run --out .photos-output
@@ -201,6 +211,13 @@ R2 upload mode is optional locally and requires the same environment variables. 
 `<filename-slug>/<content-hash>/<width>.<avif|webp>` with immutable one-year caching; changing
 an original changes its key. Only derivatives reach the public bucket. The ingest workflow has
 no automatic trigger; review and merge the generated PR yourself.
+
+### Now page (`/now/`)
+
+A [now page](https://nownownow.com/about) about what you're focused on at the moment. It is
+**unlisted** (noindex, not linked) until you announce it. Edit `src/content/now/now.md` or
+*Pages → Now* in `/admin`: set `updated` and `location`, write the sections in Markdown, and turn
+off `placeholder` to remove the draft banner.
 
 ## Testing and quality
 
@@ -254,6 +271,8 @@ It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 Other workflows:
 
 - **CMS Auth Worker** (`cms-auth.yml`): tests and deploys `workers/cms-auth/`.
+- **Photo ingest** (`photos.yml`): manual; publishes R2 inbox photos and opens a draft metadata PR.
+- **Locate photos** (`photos-locate.yml`): on photo PRs, resolves Maps links and place names.
 - **Release** (`release.yml`): Release Please versioning, changelog, tags and GitHub releases.
 - **Deploy** (`deploy.yml`): manual redeploy to GitHub Pages or Google Cloud Storage.
 

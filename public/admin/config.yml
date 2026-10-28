@@ -137,10 +137,12 @@ collections:
         label: Approximate location
         widget: object
         required: false
+        hint: Paste a Google Maps link to the town or landmark (not your exact spot). Name, region, country and rounded coordinates are filled in automatically, and the link is then removed.
         fields:
-          - { name: name, label: Place name, widget: string }
+          - { name: maps, label: Google Maps link, widget: string, required: false, pattern: ['^https://(www\.|maps\.)?(google\.[a-z.]+|app\.goo\.gl|goo\.gl)/', 'Use a Google Maps link'] }
+          - { name: name, label: Place name, widget: string, required: false }
           - { name: region, label: Region, widget: string, required: false }
-          - { name: country, label: Country, widget: string }
+          - { name: country, label: Country, widget: string, required: false }
           - { name: lat, label: Latitude (at most 2 decimals), widget: number, value_type: float, min: -90, max: 90, step: 0.01, required: false }
           - { name: lng, label: Longitude (at most 2 decimals), widget: number, value_type: float, min: -180, max: 180, step: 0.01, required: false }
       - name: albums
@@ -199,3 +201,21 @@ collections:
           - { name: region, label: Region, widget: string, required: false }
           - { name: date, label: Date, widget: datetime, format: YYYY-MM-DD, time_format: false, required: false }
       - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
+  - name: pages
+    label: Pages
+    files:
+      - name: now
+        label: Now (unlisted)
+        file: src/content/now/now.md
+        format: frontmatter
+        preview_path: now/
+        fields:
+          - name: updated
+            label: Updated
+            widget: datetime
+            format: YYYY-MM-DD
+            time_format: false
+            default: '{{now}}'
+          - { name: location, label: Where I am, widget: string, required: false }
+          - { name: placeholder, label: Still placeholder text, widget: boolean, default: false, required: false }
+          - { name: body, label: Now, widget: markdown }

@@ -280,3 +280,13 @@ test('without JavaScript the switcher is hidden and terminal remains the default
   await expect(page.locator('[data-theme-switcher]')).toBeHidden();
   await context.close();
 });
+
+test('now page is unlisted and flags its placeholder content', async ({ page, request }) => {
+  await page.goto('/now/');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText("What I'm doing now");
+  await expect(page.getByRole('note')).toContainText('placeholder');
+  await expect(page.getByRole('heading', { name: 'Photography', level: 2 })).toBeVisible();
+  expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/now');
+  expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /now');
+});
