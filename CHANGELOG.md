@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.2.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.1.0...v2.2.0) (2026-10-28)
+
+
+### ✨ Features
+
+* ✨ add light theme with terminal-style switcher ([b344f07](https://github.com/Amrithnath/Astro-portfolio/commit/b344f079098fcdc58e7164d141c67de4aec5d0dc))
+* ✨ add privacy-friendly Cloudflare Web Analytics ([3315b1c](https://github.com/Amrithnath/Astro-portfolio/commit/3315b1cdc10d41916076ee4d56aa520a783d5f1b))
+* ✨ photo albums, light theme, richer OG cards and private analytics ([b92fc8f](https://github.com/Amrithnath/Astro-portfolio/commit/b92fc8f84e86c7d6797dcdc947230de0b166b6d2))
+* **photos:** ✨ add tagged galleries, trips and private R2 ingest ([128d4e7](https://github.com/Amrithnath/Astro-portfolio/commit/128d4e7d14a35baf05eb5f56d05aaa19ad26501e))
+* **projects:** ✨ richer OG cards, project write-ups and tech filters ([27f193c](https://github.com/Amrithnath/Astro-portfolio/commit/27f193cd93b1670f6d0a8547de7cd42f10173eb8))
+
 ## [2.1.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.0.0...v2.1.0) (2026-10-28)
 
 
