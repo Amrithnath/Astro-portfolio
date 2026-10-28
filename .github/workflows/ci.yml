@@ -5,6 +5,8 @@ name: Portfolio Quality
 # whole run, and deploys only start once every gate has passed.
 # Release Please PRs and their merge commits only bump the version and changelog of code that
 # already passed every gate, so they skip straight to Build (push, for the deploy) or nothing (PR).
+# Changes (scripts/ci-changes.mjs) also skips the site gates for docs, Worker or other-workflow
+# changes, and CodeQL for docs-only changes. Unknown paths run everything.
 on:
   pull_request:
   push:
@@ -27,13 +29,15 @@ jobs:
     timeout-minutes: 5
     outputs:
       release_only: ${{ steps.diff.outputs.release_only }}
+      site: ${{ steps.diff.outputs.site }}
+      code: ${{ steps.diff.outputs.code }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           filter: blob:none
       - id: diff
-        run: node scripts/ci-release-only.mjs >> "$GITHUB_OUTPUT"
+        run: node scripts/ci-changes.mjs >> "$GITHUB_OUTPUT"
         env:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -99,7 +103,7 @@ jobs:
   codeql:
     name: CodeQL
     needs: changes
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -132,6 +136,7 @@ jobs:
     # Release merges still build: the deploys ship the new version.
     if: >-
       github.event_name != 'schedule' &&
+      needs.changes.outputs.site == 'true' &&
       (github.event_name == 'push' || needs.changes.outputs.release_only != 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -169,7 +174,9 @@ jobs:
   node-24:
     name: Node 24
     needs: changes
-    if: github.event_name != 'schedule' && needs.changes.outputs.release_only != 'true'
+    if: >-
+      github.event_name != 'schedule' && needs.changes.outputs.site == 'true' &&
+      needs.changes.outputs.release_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -195,7 +202,7 @@ jobs:
   e2e:
     name: E2E
     needs: [changes, build]
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.site == 'true' && needs.changes.outputs.release_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -236,7 +243,7 @@ jobs:
   visual:
     name: Visual regression
     needs: [changes, build]
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.site == 'true' && needs.changes.outputs.release_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -277,7 +284,7 @@ jobs:
   lighthouse:
     name: Lighthouse (${{ matrix.profile }} ${{ matrix.shard }}/2)
     needs: [changes, build]
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.site == 'true' && needs.changes.outputs.release_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
