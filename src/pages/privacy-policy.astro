@@ -4,38 +4,30 @@ import Prompt from '../shared/ui/Prompt.astro';
 import { profile } from '../features/seo/seo';
 ---
 
-<BaseLayout title={`Privacy Policy | ${profile.contact.name}`} description="Privacy policy for the site and messaging interactions." currentPage="/privacy-policy">
-  <Prompt command="cat privacy-policy.md" />
+<BaseLayout title={`Privacy Policy | ${profile.contact.name}`} description="What amrithnath.dev does and does not collect: no cookies, forms or tracking, plus how analytics, view counts and the carbon badge work." currentPage="/privacy-policy">
+  <Prompt command="cat privacy-policy.txt" />
   <div class="output">
-    <article class="prose">
+    <article class="prose plain-text">
       <h1>Privacy Policy</h1>
-      <p><strong>Effective Date:</strong> 28 Oct 2026</p>
+      <p class="txt-meta">Effective date: 28 Oct 2026</p>
 
-      <p>Welcome to www.amrithnath.dev (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit the website or contact the business through WhatsApp. By accessing or using the website or engaging with us on WhatsApp, you agree to this Privacy Policy.</p>
+      <p>I'm {profile.contact.name}, and amrithnath.dev is my personal website. This policy explains what happens to information about you when you visit it. In short: I don't run accounts, contact forms, newsletters or messaging services, I don't set cookies, and I don't sell or share anything about you.</p>
 
-      <h2>Information We Collect</h2>
-      <p>We may collect personal information that you voluntarily provide, such as your name, email address, phone number, and any other details you submit through contact forms, WhatsApp messages, or newsletter sign-ups. We may also collect non-personal information such as browser type, IP address, and pages visited to improve the website's functionality.</p>
-
-      <h2>How We Use Your Information</h2>
-      <ul>
-        <li>Respond to inquiries and provide support via website forms and WhatsApp messages.</li>
-        <li>Improve and personalize the website and WhatsApp communication experience.</li>
-        <li>Send newsletters, updates, or promotional content if you have opted in.</li>
-        <li>Comply with legal obligations.</li>
-      </ul>
+      <h2>What I Collect</h2>
+      <p>I don't ask you for any personal information, and the site has no forms that send me data. The site search runs in your browser.</p>
+      <p>If you email me using one of the links on the site, your own email app sends the message, and I receive your email address and whatever you write. I use it only to reply, and I don't add you to any list.</p>
+      <p>Like any website, the hosting provider (Cloudflare) processes your IP address and standard request details to deliver pages and protect the site from abuse. I use this only in aggregate (see analytics below) and don't use it to identify you.</p>
 
       <h2>Sharing of Information</h2>
-      <p>We do not sell, trade, or rent your personal information. We may share information with service providers who assist in website operations and WhatsApp Business services, comply with legal obligations, or protect our rights.</p>
+      <p>I don't sell, trade, or rent your information. The only other parties involved are the services described below that make the site work, and I'd disclose information only if the law required it.</p>
 
-      <h2>WhatsApp Business Data Privacy</h2>
-      <p>When you contact us through WhatsApp, we may collect your phone number, profile information, and message content. This information is used solely to respond to your inquiries, provide support, and improve our services.</p>
-      <p>WhatsApp is a third-party platform, and your data may also be subject to WhatsApp's own privacy policy. Review <a href="https://www.whatsapp.com/legal/privacy-policy" target="_blank" rel="noreferrer">WhatsApp's Privacy Policy</a> for more details.</p>
-
-      <h2>Cookies and Tracking Technologies</h2>
+      <h2>Cookies and Local Storage</h2>
       <p>This website does not set cookies. It stores your theme preference in your browser's local storage, which never leaves your device.</p>
       <p>Page views are counted with <a href="https://www.cloudflare.com/web-analytics/" target="_blank" rel="noreferrer">Cloudflare Web Analytics</a>, which is cookieless and does not fingerprint or track you across sites. It records aggregate data only: the page visited, referrer, country, and browser and device type. If your browser sends a Global Privacy Control or Do Not Track signal, the analytics script is not loaded at all. See <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noreferrer">Cloudflare's Privacy Policy</a> for details.</p>
 
       <p>Site search runs in your browser using a same-origin, build-time index. The search page does not load analytics or send queries to an external search service. Shared search URLs include the query, so it may appear in browser history and site access logs.</p>
+      <h3>Privacy check</h3>
+      <p>The <a href="/privacy-check/">privacy check</a> page shows what any website can learn about your browser. To demonstrate fingerprinting it reads your browser's characteristics, but the results are only displayed on that page: they are never sent anywhere or stored, and are discarded when you leave. That page loads no analytics, and its carbon estimate is calculated locally. When you run the check, your browser requests an empty bait file from this site to detect content blockers and, unless you add <code>--offline</code>, downloads the public Chrome or Firefox release list from <a href="https://endoflife.date/" target="_blank" rel="noreferrer">endoflife.date</a> without cookies or a referrer; your version number is not sent. Only if you add <code>--stun</code> does your browser contact Cloudflare's public STUN server, which sees your IP address in order to report it back to you.</p>
       <h3>Article view counts</h3>
       <p>Blog posts and project pages may show a public view count. It is a single anonymous number per page, kept by a small service at <code>views.amrithnath.dev</code> on Cloudflare. When you open an article, your browser asks that service for the count and, the first time you view that article, adds one to it. The service stores only the page path and its total. It does not set cookies and does not store your IP address, browser details, or any identifier, so views cannot be linked to you or to each other.</p>
       <p>To avoid counting you twice, your browser remembers in local storage which articles it has already counted; this never leaves your device, and you can clear it at any time. If your browser sends a Global Privacy Control or Do Not Track signal, the count is only displayed and never increased.</p>
@@ -45,16 +37,64 @@ import { profile } from '../features/seo/seo';
       <p>On wide screens the side panel also shows live page performance and a carbon estimate calculated in your browser; that data never leaves your device apart from a running byte total kept in session storage.</p>
 
       <h2>Third-Party Links</h2>
-      <p>The website may contain links to third-party sites. We are not responsible for the privacy practices of these external sites, and we encourage you to review their privacy policies before providing personal information.</p>
+      <p>The website may contain links to third-party sites. I'm not responsible for the privacy practices of those sites, so check their policies before sharing personal information with them.</p>
 
       <h2>Data Security</h2>
-      <p>We implement security measures to protect your information. However, no method of transmission over the internet or electronic storage is 100% secure, and we cannot guarantee absolute security.</p>
+      <p>The site is served only over HTTPS with a strict Content Security Policy and other security headers. No method of transmission over the internet is completely secure, so I can't guarantee absolute security.</p>
 
       <h2>Your Rights</h2>
-      <p>You have the right to access, correct, or delete your personal information. To exercise these rights, contact <a href="mailto:amrithnathvijayakumar@gmail.com">amrithnathvijayakumar@gmail.com</a>.</p>
+      <p>If you've emailed me, you can ask me to show, correct, or delete what I hold about you. Since the site itself keeps no personal data, there is nothing else to request. Contact <a href="mailto:amrithnathvijayakumar@gmail.com">amrithnathvijayakumar@gmail.com</a>.</p>
 
       <h2>Changes to This Privacy Policy</h2>
-      <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated effective date.</p>
+      <p>I may update this policy from time to time. Changes will be posted on this page with an updated effective date.</p>
     </article>
   </div>
 </BaseLayout>
+
+<style>
+  /* Read like a plain .txt file: body-size uppercase headings with rules, 80 columns, dash bullets. */
+  .plain-text {
+    max-width: 80ch;
+  }
+  .plain-text :is(h1, h2, h3) {
+    margin: var(--space-6) 0 var(--space-2);
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: normal;
+    color: var(--color-heading);
+  }
+  .plain-text h1 {
+    margin-top: 0;
+  }
+  .plain-text :is(h1, h2) {
+    text-transform: uppercase;
+  }
+  .plain-text :is(h1, h2)::after {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--color-muted);
+    font-weight: 400;
+    font-variant-ligatures: none;
+  }
+  .plain-text h1::after {
+    content: '================================================================================';
+  }
+  .plain-text h2::after {
+    content: '--------------------------------------------------------------------------------';
+  }
+  .plain-text h3 {
+    margin-top: var(--space-4);
+  }
+  .plain-text h3::before {
+    content: '» ';
+    color: var(--color-muted);
+  }
+  .plain-text ul {
+    padding-left: 2ch;
+    list-style: '- ';
+  }
+  .txt-meta {
+    color: var(--color-muted);
+  }
+</style>

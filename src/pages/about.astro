@@ -62,7 +62,7 @@ const pageTitle = `About ${contactName}`;
 const pageDescription = `Learn about ${contactName} - ${contactTitle}. ${summary}`;
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription} currentPage="/about" panes={{ seeAlso: [{ href: '/contact', label: 'contact(1)' }, { href: '/resume', label: 'resume(1)' }] }}>
+<BaseLayout title={pageTitle} description={pageDescription} currentPage="/about" signoff panes={{ seeAlso: [{ href: '/contact', label: 'contact(1)' }, { href: '/resume', label: 'resume(1)' }] }}>
   <h1 class="visually-hidden">About Amrithnath Vijayakumar</h1>
   <TerminalView 
     title={aboutData.title}

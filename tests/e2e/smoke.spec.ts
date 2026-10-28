@@ -27,7 +27,10 @@ for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/bl
     await expect(page.locator('.terminal')).toBeVisible();
     // Wait for deferred content and production service-worker registration as well.
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('.cursor:visible')).toHaveCount(route === '/resume/' ? 0 : 1);
+    // Only narrative pages end with the terminal sign-off and its idle cursor.
+    const signoff = ['/', '/about/', '/projects/'].includes(route);
+    await expect(page.locator('.cursor:visible')).toHaveCount(signoff ? 1 : 0);
+    await expect(page.getByText('Thanks for visiting!', { exact: true })).toHaveCount(signoff ? 1 : 0);
     if (route === '/does-not-exist/') {
       await expect(page.getByText("ls: cannot access '/requested/path': No such file or directory")).toBeVisible();
     }
@@ -138,6 +141,10 @@ test('perf monitor and carbon badge measure locally without contacting Website C
   await expect(monitor).toBeVisible();
   await expect(monitor.locator('[data-metric="ttfb"]')).toHaveText(/\d+(\.\d+)? m?s/);
   await expect(monitor.locator('[data-metric="requests"]')).toHaveText(/^[1-9]\d*$/);
+  await expect(monitor.locator('[data-rating="ttfb"]')).toHaveText(/^· (fast|okay|slow)$/);
+  await expect(monitor.locator('[data-metric-label="ttfb"]')).toHaveText('server reply');
+  await monitor.getByText('what do these mean?').click();
+  await expect(monitor.locator('.pane-help')).toContainText('Largest Contentful Paint');
   await expect(monitor.locator('[data-metric="co2-cold"]')).toHaveText(/^\d+\.\d+ g \((A\+|[A-F])\)$/);
   const badge = page.locator('[data-carbon-badge]');
   await expect(badge).toBeVisible();
@@ -145,8 +152,57 @@ test('perf monitor and carbon badge measure locally without contacting Website C
   await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated locally');
   const status = page.getByRole('contentinfo').locator('.site-status');
   await expect(status.locator('[data-build-version]')).toHaveText(/^\d+\.\d+\.\d+$/);
-  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'rss', 'source']);
+  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'scan', 'rss', 'source']);
   expect(carbonRequests).toEqual([]);
+});
+
+test('privacy check runs locally when typed and explains itself', async ({ page }) => {
+  const external: string[] = [];
+  page.on('request', request => {
+    if (!['localhost', '127.0.0.1'].includes(new URL(request.url()).hostname)) external.push(request.url());
+  });
+  await page.route('https://endoflife.date/**', route =>
+    route.fulfill({
+      json: { result: { releases: [{ name: '999', isMaintained: true, latest: { name: '999.0.1' } }, { name: '998', isMaintained: false }] } },
+      headers: { 'access-control-allow-origin': '*' },
+    })
+  );
+  await page.goto('/privacy-check/');
+  await expect(page.locator('script[src*="beacon"]')).toHaveCount(0);
+  await expect(page.getByRole('note')).toContainText('fingerprints your browser locally');
+  const input = page.getByRole('textbox', { name: 'Privacy check command' });
+  const log = page.getByRole('log');
+
+  await input.fill('run check --help');
+  await input.press('Enter');
+  await expect(log).toContainText('usage: run check [--offline] [--stun]');
+  await expect(log.locator('.privacy-heading')).toHaveCount(7);
+  await expect(log.locator('.privacy-echo .sh-flag')).toHaveText('--help');
+
+  await input.fill('run check --offline');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-summary')).toContainText('done:');
+  await expect(log.locator('.privacy-result')).toHaveCount(7);
+  await expect(log).toContainText('support not checked offline');
+  expect(external.filter(url => url.includes('endoflife.date'))).toEqual([]);
+
+  await input.fill('clear');
+  await input.press('Enter');
+  await input.fill('run check');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-summary')).toContainText('done:');
+  await expect(log.locator('.privacy-result', { has: page.locator('.privacy-id', { hasText: /^browser\s*$/ }) })).toContainText(
+    'no longer receives security fixes'
+  );
+  await input.fill('explain browser');
+  await input.press('Enter');
+  await expect(log).toContainText('your result:');
+  await input.fill('sudo rm -rf /');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-error')).toContainText('command not found');
+  await input.press('ArrowUp');
+  await expect(input).toHaveValue('sudo rm -rf /');
+  expect(external.filter(url => new URL(url).hostname !== 'endoflife.date')).toEqual([]);
 });
 
 test('about exposes the skills tree and a hidden crawler-readable profile', async ({ page }) => {
@@ -275,14 +331,15 @@ test('photography remains browsable without JavaScript', async ({ browser, baseU
 test('projects can be filtered by technology and announce the result count', async ({ page }) => {
   await page.goto('/projects/');
   const card = page.locator('.project-card');
-  await expect(card).toHaveCount(1);
+  await expect(card).toHaveCount(2);
   const filter = page.getByRole('button', { name: /--tech dev/ });
   await expect(filter).toBeVisible();
   await expect(filter).toHaveAttribute('aria-pressed', 'false');
   await filter.click();
   await expect(filter).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects --tech dev');
-  await expect(page.locator('#project-count')).toHaveText('Showing 1 of 1 projects');
+  await expect(page.locator('#project-count')).toHaveText('Showing 1 of 2 projects');
+  await expect(card.filter({ visible: true })).toHaveCount(1);
   await filter.click();
   await expect(filter).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects');

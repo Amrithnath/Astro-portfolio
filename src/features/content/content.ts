@@ -2,7 +2,9 @@ import { assertPhotoIds } from '../photos/photos';
 import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
 
 export function getPublishedCollection<C extends Exclude<CollectionKey, 'now' | 'uses'>>(collection: C) {
-  return getCollection(collection, ({ data }) => !import.meta.env.PROD || !data.draft);
+  // Drafts stay hidden in dev too, so local testing matches production; SHOW_DRAFTS=1 previews them.
+  const showDrafts = !import.meta.env.PROD && process.env.SHOW_DRAFTS === '1';
+  return getCollection(collection, ({ data }) => showDrafts || !data.draft);
 }
 
 export function contentPath(entry: CollectionEntry<'blog' | 'projects'>): string {

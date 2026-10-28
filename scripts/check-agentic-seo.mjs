@@ -129,6 +129,13 @@ for (const file of htmlFiles) {
 }
 assert.ok(existsSync('dist/pagefind/pagefind.js'), 'Build must generate the Pagefind index');
 assert.doesNotMatch(read('search/index.html'), /beacon\.min\.js/, 'Search must not load analytics, even when configured');
+// The privacy check promises to send nothing: no analytics, no remote carbon lookup, and only it may reach endoflife.date.
+assert.doesNotMatch(read('privacy-check/index.html'), /beacon\.min\.js/, 'Privacy check must not load analytics');
+assert.match(read('privacy-check/index.html'), /data-carbon-badge[^>]*data-local-only/, 'Privacy check carbon badge must stay local');
+assert.match(head(read('privacy-check/index.html')), /name="robots" content="index, follow/, 'Privacy check is a listed page');
+for (const file of htmlFiles) {
+  assert.equal(/connect-src[^;"]*https:\/\/endoflife\.date/.test(read(file)), file.startsWith('privacy-check/'), file + ': endoflife.date is only allowed on the privacy check');
+}
 const robots = read('robots.txt');
 for (const group of robots.split(/\n\n/).filter(group => group.startsWith('User-agent:'))) {
   assert.match(group, /Allow: \//);

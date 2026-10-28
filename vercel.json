@@ -36,12 +36,17 @@
       ]
     },
     {
-      "source": "/((?!admin/).*)",
+      "source": "/((?!admin/|privacy-check|privacy-check/).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
           "value": "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://cloudflareinsights.com https://views.amrithnath.dev https://api.websitecarbon.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
-        },
+        }
+      ]
+    },
+    {
+      "source": "/((?!admin/).*)",
+      "headers": [
         {
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin"
@@ -134,6 +139,24 @@
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/privacy-check",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://endoflife.date https://cloudflareinsights.com https://views.amrithnath.dev https://api.websitecarbon.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/privacy-check/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://endoflife.date https://cloudflareinsights.com https://views.amrithnath.dev https://api.websitecarbon.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
         }
       ]
     },

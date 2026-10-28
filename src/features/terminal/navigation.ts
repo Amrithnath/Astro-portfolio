@@ -54,6 +54,15 @@ export const homeDirectoryItems: LsItem[] = [
     href: '/contact'
   },
   {
+    name: 'privacy-check.ts',
+    isDirectory: false,
+    isAccessible: true,
+    size: 512,
+    date: 'Oct 28',
+    time: '18:30',
+    href: '/privacy-check/'
+  },
+  {
     name: 'projects/',
     isDirectory: true,
     isAccessible: true,

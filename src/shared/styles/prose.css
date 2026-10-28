@@ -38,13 +38,13 @@
   margin-top: var(--space-1);
 }
 
-.prose a {
+.prose a:not(.btn) {
   color: var(--color-link);
   text-underline-offset: 0.2em;
 }
 
-.prose a:hover,
-.prose a:focus-visible {
+.prose a:not(.btn):hover,
+.prose a:not(.btn):focus-visible {
   color: var(--color-accent);
 }
 

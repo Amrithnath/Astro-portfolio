@@ -8,6 +8,9 @@ export const test = base.extend<{ cspGuard: void }>({
     const headers = await readFile(new URL('../../public/_headers', import.meta.url), 'utf8');
     const policy = headers.match(/^  Content-Security-Policy: (.+)$/m)![1];
     const adminPolicy = headers.split('/admin/*')[1].match(/^  Content-Security-Policy: (.+)$/m)![1];
+    const privacyCheckPolicy = headers.split('\n/privacy-check/*')[1].match(/^  Content-Security-Policy: (.+)$/m)![1];
+    const policyFor = (pathname: string) =>
+      pathname.startsWith('/admin/') ? adminPolicy : /^\/privacy-check(?:\/|$)/.test(pathname) ? privacyCheckPolicy : policy;
     const violations: string[] = [];
     await context.exposeBinding('__reportCsp', (_source, violation: string) => violations.push(violation));
     await context.addInitScript(() => {
@@ -29,7 +32,7 @@ export const test = base.extend<{ cspGuard: void }>({
         const body = await response.body();
         await route.fulfill({ status: response.status(), body, headers: {
           ...response.headers(),
-          'content-security-policy': new URL(route.request().url()).pathname.startsWith('/admin/') ? adminPolicy : policy,
+          'content-security-policy': policyFor(new URL(route.request().url()).pathname),
         } });
       } catch (error) {
         // Prefetches and navigations can be cancelled mid-flight; the request is already gone.

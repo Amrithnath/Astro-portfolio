@@ -5,9 +5,11 @@
 // shows a local Sustainable Web Design v4 estimate from this page's cold-load bytes.
 
 const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
+// Pages that promise to send nothing (the privacy check) only show the local estimate.
+const localOnly = /^\/privacy-check(?:\/|$)/.test(Astro.url.pathname);
 ---
 
-<span class="status-segment carbon-badge" data-carbon-badge data-host={host} hidden>
+<span class="status-segment carbon-badge" data-carbon-badge data-host={host} data-local-only={localOnly ? '' : undefined} hidden>
   <a href="https://www.websitecarbon.com/" rel="noopener">co₂<span class="visually-hidden"> (Website Carbon)</span></a>
   <span class="carbon-value" data-carbon-value>measuring…</span>
   <span class="carbon-detail" data-carbon-detail></span>
@@ -61,7 +63,7 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
     const url = `${location.origin}${location.pathname}`;
     const key = `portfolio-carbon:${location.pathname}`;
 
-    if (location.hostname !== root.dataset.host || optedOut) {
+    if (location.hostname !== root.dataset.host || optedOut || root.dataset.localOnly !== undefined) {
       localAfterLoad();
     } else {
       let cached: Result | undefined;

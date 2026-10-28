@@ -12,13 +12,15 @@ export interface Props {
   currentPage?: string;
   /** Pages with their own live input (e.g. the resume CLI) hide the decorative footer cursor. */
   footerCursor?: boolean;
+  /** Show the decorative "Thanks for visiting" sign-off above the site footer. */
+  signoff?: boolean;
   /** Page title/description and optional context for the wide-screen side panes. */
   title?: string;
   description?: string;
   panes?: PaneContext;
 }
 
-const { currentPage = '/', footerCursor = true, title, description, panes } = Astro.props;
+const { currentPage = '/', footerCursor = true, signoff = false, title, description, panes } = Astro.props;
 ---
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -42,4 +44,4 @@ const { currentPage = '/', footerCursor = true, title, description, panes } = As
   ><slot /></main>
   <SidePanes slot="panes" currentPage={currentPage} title={title} description={description} panes={panes} />
 </TerminalWindow>
-<TerminalFooter showCursor={footerCursor} />
+<TerminalFooter showCursor={footerCursor} signoff={signoff} />

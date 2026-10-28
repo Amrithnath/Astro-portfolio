@@ -42,6 +42,31 @@ const bar = (percent: number) => {
   return `${'|'.repeat(filled)}${' '.repeat(10 - filled)}`;
 };
 const host = (value?: string) => value?.replace(/^https?:\/\//, '');
+
+// [data-metric, label, has a good/okay/slow verdict]; values are filled in by the script below.
+const perfRows: [string, string, boolean][] = [
+  ['ttfb', 'server reply', true],
+  ['fcp', 'first paint', true],
+  ['lcp', 'main content', true],
+  ['cls', 'layout shift', true],
+  ['requests', 'files loaded', false],
+  ['transferred', 'downloaded', false],
+  ['dom', 'page elements', false],
+  ['heap', 'JS memory', false],
+  ['uptime', 'time on page', false],
+];
+const perfHelp: [string, string][] = [
+  ['server reply', 'How long the server took to start answering (time to first byte).'],
+  ['first paint', 'When anything first appeared on screen (First Contentful Paint).'],
+  ['main content', 'When the biggest text or image finished drawing (Largest Contentful Paint).'],
+  ['layout shift', 'How much things jumped around while loading; lower is better (Cumulative Layout Shift).'],
+  ['fast / okay / slow', "Google's Core Web Vitals thresholds for a good experience."],
+  ['downloaded', 'Data sent over the network for this page; files already in your cache count as 0.'],
+  ['JS memory', 'Memory used by scripts on this page (Chromium browsers only).'],
+  ['this page', 'CO₂ for the data this page view moved, using the Sustainable Web Design model and the global average grid.'],
+  ['first visit', 'The same page with nothing cached. Grades run from A+ (cleanest) to F.'],
+  ['this visit', 'Running total for every page you have opened in this tab.'],
+];
 ---
 
 <aside class="side-pane side-pane-left" aria-label="Page manual and career">
@@ -145,24 +170,31 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
 
   <div class="perf-mon" data-perf-mon hidden>
     <Prompt command="top -p $$" />
+    <p class="pane-muted pane-caption"># how this page loaded for you</p>
     <dl class="pane-stats">
-      <dt>ttfb</dt><dd data-metric="ttfb">n/a</dd>
-      <dt>fcp</dt><dd data-metric="fcp">n/a</dd>
-      <dt>lcp</dt><dd data-metric="lcp">n/a</dd>
-      <dt>cls</dt><dd data-metric="cls">n/a</dd>
-      <dt>reqs</dt><dd data-metric="requests">n/a</dd>
-      <dt>xfer</dt><dd data-metric="transferred">n/a</dd>
-      <dt>dom</dt><dd data-metric="dom">n/a</dd>
-      <dt data-metric-label="heap">heap</dt><dd data-metric="heap">n/a</dd>
-      <dt>uptime</dt><dd data-metric="uptime">n/a</dd>
+      {perfRows.map(([metric, label, rated]) => (
+        <>
+          <dt data-metric-label={metric}>{label}</dt>
+          <dd data-metric-row={metric}>
+            <span data-metric={metric}>n/a</span>
+            {rated && <span class="perf-rating" data-rating={metric}></span>}
+          </dd>
+        </>
+      ))}
     </dl>
     <Prompt command="carbon --estimate --live" />
+    <p class="pane-muted pane-caption"># CO₂ from data sent to you</p>
     <dl class="pane-stats">
-      <dt>view</dt><dd data-metric="co2-view">n/a</dd>
-      <dt>cold</dt><dd data-metric="co2-cold">n/a</dd>
-      <dt>session</dt><dd data-metric="co2-session">n/a</dd>
+      <dt>this page</dt><dd data-metric="co2-view">n/a</dd>
+      <dt>first visit</dt><dd data-metric="co2-cold">n/a</dd>
+      <dt>this visit</dt><dd data-metric="co2-session">n/a</dd>
     </dl>
-    <p class="pane-muted pane-note">Estimated in your browser from transferred bytes (Sustainable Web Design v4, global grid 494 gCO₂e/kWh).</p>
+    <details class="pane-help">
+      <summary>what do these mean?</summary>
+      <dl>
+        {perfHelp.map(([term, text]) => <><dt>{term}</dt><dd>{text}</dd></>)}
+      </dl>
+    </details>
   </div>
 
   <Prompt command={panes.allSkills ? 'htop --tree' : 'htop'} />
@@ -193,7 +225,7 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
 </aside>
 
 <script>
-  import { carbonEstimate, formatBytes, formatMs, transferTotals } from './perf';
+  import { carbonEstimate, formatBytes, formatMs, rateMetric, transferTotals, type RatedMetric } from './perf';
 
   const root = document.querySelector<HTMLElement>('[data-perf-mon]');
   if (root && !root.dataset.ready) {
@@ -205,6 +237,15 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
     const set = (name: string, value: string) => {
       const element = root.querySelector<HTMLElement>(`[data-metric="${name}"]`);
       if (element && element.textContent !== value) element.textContent = value;
+    };
+    const rate = (metric: RatedMetric, value: number | undefined) => {
+      const element = root.querySelector<HTMLElement>(`[data-rating="${metric}"]`);
+      const verdict = rateMetric(metric, value);
+      if (!element) return;
+      const text = verdict ? `· ${verdict.word}` : '';
+      if (element.textContent !== text) element.textContent = text;
+      if (verdict) element.dataset.level = verdict.rating;
+      else delete element.dataset.level;
     };
     const readSession = () => {
       try {
@@ -237,7 +278,7 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
     const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
     if (!memory) {
       root.querySelector('[data-metric-label="heap"]')?.remove();
-      root.querySelector('[data-metric="heap"]')?.remove();
+      root.querySelector('[data-metric-row="heap"]')?.remove();
     }
 
     let transferred = 0;
@@ -251,6 +292,10 @@ const host = (value?: string) => value?.replace(/^https?:\/\//, '');
       set('fcp', formatMs(paint?.startTime));
       set('lcp', formatMs(lcp));
       set('cls', cls.toFixed(3));
+      rate('ttfb', navigation?.responseStart);
+      rate('fcp', paint?.startTime);
+      rate('lcp', lcp);
+      rate('cls', navigation ? cls : undefined);
       set('requests', String(resources.length + (navigation ? 1 : 0)));
       set('transferred', formatBytes(totals.transferred));
       set('dom', String(document.getElementsByTagName('*').length));

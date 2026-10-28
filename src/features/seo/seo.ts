@@ -47,7 +47,7 @@ export const pageDescriptions: Record<string, string> = {
   '/resume': `${profile.contact.name}'s experience, education, and skills. Read the resume or generate a customized download.`,
   '/projects': `Explore ${profile.contact.name}'s projects in ${projectTechnologies.slice(0, 8).join(', ')}.`,
   '/contact': `Contact ${profile.contact.name}, ${profile.contact.title}, by email or professional profile.`,
-  '/privacy-policy': `Privacy policy for ${profile.contact.name}'s portfolio and messaging interactions.`,
+  '/privacy-policy': `Privacy policy for ${profile.contact.name}'s portfolio: no cookies, forms or tracking.`,
 };
 
 export function personSchema(site: URL) {

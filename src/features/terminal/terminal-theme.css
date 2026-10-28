@@ -226,6 +226,7 @@ body {
 .position { color: var(--color-muted); }
 
 .theme-switcher { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+:root[data-theme-switchable] .theme-switcher[hidden] { display: flex !important; }
 .theme-command { color: var(--color-secondary); margin-right: var(--space-1); }
 .theme-switcher button {
   border: 1px solid transparent;
@@ -549,6 +550,18 @@ body {
   .pane-stats dt { color: var(--color-muted); }
   .pane-stats dd { margin: 0; color: var(--color-text); font-variant-numeric: tabular-nums; }
   .pane-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); }
+  .pane-caption { margin: 0 0 var(--space-1); font-size: var(--text-xs); }
+  .perf-rating { margin-left: 0.5ch; color: var(--color-muted); }
+  .perf-rating[data-level='good'] { color: var(--color-success, var(--color-accent)); }
+  .perf-rating[data-level='ok'] { color: var(--color-warning); }
+  .perf-rating[data-level='poor'] { color: var(--color-danger); }
+  .pane-help { margin-top: var(--space-2); font-size: var(--text-xs); }
+  .pane-help summary { cursor: pointer; color: var(--color-link); }
+  .pane-help summary:hover,
+  .pane-help summary:focus-visible { color: var(--color-accent); }
+  .pane-help dl { margin: var(--space-1) 0 0; }
+  .pane-help dt { margin-top: var(--space-1); color: var(--color-text); font-weight: 600; }
+  .pane-help dd { margin: 0; color: var(--color-muted); }
 
   /* htop */
   .htop-group { margin: var(--space-2) 0 var(--space-1); color: var(--color-heading); font-weight: 600; }
