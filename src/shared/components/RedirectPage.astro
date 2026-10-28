@@ -1,0 +1,13 @@
+---
+import BaseHead from './BaseHead.astro';
+import { defaultTheme } from '../../features/theme';
+const { to } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en" data-theme={defaultTheme}>
+  <head>
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+    <BaseHead title="Redirecting" description="This page has moved." noindex />
+  </head>
+  <body><p><a href={to}>Continue to the destination page</a></p></body>
+</html>

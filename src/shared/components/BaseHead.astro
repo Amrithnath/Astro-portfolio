@@ -1,0 +1,37 @@
+---
+import '@fontsource/fira-code/400.css';
+import '@fontsource/fira-code/700.css';
+import regularFont from '@fontsource/fira-code/files/fira-code-latin-400-normal.woff2?url';
+import boldFont from '@fontsource/fira-code/files/fira-code-latin-700-normal.woff2?url';
+import SEO, { type Props as SEOProps } from '../../features/seo/SEO.astro';
+import ThemeBootstrap from '../../features/theme/ThemeBootstrap.astro';
+import ServiceWorker from './ServiceWorker.astro';
+import Analytics from './Analytics.astro';
+import { defaultTheme, themes } from '../../features/theme';
+import '../../features/theme/styles/tokens.css';
+import '../../features/theme/styles/themes/terminal.css';
+import '../../features/theme/styles/themes/light.css';
+import '../styles/global.css';
+import '../../features/terminal/terminal-theme.css';
+import '../styles/ui.css';
+import '../styles/prose.css';
+
+export interface Props extends SEOProps {}
+const theme = themes.find(({ id }) => id === defaultTheme)!;
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content={theme.themeColor} />
+<link rel="preload" href={regularFont} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={boldFont} as="font" type="font/woff2" crossorigin />
+<ThemeBootstrap />
+<SEO {...Astro.props} />
+<link rel="alternate" type="application/rss+xml" title="Blog RSS" href={new URL('/rss.xml', Astro.site).href} />
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+<link rel="shortcut icon" href="/favicon/favicon.ico" />
+<link rel="manifest" href="/favicon/site.webmanifest" />
+<ServiceWorker />
+{!/^\/search(?:\/|$)/.test(Astro.url.pathname) && <Analytics />}

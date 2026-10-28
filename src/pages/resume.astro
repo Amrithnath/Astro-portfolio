@@ -1,8 +1,8 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ResumeGenerator from '../components/ResumeGenerator.astro';
-import ProfileSummary from '../components/ProfileSummary.astro';
-import { profile } from '../lib/seo';
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import ResumeGenerator from '../features/resume/ResumeGenerator.astro';
+import ProfileSummary from '../features/resume/ProfileSummary.astro';
+import { profile } from '../features/seo/seo';
 ---
 
 <BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume" footerCursor={false}>

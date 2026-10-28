@@ -1,5 +1,5 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { fullProfileMarkdown, markdownMirrors } from '../lib/profile-markdown';
+import { fullProfileMarkdown, markdownMirrors } from '../features/seo/profile-markdown';
 
 export const prerender = true;
 export const getStaticPaths: GetStaticPaths = async () => (await markdownMirrors()).map(page => ({

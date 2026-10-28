@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Gallery from '../../../components/photos/Gallery.astro';
-import PhotoNav from '../../../components/photos/PhotoNav.astro';
-import { getPhotos } from '../../../lib/content';
-import { tagIndex } from '../../../lib/photos';
+import BaseLayout from '../../../shared/layouts/BaseLayout.astro';
+import Gallery from '../../../features/photos/Gallery.astro';
+import PhotoNav from '../../../features/photos/PhotoNav.astro';
+import { getPhotos } from '../../../features/content/content';
+import { tagIndex } from '../../../features/photos/photos';
 export async function getStaticPaths() {
   return tagIndex(await getPhotos()).map((entry) => ({
     params: { slug: entry.slug },

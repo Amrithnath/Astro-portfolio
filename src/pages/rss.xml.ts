@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIRoute } from 'astro';
-import { contentPath, getPublishedCollection } from '../lib/content';
-import { profile } from '../lib/seo';
+import { contentPath, getPublishedCollection } from '../features/content/content';
+import { profile } from '../features/seo/seo';
 
 export const prerender = true;
 export const GET: APIRoute = async ({ site }) => {

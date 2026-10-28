@@ -15,7 +15,7 @@ import {
   placeSlug,
   remoteImage,
   tagIndex,
-} from '../../src/lib/photos.ts';
+} from '../../src/features/photos/photos.ts';
 
 const photos = [
   {

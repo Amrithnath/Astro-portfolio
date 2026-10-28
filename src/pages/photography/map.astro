@@ -1,11 +1,11 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Prompt from '../../components/ui/Prompt.astro';
-import PhotoNav from '../../components/photos/PhotoNav.astro';
-import { getPhotos } from '../../lib/content';
-import { mapPoint, placeIndex } from '../../lib/photos';
-import { geocoderAttribution } from '../../lib/geo';
-import land from '../../data/world-land.json';
+import BaseLayout from '../../shared/layouts/BaseLayout.astro';
+import Prompt from '../../shared/ui/Prompt.astro';
+import PhotoNav from '../../features/photos/PhotoNav.astro';
+import { getPhotos } from '../../features/content/content';
+import { mapPoint, placeIndex } from '../../features/photos/photos';
+import { geocoderAttribution } from '../../features/photos/geo';
+import land from '../../features/photos/world-land.json';
 const places = placeIndex(await getPhotos()).flatMap((place) => {
   const point = mapPoint(place.location);
   return point ? [{ ...place, ...point }] : [];

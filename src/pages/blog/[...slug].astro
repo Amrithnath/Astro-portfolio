@@ -1,7 +1,7 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { getPublishedCollection } from '../../lib/content';
-import Layout from '../../layouts/blog.astro';
+import { getPublishedCollection } from '../../features/content/content';
+import Layout from '../../features/content/blog.astro';
 
 export async function getStaticPaths() {
   const entries = await getPublishedCollection('blog');

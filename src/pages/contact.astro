@@ -1,8 +1,8 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Prompt from '../components/ui/Prompt.astro';
-import Card from '../components/ui/Card.astro';
-import { resumeCompendium } from '../data/resume-compendium';
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import Prompt from '../shared/ui/Prompt.astro';
+import Card from '../shared/ui/Card.astro';
+import { resumeCompendium } from '../features/resume/resume-compendium';
 
 const contact = resumeCompendium.contact;
 const channels = [

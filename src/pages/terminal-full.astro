@@ -1,10 +1,10 @@
 ---
-import { getProjectPreviews } from '../lib/content';
-import { defaultTheme } from '../themes';
+import { getProjectPreviews } from '../features/content/content';
+import { defaultTheme } from '../features/theme';
 // Generates the deferred terminal content fragment for the homepage
-import TerminalView from '../components/TerminalView.astro';
-import BaseHead from '../components/BaseHead.astro';
-import { generateSeededLandingData } from '../data/landing-data-service';
+import TerminalView from '../features/terminal/TerminalView.astro';
+import BaseHead from '../shared/components/BaseHead.astro';
+import { generateSeededLandingData } from '../features/resume/landing-data-service';
 
 // Load published project collection entries.
 const projects = await getProjectPreviews();

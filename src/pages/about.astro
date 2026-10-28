@@ -1,8 +1,8 @@
 ---
-import ProfileSummary from '../components/ProfileSummary.astro';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import TerminalView from '../components/TerminalView.astro';
-import { resumeCompendium } from '../data/resume-compendium';
+import ProfileSummary from '../features/resume/ProfileSummary.astro';
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import TerminalView from '../features/terminal/TerminalView.astro';
+import { resumeCompendium } from '../features/resume/resume-compendium';
 // Ensure safe data access
 const contactName = resumeCompendium?.contact?.name || 'Amrithnath Vijayakumar';
 const contactTitle = resumeCompendium?.contact?.title || 'Senior Engineer';

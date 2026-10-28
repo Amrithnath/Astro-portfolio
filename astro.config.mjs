@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { fileURLToPath } from 'node:url';
 import { injectCsp } from './scripts/csp.mjs';
-import { isIndexablePath } from './src/lib/seo';
+import { isIndexablePath } from './src/features/seo/seo';
 
 // Archived: wedding API proxy target (see project-archive/README.md).
 // const weddingApiTarget = process.env.WEDDING_API_URL || 'http://127.0.0.1:8787';

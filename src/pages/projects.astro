@@ -1,13 +1,13 @@
 ---
 import { Image } from 'astro:assets';
-import { getProjectPreviews } from '../lib/content';
-import { profile } from '../lib/seo';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import LsOutput from '../components/LsOutput.astro';
-import Prompt from '../components/ui/Prompt.astro';
-import CatOutput from '../components/CatOutput.astro';
-import Card from '../components/ui/Card.astro';
-import Button from '../components/ui/Button.astro';
+import { getProjectPreviews } from '../features/content/content';
+import { profile } from '../features/seo/seo';
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import LsOutput from '../features/terminal/LsOutput.astro';
+import Prompt from '../shared/ui/Prompt.astro';
+import CatOutput from '../features/terminal/CatOutput.astro';
+import Card from '../shared/ui/Card.astro';
+import Button from '../shared/ui/Button.astro';
 
 const projects = await getProjectPreviews();
 const techCounts = new Map<string, number>();

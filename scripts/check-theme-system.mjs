@@ -49,7 +49,7 @@ assert.ok(bootstrap, 'Missing inline theme bootstrap');
 assert.ok(homepage.indexOf(bootstrap) < homepage.indexOf('</head>'), 'Bootstrap must run in head');
 
 const registry = {};
-vm.runInNewContext(ts.transpileModule(read('src/themes/index.ts'), {
+vm.runInNewContext(ts.transpileModule(read('src/features/theme/index.ts'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS },
 }).outputText, { exports: registry });
 
@@ -191,9 +191,9 @@ const contrast = (palette, foreground, background, id) => {
     `${id}: ${foreground} on ${background}: WCAG AA text contrast`);
 };
 const tokens = css => [...css.matchAll(/(--[a-z-]+):/g)].map(match => match[1]).sort();
-const terminalTokens = tokens(read('src/styles/themes/terminal.css'));
+const terminalTokens = tokens(read('src/features/theme/styles/themes/terminal.css'));
 for (const theme of registry.themes) {
-  const css = read(`src/styles/themes/${theme.id}.css`);
+  const css = read(`src/features/theme/styles/themes/${theme.id}.css`);
   assert.ok(css.includes(`[data-theme='${theme.id}']`), `${theme.id}: scoped palette`);
   assert.deepEqual(tokens(css), terminalTokens, `${theme.id}: all palette tokens must be defined`);
   const palette = Object.fromEntries([...css.matchAll(/--color-([a-z-]+):\s*(#[0-9a-f]{6});/g)]
@@ -249,7 +249,7 @@ const context = vm.createContext({
     focus() {}, print: () => { printCalls++; }, close() {},
   }) },
 });
-const script = read('src/components/ResumeGenerator.astro').match(/<script>([\s\S]*?)<\/script\b[^>]*>/i)[1];
+const script = read('src/features/resume/ResumeGenerator.astro').match(/<script>([\s\S]*?)<\/script\b[^>]*>/i)[1];
 const { outputText } = ts.transpileModule(script, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 });

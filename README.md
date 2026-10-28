@@ -73,21 +73,41 @@ pnpm dev            # http://localhost:4321
 
 ```
 ├── src/
-│   ├── pages/           # Routes, including /admin, RSS, llms.txt and OG images
-│   ├── layouts/         # BaseLayout and article layouts
-│   ├── components/      # Terminal shell, SEO head and UI primitives
-│   ├── content/         # Blog and project Markdown (Content Layer collections)
-│   ├── data/            # Profile and resume data
-│   ├── lib/             # Content, SEO and OG helpers
-│   ├── styles/          # Tokens, themes and shared CSS
-│   └── themes/          # Theme registry
+│   ├── features/        # Feature-owned components, helpers, data and styles
+│   │   ├── content/     # Shared blog/project articles and collection helpers
+│   │   ├── photos/      # Gallery/viewer, EXIF, indexing, geo helpers and config
+│   │   ├── resume/      # Profile data, landing data and resume export
+│   │   ├── seo/         # Metadata, OG mapping and Markdown discovery
+│   │   ├── terminal/    # Shell, navigation, commands, output and shell CSS
+│   │   ├── theme/       # Bootstrap, switcher, registry, tokens and palettes
+│   │   └── views/       # Anonymous article view-count client
+│   ├── shared/          # Cross-feature composition and primitives
+│   │   ├── components/  # BaseHead, redirect, analytics and service worker
+│   │   ├── layouts/     # BaseLayout document composition
+│   │   ├── lib/         # Build version and date formatting
+│   │   ├── styles/      # Global, prose and UI CSS
+│   │   └── ui/          # Button, Card, Prompt and TerminalWindow
+│   ├── pages/           # Astro routes, including /admin, RSS, llms.txt and OG
+│   ├── content/         # Content Layer Markdown, photos and album metadata
+│   └── content.config.ts # Content Layer loaders and schemas
 ├── public/              # Static files, _headers, service worker, CMS config
 ├── workers/cms-auth/    # Cloudflare Worker for CMS sign-in
 ├── workers/views/       # Cloudflare Worker + D1 for article view counts
-├── scripts/             # Build output checks
-├── tests/e2e/           # Playwright tests
+├── project-archive/     # Paused projects; excluded from the portfolio build
+├── scripts/             # Build, ingestion and output checks
+├── tests/               # Photos, CSP, CI and browser checks
 └── .github/workflows/   # CI, releases and deploys
 ```
+
+Feature folders own their components, helpers, data and styles; only cross-feature composition
+and generic primitives belong in `src/shared/`. Routes and Content Layer inputs stay in Astro
+conventions. Imports remain relative: Node-run scripts and tests consume the same helpers without
+an alias loader, and feature boundaries stay explicit.
+
+Workers retain their existing paths and root test/deploy commands. They need no separate package
+dependencies, so additional workspace packages would add lockfile and deployment configuration
+without improving isolation. `pnpm-workspace.yaml` remains root-only with its pnpm 9/10-compatible
+single-document lockfile settings; the archive remains excluded and unbuilt.
 
 Paused projects, such as the wedding upload stack, live in [`project-archive/`](project-archive/README.md).
 
@@ -205,7 +225,7 @@ deliberately keeps the existing privacy-preserving ingest pipeline unchanged.
 **Extras (still unlisted):** places link to `/photography/map/`, an inline SVG with no third-party
 requests. One linked marker per named place uses reviewed, coarse coordinates; the text list is
 available without JavaScript. Unknown locations stay unset. The bundled simplified Natural Earth
-110m land outline is public domain (source, version and licence in `src/data/world-land.json`).
+110m land outline is public domain (source, version and licence in `src/features/photos/world-land.json`).
 `/photography/rss.xml` lists published photos newest first (undated last), with metadata-free
 WebP media links; only the photography index advertises it. The optional `exiftool`-style photo
 panel shows camera, lens, taken date and exposure fields, never GPS or serial numbers. Ingest fills
@@ -219,7 +239,7 @@ all photos remain © the owner, all rights reserved unless stated otherwise.
 
 1. Create **two different R2 buckets**: a private inbox for originals and a public derivatives
    bucket. Never expose the inbox; originals may contain GPS. Connect custom domain
-   `photos.amrithnath.dev` to the public bucket (source config: `src/data/photos-config.ts`).
+   `photos.amrithnath.dev` to the public bucket (source config: `src/features/photos/config.ts`).
 2. Create an R2 API token scoped to both buckets with object read/write permissions.
    Add repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`;
    add repository variables `R2_INBOX_BUCKET` and `R2_PUBLIC_BUCKET` with the bucket names.
@@ -445,7 +465,7 @@ keyboard use; its WebAssembly CSP exception is scoped to `/search/*`. No owner s
 
 The canonical origin is `https://amrithnath.dev`. Everything below is generated at build time.
 
-- `src/components/SEO.astro` emits canonical and social metadata and schema.org JSON-LD.
+- `src/features/seo/SEO.astro` emits canonical and social metadata and schema.org JSON-LD.
 - `/llms.txt` and `/llms-full.txt` list the pages, the Markdown mirrors and `/rss.xml`.
 - Markdown mirrors such as `/about.md`, `/resume.md` and the post mirrors provide plain-text
   versions of each page.
@@ -453,9 +473,9 @@ The canonical origin is `https://amrithnath.dev`. Everything below is generated 
   WIP and unlisted paths. Robots rules are guidance, not access control.
 - The sitemap leaves out private, noindex and redirect routes.
 
-Route exclusions live in `src/lib/seo.ts`. Add new private or unlisted pages there, and keep
-unlisted pages out of `TerminalNav.astro` and `src/data/navigation.ts` until they launch. Keep profile facts in
-`src/data/resume-compendium.ts` rather than duplicating them. Check the output with
+Route exclusions live in `src/features/seo/seo.ts`. Add new private or unlisted pages there, and keep
+unlisted pages out of `TerminalNav.astro` and `src/features/terminal/navigation.ts` until they launch. Keep profile facts in
+`src/features/resume/resume-compendium.ts` rather than duplicating them. Check the output with
 `pnpm build && pnpm check:seo`.
 
 ## Themes
@@ -467,9 +487,9 @@ terminal palette. Auto follows your system color scheme live and is the first-vi
 default. Explicit choices persist across reloads, navigation, and tabs; selecting auto
 clears the stored choice. Without JavaScript, the site stays dark and hides the switcher.
 
-To add a theme, register it in `src/themes/index.ts`, define every scoped palette
+To add a theme, register it in `src/features/theme/index.ts`, define every scoped palette
 token, and import its CSS in `BaseHead.astro`. Content is rendered once for all themes.
-See [the theme guide](src/themes/README.md).
+See [the theme guide](src/features/theme/README.md).
 
 ## Contributing and releases
 

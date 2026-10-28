@@ -9,7 +9,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseDocument } from 'yaml';
-import { isShortMapsUrl, parseGoogleMapsUrl, resolveGoogleMapsUrl } from '../src/lib/geo.ts';
+import { isShortMapsUrl, parseGoogleMapsUrl, resolveGoogleMapsUrl } from '../src/features/photos/geo.ts';
 import { locate } from './photos-ingest.mjs';
 
 const isTodo = (value) => typeof value !== 'string' || !value.trim() || /^TODO\b/i.test(value);

@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Prompt from '../../../components/ui/Prompt.astro';
-import Card from '../../../components/ui/Card.astro';
-import PhotoNav from '../../../components/photos/PhotoNav.astro';
-import { getPhotos } from '../../../lib/content';
-import { tagIndex } from '../../../lib/photos';
+import BaseLayout from '../../../shared/layouts/BaseLayout.astro';
+import Prompt from '../../../shared/ui/Prompt.astro';
+import Card from '../../../shared/ui/Card.astro';
+import PhotoNav from '../../../features/photos/PhotoNav.astro';
+import { getPhotos } from '../../../features/content/content';
+import { tagIndex } from '../../../features/photos/photos';
 const entries = tagIndex(await getPhotos());
 ---
 
