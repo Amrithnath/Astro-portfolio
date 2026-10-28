@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.6.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.5.1...v2.6.0) (2026-10-28)
+
+
+### ✨ Features
+
+* **photos:** ✨ add a deep-zoom photo viewer ([e6e6398](https://github.com/Amrithnath/Astro-portfolio/commit/e6e63989cc87eaebbe58e856ee1277b6b7f96624))
+* **photos:** ✨ add a deep-zoom photo viewer ([63fce25](https://github.com/Amrithnath/Astro-portfolio/commit/63fce25dcbed9a40ea15e6867e0a8bf2d9b2050c))
+* **theme:** ✨ make the light theme look like a real terminal ([d404111](https://github.com/Amrithnath/Astro-portfolio/commit/d4041118439bd3ba4917000e5e00231c17f0e26f))
+* **theme:** ✨ make the light theme look like a real terminal ([635d890](https://github.com/Amrithnath/Astro-portfolio/commit/635d89099fab9993bdf26b0341fd0b63783c1ba7))
+
+
+### ⚡ Performance
+
+* **build:** ⚡ parse CSP documents once and reuse CI image cache ([65fe2b0](https://github.com/Amrithnath/Astro-portfolio/commit/65fe2b0a996909d08a8650161f164c0626906f7e))
+* **build:** ⚡ streamline CSP injection and cache optimized images ([08f84ee](https://github.com/Amrithnath/Astro-portfolio/commit/08f84eea8882de03553f5de43994b23bc0ae0187))
+
+
+### ♻️ Refactoring
+
+* ♻️ group source by feature ([a7605cc](https://github.com/Amrithnath/Astro-portfolio/commit/a7605cc26c80476858f834109a3f23a96faf2f4c))
+* ♻️ group source by feature ([e17a99b](https://github.com/Amrithnath/Astro-portfolio/commit/e17a99b9f3a845d5eb104ffbe291756cf7c76c13))
+
+
+### 👷 CI
+
+* **build:** 👷 restore the image cache across commits ([43e26e2](https://github.com/Amrithnath/Astro-portfolio/commit/43e26e2f1108ce9ca2f3fdff958644d5dedc52ae))
+
 ## [2.5.1](https://github.com/Amrithnath/Astro-portfolio/compare/v2.5.0...v2.5.1) (2026-10-28)
 
 
