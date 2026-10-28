@@ -23,13 +23,18 @@ export const test = base.extend<{ cspGuard: void }>({
     }));
     await context.route('**/*', async route => {
       if (!/^https?:\/\/(127\.0\.0\.1|localhost):/.test(route.request().url())) return route.continue();
-      const response = await route.fetch();
-      if (response.headers()['content-type']?.includes('text/html')) {
-        await route.fulfill({ response, headers: {
+      try {
+        const response = await route.fetch();
+        if (!response.headers()['content-type']?.includes('text/html')) return await route.fulfill({ response });
+        const body = await response.body();
+        await route.fulfill({ status: response.status(), body, headers: {
           ...response.headers(),
           'content-security-policy': new URL(route.request().url()).pathname.startsWith('/admin/') ? adminPolicy : policy,
         } });
-      } else await route.fulfill({ response });
+      } catch (error) {
+        // Prefetches and navigations can be cancelled mid-flight; the request is already gone.
+        if (!/disposed|closed|Route is already handled|Target page, context or browser/i.test(String(error))) throw error;
+      }
     });
     await use();
     expect(violations, 'Unexpected CSP violations under response + meta policies').toEqual([]);

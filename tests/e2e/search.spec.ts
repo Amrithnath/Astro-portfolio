@@ -1,17 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from '@playwright/test';
-
-const headers = readFileSync('public/_headers', 'utf8');
-const searchCsp = headers.match(/\/search\/\*\n  ! Content-Security-Policy\n  Content-Security-Policy: (.+)/)![1];
+import { expect } from '@playwright/test';
+import { test } from './csp-fixture';
 
 for (const colorScheme of ['dark', 'light'] as const) {
   test(`search finds a post under its production CSP (${colorScheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
-    // Astro preview does not apply _headers. Exercise the real scoped policy in the browser.
-    await page.route('**/search/?*', async route => {
-      const response = await route.fetch();
-      await route.fulfill({ response, headers: { ...response.headers(), 'content-security-policy': searchCsp } });
-    });
+    // The CSP fixture applies the production response policy on top of the built meta policy.
     const failures: string[] = [];
     page.on('pageerror', error => failures.push(error.message));
     await page.goto('/search/?q=headphone');
