@@ -266,7 +266,6 @@ export const resumeCompendium: ResumeCompendium = {
       technologies: ["Astro", "TypeScript", "CSS", "Cloudflare", "GitHub Actions"],
       role: "Full-Stack Developer",
       startDate: "2020-01",
-      endDate: null,
       url: "https://amrithnath.dev",
       github: "https://github.com/Amrithnath",
       type: "personal",
@@ -308,7 +307,6 @@ export const resumeCompendium: ResumeCompendium = {
       technologies: ["Raspberry Pi", "Docker", "Reverse Proxy", "Load Balancer", "IoT", "Terraform"],
       role: "Systems Engineer",
       startDate: "2016-01",
-      endDate: null,
       type: "personal",
       status: "in-progress",
       highlights: [

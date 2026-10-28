@@ -17,6 +17,7 @@ export const profileLinks = [
 export const excludedPrefixes = [
   '/wedding',
   '/photography',
+  '/now',
   '/photos',
   '/admin',
   '/api',

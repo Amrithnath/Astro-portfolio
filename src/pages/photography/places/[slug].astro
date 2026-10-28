@@ -4,6 +4,7 @@ import Gallery from '../../../components/photos/Gallery.astro';
 import PhotoNav from '../../../components/photos/PhotoNav.astro';
 import { getPhotos } from '../../../lib/content';
 import { placeIndex } from '../../../lib/photos';
+import { geocoderAttribution } from '../../../lib/geo';
 export async function getStaticPaths() {
   return placeIndex(await getPhotos()).map((entry) => ({
     params: { slug: entry.slug },
@@ -19,4 +20,5 @@ const { entry } = Astro.props;
   currentPage={'/photography/places/' + entry.slug}
 >
   <h1>{entry.name}</h1><PhotoNav /><Gallery entries={entry.photos} />
+  <p class="attribution"><small>{geocoderAttribution}</small></p>
 </BaseLayout>

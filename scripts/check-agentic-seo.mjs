@@ -108,7 +108,7 @@ for (const file of ['404.html', 'work-in-progress/index.html', 'blog/index.html'
   assert.match(head(read(file)), /name="robots" content="noindex, follow"/);
 }
 // Unlisted pages ship to production but stay out of navigation and search until announced.
-for (const unlisted of ['photography']) {
+for (const unlisted of ['photography', 'now']) {
   for (const file of htmlFiles.filter(file => file.startsWith(unlisted + '/'))) {
     assert.match(head(read(file)), /name="robots" content="noindex, follow"/, file + ': must stay unlisted');
   }
@@ -119,7 +119,7 @@ for (const unlisted of ['photography']) {
 const robots = read('robots.txt');
 for (const group of robots.split(/\n\n/).filter(group => group.startsWith('User-agent:'))) {
   assert.match(group, /Allow: \//);
-  for (const path of ['/wedding', '/photography', '/admin', '/api', '/terminal-full', '/work-in-progress']) {
+  for (const path of ['/wedding', '/photography', '/now', '/admin', '/api', '/terminal-full', '/work-in-progress']) {
     assert.ok(group.includes(`Disallow: ${path}`), `${group.split('\n')[0]}: missing ${path}`);
   }
 }

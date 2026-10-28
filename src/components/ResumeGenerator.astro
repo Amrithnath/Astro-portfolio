@@ -291,7 +291,7 @@ Try: python generator.py generate --format pdf</pre>
       this.handleMDExport = this.handleMDExport.bind(this);
       this.handleTXTExport = this.handleTXTExport.bind(this);
       this.toggleVisualGenerator = this.toggleVisualGenerator.bind(this);
-      this.resumeData = JSON.parse(document.getElementById('resume-generator').dataset.resume);
+      this.resumeData = JSON.parse(document.getElementById('resume-generator')?.dataset.resume ?? '{}');
       this.sections = { contact: true, bio: true, skills: true, experience: true, education: true };
       this.initializeEventListeners();
     }
@@ -324,7 +324,7 @@ Try: python generator.py generate --format pdf</pre>
           const cmd = suggestion.getAttribute('data-cmd');
           const input = document.querySelector<HTMLInputElement>('#terminal-input');
           if (input) {
-            input.value = cmd;
+            input.value = cmd ?? '';
             input.focus();
           }
         });
@@ -332,17 +332,19 @@ Try: python generator.py generate --format pdf</pre>
       
     }
 
-    handleTerminalInput(e) {
+    handleTerminalInput(e: KeyboardEvent) {
+      const target = e.target as HTMLInputElement;
       if (e.key === 'Enter') {
-        this.handleTerminalCommand(e.target.value.trim());
-        e.target.value = '';
+        this.handleTerminalCommand(target.value.trim());
+        target.value = '';
       }
     }
     
-    handleToggleChange(e) {
-      const section = e.target.id.replace('include-', '');
+    handleToggleChange(e: Event) {
+      const target = e.target as HTMLInputElement;
+      const section = target.id.replace('include-', '');
       if (!(section in this.sections)) return;
-      this.sections[section] = e.target.checked;
+      this.sections[section] = target.checked;
       this.updatePreviewFromSections();
     }
     
@@ -370,8 +372,9 @@ Try: python generator.py generate --format pdf</pre>
       this.exportText();
     }
     
-    handleTerminalCommand(command) {
+    handleTerminalCommand(command: string) {
       const output = document.getElementById('terminal-output');
+      if (!output) return;
       const parts = command.toLowerCase().split(' ');
       const cmd = parts[0];
       const safeCommand = command.replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`);
@@ -540,7 +543,7 @@ Last Updated:     ${new Date().toLocaleDateString()}</pre>`;
         case '3':
         case '4':
         case '5':
-          const sectionMap = {
+          const sectionMap: Record<string, string> = {
             '1': 'contact',
             '2': 'bio', 
             '3': 'skills',
@@ -549,7 +552,7 @@ Last Updated:     ${new Date().toLocaleDateString()}</pre>`;
           };
           const section = sectionMap[cmd];
           this.sections[section] = !this.sections[section];
-          const sectionNames = {
+          const sectionNames: Record<string, string> = {
             'contact': 'Contact Information',
             'bio': 'Professional Summary',
             'skills': 'Skills & Technologies', 
@@ -632,7 +635,7 @@ Type 'help' to see available commands.</pre>`;
     }
     
     getResumeContent() {
-      const sections = [];
+      const sections: { type: string; title?: string; content: string }[] = [];
       
       if (this.sections.contact) {
         sections.push({
@@ -727,8 +730,9 @@ Type 'help' to see available commands.</pre>`;
           text += `GitHub: ${this.resumeData.contact.github}\n`;
           text += `LinkedIn: ${this.resumeData.contact.linkedin}\n\n`;
         } else {
-          text += `${section.title.toUpperCase()}\n`;
-          text += '='.repeat(section.title.length) + '\n';
+          const title = section.title ?? section.type;
+          text += `${title.toUpperCase()}\n`;
+          text += '='.repeat(title.length) + '\n';
           text += `${section.content}\n\n`;
         }
       });
@@ -837,7 +841,7 @@ Type 'help' to see available commands.</pre>`;
       }, 500);
     }
     
-    downloadFile(content, filename, mimeType) {
+    downloadFile(content: string, filename: string, mimeType: string) {
       const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
       

@@ -2,6 +2,7 @@ import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { coarseCoordinate, normalizeTags } from './lib/photos';
+import { isGoogleMapsUrl, isShortMapsUrl, parseGoogleMapsUrl } from './lib/geo';
 
 // Absolute URL or a site-relative path such as /images/blog/cover.jpg (CMS uploads).
 const imageSource = z.union([z.url(), z.string().regex(/^\/(?![/\\])/)]);
@@ -70,9 +71,9 @@ const photos = defineCollection({
         caption: z.string().optional(),
         location: z
           .object({
-            name: z.string().trim().min(1),
-            region: z.string().optional(),
-            country: z.string().trim().min(1),
+            name: z.string().trim().min(1).optional(),
+            region: z.string().trim().min(1).optional(),
+            country: z.string().trim().min(1).optional(),
             lat: z
               .number()
               .min(-90)
@@ -82,6 +83,32 @@ const photos = defineCollection({
               })
               .optional(),
             lng: z.number().min(-180).max(180).refine(coarseCoordinate).optional(),
+            // A pasted Google Maps link fills in a missing name and coordinates (rounded). The link
+            // itself is never rendered.
+            maps: z.url().refine(isGoogleMapsUrl, { message: 'Use a Google Maps link' }).optional(),
+          })
+          .transform(({ maps, ...place }, ctx) => {
+            const fromLink = maps ? parseGoogleMapsUrl(maps) : undefined;
+            const hasCoordinates = place.lat !== undefined && place.lng !== undefined;
+            const location = {
+              ...place,
+              name: place.name ?? fromLink?.name,
+              ...(!hasCoordinates && fromLink?.lat !== undefined
+                ? { lat: fromLink.lat, lng: fromLink.lng }
+                : {}),
+            };
+            if (!location.name) {
+              ctx.issues.push({
+                code: 'custom',
+                input: maps,
+                message:
+                  maps && isShortMapsUrl(maps)
+                    ? 'Short Maps links need resolving: run `pnpm photos:locate` (or the Locate photos workflow), or add a place name'
+                    : 'Add a place name, or a Google Maps link that names the place',
+              });
+              return z.NEVER;
+            }
+            return location as typeof location & { name: string };
           })
           .optional(),
         date: z.coerce.date().optional(),
@@ -125,4 +152,14 @@ const albums = defineCollection({
     }),
 });
 
-export const collections = { blog, projects, photos, albums };
+// Single-entry collection for the unlisted /now page (src/content/now/now.md).
+const now = defineCollection({
+  loader: glob({ base: './src/content/now', pattern: 'now.md' }),
+  schema: z.object({
+    updated: z.coerce.date(),
+    location: z.string().optional(),
+    placeholder: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, projects, photos, albums, now };

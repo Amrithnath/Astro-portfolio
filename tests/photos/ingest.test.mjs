@@ -56,7 +56,7 @@ test('dry-run ingests camera and coarse GPS metadata, strips derivatives and nev
     assert.equal(data.location.lat, 12.35);
     assert.equal(data.location.lng, -73.12);
     assert.equal(data.location.name, 'TODO place name');
-    assert.equal(data.location.country, 'TODO country');
+    assert.equal(data.location.country, undefined);
     assert.equal(data.camera, 'Test Camera Model One');
     assert.equal(data.lens, 'Test lens');
     assert.match(data.date, /^2026-01-02/);
