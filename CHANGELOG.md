@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.4.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.3.0...v2.4.0) (2026-10-28)
+
+
+### ✨ Features
+
+* ✨ add an unlisted uses page with placeholder gear lists ([940b5eb](https://github.com/Amrithnath/Astro-portfolio/commit/940b5eb10fb25d366cfab9f0c63349c37cb91643))
+* ✨ search, photo map and feed, view counts, strict CSP, visual tests, uses page ([2eb7f3d](https://github.com/Amrithnath/Astro-portfolio/commit/2eb7f3d91550b2b78245b3267b17bafb664d51d4))
+* ✨ show article view counts ([88fb097](https://github.com/Amrithnath/Astro-portfolio/commit/88fb09785a7b4090053ab7b6eead8e90d4afa173))
+* **photos:** ✨ add map, feed, EXIF and prints pages ([878651c](https://github.com/Amrithnath/Astro-portfolio/commit/878651cab47fb61661bd1100aaa850a4bc2a9405))
+* **search:** ✨ add unlisted Pagefind site search ([8ff52f0](https://github.com/Amrithnath/Astro-portfolio/commit/8ff52f0e260b11ac5f333e432613e9043ab04e36))
+* **views:** ✨ add privacy-friendly view counter worker ([24a3949](https://github.com/Amrithnath/Astro-portfolio/commit/24a39495015e4e777f9ba043f216fac4a8011098))
+
+
+### 🐛 Bug Fixes
+
+* **security:** 🔒 drop unsafe-inline scripts from CSP ([cebc16d](https://github.com/Amrithnath/Astro-portfolio/commit/cebc16d910dcb1d07fd7dcc2e618293efb4e1d61))
+* **theme:** 🐛 keep the active theme on the incoming page during client navigation ([70f96a2](https://github.com/Amrithnath/Astro-portfolio/commit/70f96a203bcfd2ebe3ff6003a5777e0d1316e8d7))
+
+
+### ♻️ Refactoring
+
+* **theme:** ♻️ replace ClientRouter with native view transitions so themes survive navigation ([108438a](https://github.com/Amrithnath/Astro-portfolio/commit/108438a807499bcff05eca275401c59883aec19b))
+
+
+### 👷 CI
+
+* 👷 run visual regression tests ([3ecf295](https://github.com/Amrithnath/Astro-portfolio/commit/3ecf2958631cae1579ad24dd55de29a5baf79752))
+
+
+### 📦 Build
+
+* **deps:** 📦 bump @sveltia/cms to 0.253.1 and group all Dependabot updates ([8fc610a](https://github.com/Amrithnath/Astro-portfolio/commit/8fc610a0160d330b345b54c79facf088afbe093a))
+
 ## [2.3.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.2.0...v2.3.0) (2026-10-28)
 
 
