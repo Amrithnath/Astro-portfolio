@@ -52,7 +52,52 @@ collections:
       - { name: tags, label: Tags, widget: list, required: false, default: [] }
       - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
       - { name: img, label: Cover image, widget: image, required: false }
+      - { name: project, label: Related project, widget: relation, collection: projects, search_fields: [title], value_field: '{{slug}}', display_fields: [title], required: false }
       - { name: lang, label: Language code, widget: string, required: false }
+      - { name: body, label: Body, widget: markdown }
+
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/content/projects
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    identifier_field: title
+    preview_path: project/{{slug}}/
+    summary: '{{title}} ({{pubDate}})'
+    sortable_fields:
+      fields: [pubDate, title]
+      default: { field: pubDate, direction: descending }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Description, widget: text }
+      - name: pubDate
+        label: Published
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        default: '{{now}}'
+      - name: updatedDate
+        label: Updated
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        required: false
+      - { name: tags, label: Tags, widget: list, required: false, default: [] }
+      - { name: tech, label: Technologies, widget: list, required: false }
+      - { name: status, label: Status, widget: select, options: [active, maintained, archived, concept], required: false }
+      - { name: featured, label: Featured, widget: boolean, default: false, required: false }
+      - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
+      - { name: img, label: Cover image, widget: image, required: false }
+      - { name: image, label: Alternate cover image, widget: image, required: false }
+      - { name: lang, label: Language code, widget: string, required: false }
+      - { name: link, label: Project link, widget: string, required: false }
+      - { name: client, label: Client, widget: string, required: false }
+      - { name: github, label: GitHub URL, widget: string, required: false }
+      - { name: live, label: Live URL, widget: string, required: false }
+      - { name: demo, label: Demo URL, widget: string, required: false }
       - { name: body, label: Body, widget: markdown }
 
   # Unlisted gallery at /photography/ (not linked from the site). Images are committed to

@@ -47,6 +47,7 @@ const {
 const site = Astro.site!;
 const canonical = new URL(path === '/' ? '/' : `${path}/`, site).href;
 const imageUrl = new URL(image, site).href;
+const imageAlt = `${title}: ${description}`;
 const pageTitle = title.includes(profile.contact.name) ? title : `${title} | ${profile.contact.name}`;
 const person = personSchema(site);
 const websiteId = new URL('/#website', site).href;
@@ -125,7 +126,7 @@ if (path !== '/') {
 {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
 {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
 {image.startsWith('/og/') && <meta property="og:image:type" content="image/png" />}
-<meta property="og:image:alt" content={`${title} — ${profile.contact.name}`} />
+<meta property="og:image:alt" content={imageAlt} />
 <meta property="og:site_name" content={`${profile.contact.name}'s portfolio`} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={pageTitle} />

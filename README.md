@@ -108,8 +108,12 @@ img: /images/blog/cover.jpg # optional: absolute URL or site path
 ---
 ```
 
-- Optional fields: `img` or `image`, and `lang`. Projects also accept `link`, `client`, `github`,
-  `live`, `demo` and `tech`.
+- Optional fields: `img` or `image` (local `/public` images also appear in OG cards), and `lang`.
+  Projects also accept `link`, `client`, `github`, `live`, `demo`, `tech`, `status` (`active`,
+  `maintained`, `archived` or `concept`) and `featured`. Blog posts may set `project` to a project
+  file ID (for example `webDev/weather-app`) to connect a write-up to its project page.
+- Projects are long-form articles at `/project/<file-id>/`; `/projects/` includes technology filters
+  and related write-up counts. Draft articles stay out of public project and write-up links in production.
 - Don't add `layout:`. File paths set the URL and keep their case:
   `projects/webDev/weather-app.md` publishes at `/project/webDev/weather-app/`.
 - Drafts show in development only. Production leaves them out of pages, lists, RSS, the sitemap

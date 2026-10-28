@@ -70,6 +70,9 @@ for (const file of htmlFiles) {
     if (Math.max(data[pixel], data[pixel + 1], data[pixel + 2]) > 120) foreground++;
   }
   assert.ok(foreground > 1000, `${file}: OG text did not render`);
+  if (/^(blog|project)\/.+\/index\.html$/.test(file)) {
+    assert.notDeepEqual(png, readFileSync(join('dist/og/default.png')), `${file}: article OG card must differ from the default page card`);
+  }
   assert.match(metadata, /title="LLMs"/);
   assert.match(metadata, /type="application\/rss\+xml"[^>]*href="https:\/\/amrithnath\.dev\/rss\.xml"/);
   const alternate = metadata.match(/type="text\/markdown"[^>]*href="([^"]+)"/);
