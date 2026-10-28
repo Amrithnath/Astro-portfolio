@@ -181,6 +181,27 @@ Optional fields include caption, date, camera, lens, settings, tags, albums, fea
 Use exactly one image source: local `image` **or** R2 `remote: { key, width, height, placeholder? }`.
 Photo IDs `tags`, `places`, `albums`, `map`, `prints`, `feed`, `feed.xml`, `rss` and `rss.xml` are reserved.
 
+**Full-screen detail viewer:** individual photos have an accessible full-screen dialog, enhanced
+only with JavaScript. The viewer module loads on first open, not during gallery/page loading.
+It immediately reuses the visible display derivative and then loads the largest stripped WebP
+(up to 2400px wide, never upscaled); originals and private metadata are never served. A small
+WebGL textured quad performs GPU zoom/pan, with a CSS-transform image fallback when WebGL,
+texture upload or the device texture-size limit prevents rendering. Wheel zoom follows the cursor;
+drag, two-finger pinch/pan, double-click/double-tap and +/−/0/arrows work. Esc closes and returns
+focus. Native dialog modality and explicit Tab wrapping trap focus; reduced-motion users get no animated transitions.
+Both terminal and light themes use the existing semantic tokens.
+
+For **R2 WebGL textures**, configure the public derivatives bucket CORS to allow `GET` from
+`https://amrithnath.dev` (and any preview/local origins you explicitly need), with
+`Access-Control-Allow-Origin` on image responses. Detail images use `crossOrigin = 'anonymous'`
+before assigning `src`, without credentials. A cached no-CORS display image is never uploaded
+cross-origin. If CORS is missing, the viewer retries an ordinary image and keeps CSS zoom/pan;
+if detail cannot load at all, the display image remains usable. No CSP expansion is required
+(image requests use the already-allowed photo origin). There are no published R2 catalogue
+entries to probe in the seed site; verify the bucket CORS response when publishing the first one.
+Tiled pyramids and derivatives beyond the existing 2400px cap remain a follow-up; this viewer
+deliberately keeps the existing privacy-preserving ingest pipeline unchanged.
+
 **Extras (still unlisted):** places link to `/photography/map/`, an inline SVG with no third-party
 requests. One linked marker per named place uses reviewed, coarse coordinates; the text list is
 available without JavaScript. Unknown locations stay unset. The bundled simplified Natural Earth
