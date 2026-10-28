@@ -55,6 +55,7 @@ pnpm dev            # http://localhost:4321
 | `pnpm check:photos` | Fail if a gallery photo has GPS data or no catalogue entry |
 | `pnpm test:e2e` | Playwright smoke and accessibility tests (run after a build) |
 | `pnpm test:cms-auth` | Unit tests for the CMS sign-in Worker |
+| `pnpm test:views` | Unit tests for the article view counter Worker |
 | `pnpm lighthouse` | Lighthouse CI against `dist/` (`LIGHTHOUSE_DESKTOP=1` for desktop) |
 | `pnpm commitlint --from <base> --to <head>` | Check commit messages |
 
@@ -82,6 +83,7 @@ pnpm dev            # http://localhost:4321
 │   └── themes/          # Theme registry
 ├── public/              # Static files, _headers, service worker, CMS config
 ├── workers/cms-auth/    # Cloudflare Worker for CMS sign-in
+├── workers/views/       # Cloudflare Worker + D1 for article view counts
 ├── scripts/             # Build output checks
 ├── tests/e2e/           # Playwright tests
 └── .github/workflows/   # CI, releases and deploys
@@ -246,6 +248,7 @@ items, and turn off `placeholder`.
 | Build contracts (SEO, theme, links) | `pnpm verify` |
 | Browser and accessibility (WCAG 2.1 AA via axe) | `pnpm test:e2e` |
 | CMS sign-in Worker | `pnpm test:cms-auth` |
+| View counter Worker | `pnpm test:views` |
 | Photography helpers and offline ingest | `pnpm test:photos` |
 | Photo originals/catalogue privacy | `pnpm check:photos` |
 | Photo ingest (offline rehearsal) | `pnpm photos:ingest -- <files-or-dirs> --dry-run --out .photos-output` |
@@ -290,6 +293,7 @@ It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 Other workflows:
 
 - **CMS Auth Worker** (`cms-auth.yml`): tests and deploys `workers/cms-auth/`.
+- **Views Worker** (`views.yml`): tests `workers/views/`, applies its D1 migrations and deploys it.
 - **Photo ingest** (`photos.yml`): manual; publishes R2 inbox photos and opens a draft metadata PR.
 - **Locate photos** (`photos-locate.yml`): on photo PRs, resolves Maps links and place names.
 - **Release** (`release.yml`): Release Please versioning, changelog, tags and GitHub releases.
@@ -310,6 +314,36 @@ page-view counts, viewable in the Cloudflare dashboard. The beacon only loads on
 never on previews or localhost, and is skipped for visitors who send Global Privacy Control or Do
 Not Track. Leave the variable unset to ship no analytics. Don't also enable Cloudflare Pages' own
 analytics injection, or page views are counted twice.
+
+### View counts
+
+Blog posts and projects can show `views: 123` under the description. The count comes from
+`workers/views/`, a Cloudflare Worker with a D1 table of `path → count` at
+`views.amrithnath.dev`. `GET /views?path=/blog/x/` reads a count; `POST /views` with
+`{"path":"/blog/x/"}` adds one.
+
+- Only `/blog/…/` and `/project/…/` paths (max 160 characters) are accepted. New rows are created
+  only for pages that return 200 on `SITE_URL`.
+- CORS is limited to the exact origins in `ALLOWED_ORIGINS` (`workers/views/wrangler.toml`). No
+  cookies; IP, user agent and referrer are never read or stored.
+- Each browser counts a page once (a `localStorage` flag), only on `amrithnath.dev`. Previews and
+  localhost only read. `Sec-GPC: 1` / `DNT: 1` visitors are never counted, by the page or the Worker.
+- The site renders the counter only when `PUBLIC_VIEWS_URL` is set at build time. Otherwise there
+  is no markup, script or request.
+
+**One-time setup**
+
+1. Create the database: `npx wrangler d1 create portfolio-views`, and note its `database_id`.
+2. Make sure the `CLOUDFLARE_API_TOKEN` secret (see the CMS setup) also has **D1: Edit**
+   (account). `CLOUDFLARE_ACCOUNT_ID` is reused.
+3. Add repository variables `VIEWS_D1_DATABASE_ID=<database_id>` and
+   `VIEWS_URL=https://views.amrithnath.dev`.
+4. Run the **Views Worker** workflow. It applies `workers/views/migrations/`, deploys the Worker
+   and creates the `views.amrithnath.dev` custom domain (DNS record included).
+5. Rebuild the site (push to `main` or rerun **Portfolio Quality**) so `VIEWS_URL` is built in.
+
+The CSP already allows `https://views.amrithnath.dev` in `connect-src`. To use another host,
+update `public/_headers` (then `pnpm sync:headers`), `wrangler.toml` and `VIEWS_URL`.
 
 ## Search and AI discovery
 
