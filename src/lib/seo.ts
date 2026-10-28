@@ -33,7 +33,7 @@ export function isIndexablePath(pathname: string): boolean {
   const path = pathname.replace(/\/+$/, '') || '/';
   return (
     !excludedPrefixes.some(prefix => path.startsWith(prefix)) &&
-    !['/blog', '/blogs'].includes(path) &&
+    path !== '/blogs' &&
     !isWip(path) &&
     !/\.[^/]+$/.test(path)
   );

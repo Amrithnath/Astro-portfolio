@@ -1,0 +1,3 @@
+# Edge redirects (Cloudflare Pages). Mirrored into vercel.json by scripts/sync-vercel-headers.mjs.
+/blogs /blog/ 301
+/blogs/ /blog/ 301

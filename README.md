@@ -96,7 +96,9 @@ Paused projects, such as the wedding upload stack, live in [`project-archive/`](
 ### Markdown
 
 Blog posts live in `src/content/blog/` and projects in `src/content/projects/`. The schemas are in
-`src/content.config.ts`.
+`src/content.config.ts`. Published posts are listed newest first at `/blog/`; `draft: true` keeps a
+post out of production. Redirects live in `public/_redirects` (Cloudflare) and are mirrored into
+`vercel.json` by `pnpm sync:headers`.
 
 ```yaml
 ---

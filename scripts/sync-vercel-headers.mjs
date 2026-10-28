@@ -1,4 +1,4 @@
-// Mirrors public/_headers (Cloudflare Pages) into vercel.json, which Vercel needs for the same
+// Mirrors public/_headers and public/_redirects (Cloudflare Pages) into vercel.json, which Vercel needs for the same
 // security headers. `node scripts/sync-vercel-headers.mjs` writes it; `--check` fails if stale.
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -50,7 +50,13 @@ for (const { path, headers: values } of rules) {
   for (const [source, list] of excluded) headers.push({ source, headers: list });
 }
 
-const json = `${JSON.stringify({ $schema: 'https://openapi.vercel.sh/vercel.json', headers }, null, 2)}\n`;
+const redirects = readFileSync(new URL('public/_redirects', root), 'utf8').split('\n')
+  .map((line) => line.trim()).filter((line) => line && !line.startsWith('#'))
+  .map((line) => {
+    const [source, destination, status = '302'] = line.split(/\s+/);
+    return { source, destination, statusCode: Number(status) };
+  });
+const json = `${JSON.stringify({ $schema: 'https://openapi.vercel.sh/vercel.json', headers, redirects }, null, 2)}\n`;
 if (process.argv.includes('--check')) {
   let current = '';
   try {
@@ -60,7 +66,7 @@ if (process.argv.includes('--check')) {
     console.error('vercel.json is out of sync with public/_headers. Run `pnpm sync:headers`.');
     process.exit(1);
   }
-  console.log(`Header checks passed: vercel.json mirrors ${headers.length} public/_headers rules.`);
+  console.log(`Header checks passed: vercel.json mirrors ${headers.length} public/_headers rules and ${redirects.length} redirects.`);
 } else {
   writeFileSync(vercelPath, json);
   console.log(`Wrote vercel.json with ${headers.length} header rules.`);

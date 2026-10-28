@@ -39,7 +39,7 @@ test('index contains public pages, never unlisted or nonindexable documents', as
   });
   expect(urls).toEqual(expect.arrayContaining(['/', '/about/', '/projects/', '/resume/', '/project/webDev/weather-app/']));
   expect(urls).not.toContain('/blog/bluetooth-dystopia/');
-  expect(urls.some(url => /^\/(?:photography|now|search|admin|terminal-full|offline|404|work-in-progress)(?:\/|$)/.test(url) || ['/blog/', '/blogs/'].includes(url))).toBe(false);
+  expect(urls.some(url => /^\/(?:photography|now|search|admin|terminal-full|offline|404|work-in-progress)(?:\/|$)/.test(url) || url === '/blogs/')).toBe(false);
 });
 
 test('search lazily loads its index and handles unavailable assets', async ({ page }) => {
