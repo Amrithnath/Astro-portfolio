@@ -219,6 +219,12 @@ A [now page](https://nownownow.com/about) about what you're focused on at the mo
 *Pages → Now* in `/admin`: set `updated` and `location`, write the sections in Markdown, and turn
 off `placeholder` to remove the draft banner.
 
+### Uses page (`/uses/`)
+
+A [uses page](https://uses.tech) listing your hardware, software and camera gear. It is also
+**unlisted**. Edit `src/content/uses/uses.md` or *Pages → Uses* in `/admin`, replace the TODO
+items, and turn off `placeholder`.
+
 ## Testing and quality
 
 | Check | Command |

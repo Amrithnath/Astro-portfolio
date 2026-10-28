@@ -219,3 +219,17 @@ collections:
           - { name: location, label: Where I am, widget: string, required: false }
           - { name: placeholder, label: Still placeholder text, widget: boolean, default: false, required: false }
           - { name: body, label: Now, widget: markdown }
+      - name: uses
+        label: Uses (unlisted)
+        file: src/content/uses/uses.md
+        format: frontmatter
+        preview_path: uses/
+        fields:
+          - name: updated
+            label: Updated
+            widget: datetime
+            format: YYYY-MM-DD
+            time_format: false
+            default: '{{now}}'
+          - { name: placeholder, label: Still placeholder text, widget: boolean, default: false, required: false }
+          - { name: body, label: Uses, widget: markdown }

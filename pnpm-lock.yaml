@@ -43,8 +43,8 @@ importers:
         specifier: ^1.64.1
         version: 1.64.1
       '@sveltia/cms':
-        specifier: 0.253.0
-        version: 0.253.0
+        specifier: 0.253.1
+        version: 0.253.1
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -1112,8 +1112,8 @@ packages:
   '@speed-highlight/core@1.2.24':
     resolution: {integrity: sha512-qeW2e1l78afw8VhRPfPQ1Gjj+KU5XFQ/OFV5ti6eTa9bruO7mJyZtA4vw0ofqmA3tKCkROE9xLk3VZoeRc98nw==}
 
-  '@sveltia/cms@0.253.0':
-    resolution: {integrity: sha512-mPXq+QC+DN2c7LvCAMlhsChmocBNkffaglgqmdyR/hbmUA5pw+FwztvIj2Wn8a7D1Awz1MwqjGRUCgyezTs8lQ==}
+  '@sveltia/cms@0.253.1':
+    resolution: {integrity: sha512-Y2LG4qr7fKqZMA+fEf1kelwrEQPy2thSniEKxlV/OxfS0s+Osmqx6ob7NFknPDzEVaII8qwc59MI9RnIJtJN8A==}
     peerDependencies:
       '@types/react': ^19.3.0
     peerDependenciesMeta:
@@ -3209,7 +3209,7 @@ snapshots:
 
   '@speed-highlight/core@1.2.24': {}
 
-  '@sveltia/cms@0.253.0':
+  '@sveltia/cms@0.253.1':
     dependencies:
       '@shikijs/langs': 4.5.0
       '@shikijs/themes': 4.5.0

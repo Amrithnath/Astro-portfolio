@@ -1,0 +1,47 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/ui/Prompt.astro';
+import { profile } from '../lib/seo';
+
+// A /uses page (uses.tech): hardware, software and gear. Edit src/content/uses/uses.md.
+const entry = await getEntry('uses', 'uses');
+if (!entry) throw new Error('src/content/uses/uses.md is missing');
+const { Content } = await render(entry);
+const { updated, placeholder } = entry.data;
+const updatedIso = updated.toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title={`Uses | ${profile.contact.name}`}
+  description={`The hardware, software and camera gear ${profile.contact.name} uses.`}
+  currentPage="/uses"
+>
+  <Prompt path="~" command="cat uses.md" />
+  <div class="output">
+    <article class="prose">
+      <h1>What I use</h1>
+      {placeholder && (
+        <p class="placeholder-note" role="note">Draft: this page still has placeholder text.</p>
+      )}
+      <p class="uses-meta">Updated <time datetime={updatedIso}>{updatedIso}</time></p>
+      <Content />
+      <p class="uses-footnote">
+        <small>Inspired by <a href="https://uses.tech" rel="noopener noreferrer">uses.tech</a>.</small>
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .uses-meta,
+  .uses-footnote {
+    color: var(--color-muted);
+  }
+  .placeholder-note {
+    padding: var(--space-2) var(--space-3);
+    border: 1px dashed var(--color-accent);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+  }
+</style>
