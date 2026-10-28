@@ -1,3 +1,4 @@
+import { assertPhotoIds } from './photos';
 import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
 
 export function getPublishedCollection<C extends CollectionKey>(collection: C) {
@@ -17,9 +18,10 @@ export async function getProjectPreviews() {
 // Featured photos first, then newest; undated photos keep file order at the end.
 export async function getPhotos() {
   const photos = await getPublishedCollection('photos');
+  assertPhotoIds(photos);
   return photos.sort(
     (a, b) =>
       Number(b.data.featured) - Number(a.data.featured) ||
-      (b.data.date?.valueOf() ?? 0) - (a.data.date?.valueOf() ?? 0),
+      (b.data.date?.valueOf() ?? 0) - (a.data.date?.valueOf() ?? 0)
   );
 }

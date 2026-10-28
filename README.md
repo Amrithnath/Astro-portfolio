@@ -145,19 +145,58 @@ run before anything reaches production. Publishing in the CMS merges the PR. Upl
 
 ### Photography (`/photography/`)
 
-The gallery is **unlisted**: it deploys to production and opens when you type the URL, but nothing
-links to it, it is `noindex`, and robots, the sitemap and `llms.txt` leave it out.
+The gallery and **all** its tag, place, album, trip and individual-photo pages are **unlisted**:
+noindex, no sitemap/LLM discovery and no links from the rest of the site. This is not access control;
+anyone with a URL can view published photos. CLI-style flag buttons filter without typing;
+without JavaScript, the grid and linked tag/place pages still work.
 
-To add a photo, use the **Photography** collection in `/admin`, or by hand:
+Use the **Photography** and **Albums and trips** collections in `/admin` to edit metadata.
+Tags are normalized to lowercase kebab-case and deduplicated. Location is an optional object:
+`{ name, region?, country, lat?, lng? }`; coordinates must have **at most two decimals**
+(roughly 1 km, not precise GPS). Leave unknown locations unset; do not guess.
+Photos reference any number of albums. Trips are albums with `kind: trip`, date ranges and
+ordered itinerary stops; `src/content/albums/example-trip.yml` is a draft template.
 
-1. Export the image **without GPS/location metadata** and put it in `src/assets/photos/`.
-2. Add `src/content/photos/<slug>.yml` with `title`, `image: ../../assets/photos/<file>` and
-   `alt`. Optional: `caption`, `location`, `date`, `camera`, `lens`, `settings`, `tags`,
-   `featured` (shown first), `draft`.
-3. Run `pnpm check:photos`.
+**Local photos:** export without GPS metadata, put the original in `src/assets/photos/` and add
+`src/content/photos/<slug>.yml` with title, image path and alt text. `pnpm check:photos` rejects
+GPS-bearing originals and uncatalogued assets. Astro emits metadata-free AVIF/WebP derivatives.
+Optional fields include caption, date, camera, lens, settings, tags, albums, featured and draft.
+Use exactly one image source: local `image` **or** R2 `remote: { key, width, height, placeholder? }`.
+Photo IDs `tags`, `places` and `albums` are reserved and fail the build.
 
-Astro serves resized AVIF/WebP copies with all metadata removed, but the originals are public in
-the repository, so CI rejects photos that still carry GPS coordinates.
+**R2 ingest (no local Cloudflare login required):**
+
+1. Create **two different R2 buckets**: a private inbox for originals and a public derivatives
+   bucket. Never expose the inbox; originals may contain GPS. Connect custom domain
+   `photos.amrithnath.dev` to the public bucket (source config: `src/data/photos-config.ts`).
+2. Create an R2 API token scoped to both buckets with object read/write permissions.
+   Add repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`;
+   add repository variables `R2_INBOX_BUCKET` and `R2_PUBLIC_BUCKET` with the bucket names.
+3. Optionally add secret `PHOTOS_PR_TOKEN` (a repository-scoped token with Contents and Pull
+   requests write permissions) so ingest PRs trigger CI. Otherwise enable Actions to create PRs;
+   PRs created using `GITHUB_TOKEN` do **not** trigger CI automatically.
+4. Drag-drop originals into the private inbox using Cloudflare's dashboard from any device.
+   Run **Photo ingest** in GitHub Actions, optionally selecting an existing album slug and
+   comma-separated tags. It downloads originals privately, strips metadata, uploads AVIF/WebP
+   widths 480/800/1200/1600/2400 (never upscaled), and opens a metadata-only PR. After the PR
+   succeeds, originals move to `archive/` **in the private inbox**, not the public bucket.
+5. In the PR/CMS, replace TODO alt text and location name/country (or remove unknown location),
+   review rounded coordinates/tags/album membership, then set `draft: false` to publish.
+   Ingested entries default to drafts. Existing entries are never overwritten; move or rename
+   duplicate inbox files before retrying. Do not delete the archive until you have a backup.
+
+Local rehearsal (no network, no credentials):
+
+```sh
+pnpm photos:ingest -- ./my-photos --album landscapes --tags landscape,sunset --dry-run --out .photos-output
+pnpm test:photos
+```
+
+The rehearsal still creates draft YAML entries; derivatives go to the ignored output directory.
+R2 upload mode is optional locally and requires the same environment variables. Public keys use
+`<filename-slug>/<content-hash>/<width>.<avif|webp>` with immutable one-year caching; changing
+an original changes its key. Only derivatives reach the public bucket. The ingest workflow has
+no automatic trigger; review and merge the generated PR yourself.
 
 ## Testing and quality
 
@@ -167,6 +206,9 @@ the repository, so CI rejects photos that still carry GPS coordinates.
 | Build contracts (SEO, theme, links) | `pnpm verify` |
 | Browser and accessibility (WCAG 2.1 AA via axe) | `pnpm test:e2e` |
 | CMS sign-in Worker | `pnpm test:cms-auth` |
+| Photography helpers and offline ingest | `pnpm test:photos` |
+| Photo originals/catalogue privacy | `pnpm check:photos` |
+| Photo ingest (offline rehearsal) | `pnpm photos:ingest -- <files-or-dirs> --dry-run --out .photos-output` |
 | Dependencies | `pnpm audit` |
 
 ### Lighthouse

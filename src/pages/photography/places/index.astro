@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prompt from '../../../components/ui/Prompt.astro';
+import Card from '../../../components/ui/Card.astro';
+import PhotoNav from '../../../components/photos/PhotoNav.astro';
+import { getPhotos } from '../../../lib/content';
+import { placeIndex } from '../../../lib/photos';
+const entries = placeIndex(await getPhotos());
+---
+
+<BaseLayout
+  title="Photography places"
+  description="Browse photographs by places."
+  currentPage="/photography/places"
+>
+  <h1>Photography places</h1><PhotoNav /><Prompt command="ls ~/photography/places" />
+  {
+    entries.length ? (
+      <ul role="list">
+        {entries.map((entry) => (
+          <li>
+            <Card href={'/photography/places/' + entry.slug + '/'}>
+              {entry.name} ({entry.count})
+            </Card>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No places added yet.</p>
+    )
+  }
+</BaseLayout>

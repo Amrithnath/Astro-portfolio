@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Gallery from '../../../components/photos/Gallery.astro';
+import PhotoImage from '../../../components/photos/PhotoImage.astro';
+import PhotoNav from '../../../components/photos/PhotoNav.astro';
+import { getPhotos, getPublishedCollection } from '../../../lib/content';
+import { albumPhotos, dateGroups } from '../../../lib/photos';
+export async function getStaticPaths() {
+  const photos = await getPhotos();
+  return (await getPublishedCollection('albums')).map((album) => ({
+    params: { slug: album.id },
+    props: {
+      album,
+      photos: albumPhotos(photos, album.id),
+      cover: photos.find((p) => p.id === album.data.cover?.id),
+    },
+  }));
+}
+const { album, photos, cover } = Astro.props;
+const { data } = album;
+---
+
+<BaseLayout
+  title={data.title + ' | Photography'}
+  description={data.description ?? 'A photographic ' + data.kind + '.'}
+  currentPage={'/photography/albums/' + album.id}
+>
+  <h1>{data.title}</h1><PhotoNav /><p>{data.description}</p>
+  {
+    cover && (
+      <a href={'/photography/' + cover.id + '/'} aria-label={'Cover: ' + cover.data.title}>
+        <PhotoImage photo={cover} />
+      </a>
+    )
+  }
+  {
+    data.kind === 'trip' ? (
+      <>
+        <h2>Itinerary</h2>
+        <p>
+          {data.startDate?.toISOString().slice(0, 10)}
+          {data.endDate && ' — ' + data.endDate.toISOString().slice(0, 10)}
+        </p>
+        <ol>
+          {data.stops.map((stop) => (
+            <li>
+              {stop.date && (
+                <time datetime={stop.date.toISOString()}>
+                  {stop.date.toISOString().slice(0, 10)} ·{' '}
+                </time>
+              )}
+              {[stop.name, stop.region, stop.country].filter(Boolean).join(', ')}
+            </li>
+          ))}
+        </ol>
+        {dateGroups(photos).map(([date, entries]) => (
+          <section>
+            <h2>{date}</h2>
+            <Gallery entries={entries} />
+          </section>
+        ))}
+      </>
+    ) : (
+      <Gallery entries={photos} />
+    )
+  }
+</BaseLayout>

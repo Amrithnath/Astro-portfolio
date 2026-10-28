@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Gallery from '../../../components/photos/Gallery.astro';
+import PhotoNav from '../../../components/photos/PhotoNav.astro';
+import { getPhotos } from '../../../lib/content';
+import { tagIndex } from '../../../lib/photos';
+export async function getStaticPaths() {
+  return tagIndex(await getPhotos()).map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+const { entry } = Astro.props;
+---
+
+<BaseLayout
+  title={entry.name + ' | Photography'}
+  description={'Photographs: ' + entry.name + '.'}
+  currentPage={'/photography/tags/' + entry.slug}
+>
+  <h1>{entry.name}</h1><PhotoNav /><Gallery entries={entry.photos} />
+</BaseLayout>

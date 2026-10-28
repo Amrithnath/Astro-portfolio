@@ -105,7 +105,7 @@ for (const route of ['/', '/resume/']) {
 test('photography is unlisted and its lightbox opens, cycles and restores focus', async ({ page, request }) => {
   await page.goto('/photography/');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-  await expect(page.locator('a[href^="/photography"]')).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Photography', exact: true })).toBeVisible();
   expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/photography');
 
   const links = page.locator('.gallery-link');
@@ -121,4 +121,56 @@ test('photography is unlisted and its lightbox opens, cycles and restores focus'
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
   await expect(links.first()).toBeFocused();
+});
+
+test('photography flag filters update the prompt and lightbox sees only visible photos', async ({ page }) => {
+  await page.goto('/photography/');
+  const sunset = page.getByRole('button', { name: '--tag sunset (1)', exact: true });
+  await sunset.click();
+  await expect(sunset).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-filter-prompt]')).toHaveText('$ ls ~/photography --tag sunset');
+  await expect(page.locator('.gallery-item:visible')).toHaveCount(1);
+  const visible = page.locator('.gallery-item:visible .gallery-link');
+  const source = await visible.getAttribute('data-full');
+  await visible.click();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.lightbox-image')).toHaveAttribute('src', source!);
+  await page.keyboard.press('Escape');
+  await sunset.click();
+  await expect(page.locator('.gallery-item:visible')).toHaveCount(2);
+  await expect(page.locator('[data-filter-prompt]')).toHaveText('$ ls ~/photography');
+  await page.getByRole('button', { name: '--album Landscapes (2)', exact: true }).click();
+  await expect(page.locator('[data-filter-prompt]')).toContainText('--album landscapes');
+});
+
+for (const route of ['tags/', 'tags/landscape/', 'places/', 'albums/', 'albums/landscapes/', 'pine-ridge/']) {
+  test('photography/' + route + ' stays unlisted and renders connected pages', async ({ page }) => {
+    await page.goto('/photography/' + route);
+    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    await expect(page.getByRole('link', { name: 'All photos', exact: true })).toHaveAttribute('href', '/photography/');
+    if (route === 'tags/landscape/' || route === 'albums/landscapes/') {
+      await expect(page.locator('.gallery-item')).toHaveCount(2);
+      await expect(page.locator('a.gallery-title').first()).toHaveAttribute('href', '/photography/pine-ridge/');
+    }
+    if (route === 'pine-ridge/') {
+      await expect(page.getByRole('link', { name: '#landscape', exact: true })).toHaveAttribute('href', '/photography/tags/landscape/');
+      await expect(page.getByRole('link', { name: 'Landscapes', exact: true })).toHaveAttribute('href', '/photography/albums/landscapes/');
+      await expect(page.getByRole('navigation', { name: 'Adjacent photos' })).toContainText('Golden hour');
+    }
+    if (route === 'places/') await expect(page.getByText('No places added yet.')).toBeVisible();
+  });
+}
+
+test('photography remains browsable without JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto(baseURL + '/photography/');
+    await expect(page.locator('.gallery-item')).toHaveCount(2);
+    await expect(page.locator('[data-photo-filters]')).toBeHidden();
+    await page.getByRole('link', { name: '#sunset', exact: true }).click();
+    await expect(page.locator('h1')).toHaveText('sunset');
+    await expect(page.locator('.gallery-item')).toHaveCount(1);
+  } finally { await context.close(); }
 });
