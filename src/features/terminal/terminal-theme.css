@@ -226,6 +226,7 @@ body {
 .position { color: var(--color-muted); }
 
 .theme-switcher { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+:root[data-theme-switchable] .theme-switcher[hidden] { display: flex !important; }
 .theme-command { color: var(--color-secondary); margin-right: var(--space-1); }
 .theme-switcher button {
   border: 1px solid transparent;

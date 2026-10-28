@@ -1,7 +1,13 @@
 ---
 import { themes } from '.';
+
+// Highlights the saved choice from first paint, before the switcher script sets aria-pressed.
+const pressedCss = ['auto', ...themes.map((theme) => theme.id)]
+  .map((id) => `:root[data-theme-preference='${id}'] .theme-switcher [data-theme-option='${id}']`)
+  .join(',\n') + ' { background: var(--color-accent); color: var(--color-on-accent); }';
 ---
 
+{themes.length > 1 && <style is:inline set:html={pressedCss} />}
 {themes.length > 1 && (
   <div class="theme-switcher" data-theme-switcher role="group" aria-label="Color theme" hidden>
     <span class="theme-command" aria-hidden="true">:set background=</span>
