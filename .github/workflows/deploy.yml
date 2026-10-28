@@ -37,7 +37,8 @@ jobs:
 
   deploy-ghpages:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
@@ -52,7 +53,8 @@ jobs:
   deploy-gcloud-storage:
     if: inputs.name == '2' # only deploy to gcloud if the input is 2
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write

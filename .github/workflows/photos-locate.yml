@@ -18,7 +18,7 @@ jobs:
   locate:
     # Only same-repository branches (CMS and owner PRs); forks never get a write token.
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 10
     permissions:
       contents: write

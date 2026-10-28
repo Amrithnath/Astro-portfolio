@@ -343,6 +343,15 @@ events/console errors through navigation, themes, photography, resume exports an
 If any check fails, it cancels the rest of the run, so failures don't waste minutes.
 It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 
+**Release fast path:** a `Changes` job runs `scripts/ci-release-only.mjs` first. If the diff
+only touches `CHANGELOG.md`, `.release-please-manifest.json` and the `package.json` version,
+the release PR skips every gate. The merge to `main` runs only Build and the deploys, because
+the code was already verified. Vercel also skips `release-please--*` branches (`vercel.json`).
+
+**Runners:** jobs that only call APIs, deploy artifacts, or run git and small Node tests use
+`ubuntu-slim` (1 CPU container, 15-minute hard limit, so they set `timeout-minutes: 10`). Build,
+CodeQL, Playwright, Lighthouse and image processing stay on 4-CPU `ubuntu-latest` VMs.
+
 Other workflows:
 
 - **Update visual baselines** (`visual-baselines.yml`): manual Ubuntu/Chrome snapshot refresh; see Testing.
