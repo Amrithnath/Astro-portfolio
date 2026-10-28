@@ -1,0 +1,390 @@
+---
+// Terminal-style privacy check: the visitor types `run check` (or `run check --help`) and the probes
+// in probes.ts run locally. Results live only in this page's memory.
+import Prompt from '../../shared/ui/Prompt.astro';
+import { CHECK_IDS } from './checks';
+
+const suggestions = ['run check', 'run check --help', 'run check --stun', 'explain fingerprint', 'copy', 'clear'];
+---
+
+<section class="privacy-check" aria-labelledby="privacy-check-title" data-privacy-check>
+  <h1 id="privacy-check-title" class="visually-hidden">Browser privacy check</h1>
+  <div class="privacy-log" data-privacy-log role="log" aria-live="polite" aria-relevant="additions">
+    <p>
+      <strong>privacy-check</strong> looks at what any website can learn about this browser, right here,
+      and explains each finding.
+    </p>
+    <p class="privacy-disclosure" role="note">
+      <span class="privacy-tag privacy-info">[NOTE]</span> To show how tracking works, this page
+      <strong>fingerprints your browser locally</strong>. Results are never sent or saved, and are
+      discarded when you leave. The only requests are an empty bait file on this site, the public browser
+      release list from endoflife.date (skip with <code>--offline</code>) and, only with
+      <code>--stun</code>, Cloudflare's STUN server. No analytics run on this page.
+    </p>
+    <p>
+      Type <code>run check</code> to start, or <code>run check --help</code> to see exactly what each
+      check does first.
+    </p>
+  </div>
+
+  <noscript>
+    <p class="privacy-noscript">
+      JavaScript is off, which already blocks most fingerprinting and every check on this page.
+    </p>
+  </noscript>
+
+  <form class="privacy-input-line" data-privacy-form autocomplete="off">
+    <span class="privacy-prompt" aria-hidden="true"><Prompt path="~/privacy" /></span>
+    <input
+      id="privacy-input"
+      name="command"
+      type="text"
+      aria-label="Privacy check command"
+      class="privacy-input"
+      placeholder="run check"
+      autocapitalize="off"
+      autocomplete="off"
+      spellcheck="false"
+      enterkeyhint="go"
+      aria-describedby="privacy-input-hint"
+    />
+  </form>
+  <p id="privacy-input-hint" class="privacy-hint">
+    Commands: <code>run check [--offline] [--stun]</code>, <code>run check --help</code>,
+    <code>explain &lt;{CHECK_IDS.join('|')}&gt;</code>, <code>copy</code>, <code>clear</code>. ↑/↓ for history, Tab to complete.
+  </p>
+  <div class="privacy-suggestions" aria-label="Suggested commands" role="group">
+    {suggestions.map(command => (
+      <button type="button" class="privacy-suggestion" data-command={command}>{command}</button>
+    ))}
+  </div>
+</section>
+
+<script>
+  import { tokenizeShell } from '../../shared/lib/shell-highlight';
+  import { CHECK_IDS, CHECKS, STATUS_TAG, formatReport, parseCommand, type CheckId, type CheckResult } from './checks';
+  import { runChecks } from './probes';
+
+  const root = document.querySelector<HTMLElement>('[data-privacy-check]');
+  if (root && !root.dataset.ready) {
+    root.dataset.ready = 'true';
+    const log = root.querySelector<HTMLElement>('[data-privacy-log]')!;
+    const form = root.querySelector<HTMLFormElement>('[data-privacy-form]')!;
+    const input = root.querySelector<HTMLInputElement>('#privacy-input')!;
+    const history: string[] = [];
+    let historyIndex = 0;
+    let running = false;
+    let report: CheckResult[] = [];
+
+    const element = <K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    };
+    const line = (text = '', className = '') => {
+      const node = element('div', `privacy-line ${className}`.trim(), text);
+      log.append(node);
+      return node;
+    };
+    const scroll = () => input.scrollIntoView({ block: 'nearest' });
+
+    const echo = (command: string) => {
+      const node = line('', 'privacy-echo');
+      const prompt = root.querySelector('.privacy-prompt .prompt')!.cloneNode(true) as HTMLElement;
+      const highlighted = element('span', 'command');
+      for (const { kind, text } of tokenizeShell(command)) {
+        highlighted.append(kind === 'space' ? document.createTextNode(text) : element('span', `sh-${kind}`, text));
+      }
+      prompt.append(highlighted);
+      node.append(prompt);
+    };
+
+    const tagged = (status: keyof typeof STATUS_TAG, text: string) => {
+      const node = line('', 'privacy-result');
+      node.append(element('span', `privacy-tag privacy-${status}`, STATUS_TAG[status]), ` ${text}`);
+      return node;
+    };
+
+    const help = () => {
+      line('commands:');
+      line('  run check            run every check (live browser-version lookup)', 'privacy-pre');
+      line('  run check --offline  skip the endoflife.date request', 'privacy-pre');
+      line('  run check --stun     also test public IP exposure via Cloudflare STUN', 'privacy-pre');
+      line('  run check --help     explain exactly what each check does and sends', 'privacy-pre');
+      line(`  explain <id>         why it matters and how to fix (${CHECK_IDS.join(', ')})`, 'privacy-pre');
+      line('  copy                 copy the last report to the clipboard', 'privacy-pre');
+      line('  clear                clear the screen', 'privacy-pre');
+    };
+
+    const runHelp = () => {
+      line('usage: run check [--offline] [--stun]', 'privacy-pre');
+      line('Runs these checks in your browser. Nothing is stored or sent to this site, and results vanish when you leave.');
+      for (const id of CHECK_IDS) {
+        const info = CHECKS[id];
+        line(`${id} — ${info.title}`, 'privacy-heading');
+        line(`  does:  ${info.how}`, 'privacy-wrap');
+        line(`  sends: ${info.sends}`, 'privacy-wrap');
+      }
+      line('Type `explain <id>` for why each one matters and how to improve it.', 'privacy-muted');
+    };
+
+    const explain = (id: CheckId) => {
+      const info = CHECKS[id];
+      line(`${id} — ${info.title}`, 'privacy-heading');
+      line(`  does:  ${info.how}`, 'privacy-wrap');
+      line(`  sends: ${info.sends}`, 'privacy-wrap');
+      line(`  why:   ${info.why}`, 'privacy-wrap');
+      line(`  fix:   ${info.fix}`, 'privacy-wrap');
+      const found = report.find(result => result.id === id);
+      if (found) tagged(found.status, `your result: ${found.summary}`);
+    };
+
+    const run = async (options: { offline: boolean; stun: boolean }) => {
+      running = true;
+      root.setAttribute('aria-busy', 'true');
+      report = [];
+      const probes = runChecks(options);
+      line(`running ${probes.length} checks locally${options.offline ? ' (offline)' : ''}${options.stun ? ' with STUN' : ''}…`, 'privacy-muted');
+      for (const [index, probe] of probes.entries()) {
+        const id = CHECK_IDS[index];
+        const pending = line(`[ .. ] ${id.padEnd(11)} checking ${CHECKS[id].title.toLowerCase()}…`, 'privacy-muted');
+        scroll();
+        let result: CheckResult;
+        try {
+          result = await probe();
+        } catch (error) {
+          result = { id, status: 'info', summary: 'This check could not run in this browser.', details: [String(error)] };
+        }
+        pending.remove();
+        report.push(result);
+        const node = tagged(result.status, '');
+        node.append(element('span', 'privacy-id', result.id.padEnd(11)), ' ', result.summary);
+        for (const detail of result.details) line(`       ${detail}`, 'privacy-detail');
+      }
+      const counts = (['pass', 'warn', 'fail', 'info'] as const)
+        .map(status => [status, report.filter(result => result.status === status).length] as const)
+        .filter(([, count]) => count)
+        .map(([status, count]) => `${count} ${status === 'pass' ? 'ok' : status}`);
+      line(`done: ${counts.join(', ')}. Type \`explain <id>\` for why and how to fix, or \`copy\` for the report.`, 'privacy-summary');
+      running = false;
+      root.removeAttribute('aria-busy');
+      scroll();
+    };
+
+    const execute = async (raw: string) => {
+      const command = parseCommand(raw);
+      if (command.kind !== 'empty') {
+        echo(raw.trim());
+        if (history.at(-1) !== raw.trim()) history.push(raw.trim());
+      }
+      historyIndex = history.length;
+      switch (command.kind) {
+        case 'empty':
+          break;
+        case 'run':
+          if (running) line('a check is already running…', 'privacy-muted');
+          else await run(command.options);
+          break;
+        case 'run-help':
+          runHelp();
+          break;
+        case 'help':
+          help();
+          break;
+        case 'explain':
+          if (command.id) explain(command.id);
+          else line(`usage: explain <id>; ids: ${CHECK_IDS.join(', ')}${command.unknown ? ` (no check called "${command.unknown}")` : ''}`);
+          break;
+        case 'clear':
+          log.replaceChildren();
+          break;
+        case 'copy':
+          if (!report.length) line('nothing to copy yet: type `run check` first.');
+          else {
+            try {
+              await navigator.clipboard.writeText(`privacy-check report (${new Date().toISOString()})\n${formatReport(report)}`);
+              line('report copied to the clipboard.');
+            } catch {
+              line('could not access the clipboard; select the text above instead.');
+            }
+          }
+          break;
+        case 'unknown':
+          line(`command not found: ${command.input}. Try \`run check\` or \`run check --help\`.`, 'privacy-error');
+          break;
+      }
+      scroll();
+    };
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const value = input.value;
+      input.value = '';
+      void execute(value);
+    });
+
+    const completions = ['run check', 'run check --help', 'run check --offline', 'run check --stun', 'help', 'clear', 'copy', ...CHECK_IDS.map(id => `explain ${id}`)];
+    input.addEventListener('keydown', event => {
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        if (!history.length) return;
+        event.preventDefault();
+        historyIndex = Math.max(0, Math.min(history.length, historyIndex + (event.key === 'ArrowUp' ? -1 : 1)));
+        input.value = history[historyIndex] ?? '';
+      } else if (event.key === 'Tab' && input.value.trim()) {
+        const matches = completions.filter(command => command.startsWith(input.value.trimStart().toLowerCase()));
+        if (matches.length === 1) {
+          event.preventDefault();
+          input.value = matches[0];
+        } else if (matches.length > 1) {
+          event.preventDefault();
+          line(matches.join('   '), 'privacy-muted');
+        }
+      }
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-command]').forEach(button => {
+      button.addEventListener('click', () => {
+        input.value = button.dataset.command ?? '';
+        input.focus();
+      });
+    });
+    log.addEventListener('click', () => {
+      if (!getSelection()?.toString()) input.focus({ preventScroll: true });
+    });
+  }
+</script>
+
+<style>
+  .privacy-check {
+    font-family: var(--font-mono);
+    /* Keep `--flag` as two hyphens; ligatures make it look like a dash. */
+    font-variant-ligatures: none;
+  }
+  .privacy-log p {
+    margin: 0 0 var(--space-3);
+  }
+  .privacy-disclosure {
+    padding: var(--space-2) var(--space-3);
+    border-left: 2px solid var(--color-info);
+    background: var(--color-surface);
+  }
+  .privacy-log :global(.privacy-line) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .privacy-log :global(.privacy-wrap) {
+    padding-left: 9ch;
+    text-indent: -9ch;
+  }
+  .privacy-log :global(.privacy-echo) {
+    margin-top: var(--space-3);
+  }
+  .privacy-log :global(.privacy-echo .prompt) {
+    display: inline;
+  }
+  .privacy-log :global(.privacy-heading) {
+    margin-top: var(--space-2);
+    color: var(--color-heading);
+    font-weight: 600;
+  }
+  .privacy-log :global(.privacy-detail),
+  .privacy-log :global(.privacy-muted) {
+    color: var(--color-muted);
+  }
+  .privacy-log :global(.privacy-detail) {
+    padding-left: 7ch;
+    text-indent: -7ch;
+  }
+  .privacy-log :global(.privacy-result) {
+    margin-top: var(--space-1);
+  }
+  .privacy-log :global(.privacy-id) {
+    color: var(--color-secondary);
+  }
+  .privacy-log :global(.privacy-summary) {
+    margin-top: var(--space-3);
+    color: var(--color-accent);
+  }
+  .privacy-log :global(.privacy-error) {
+    color: var(--color-danger);
+  }
+  .privacy-check :global(.privacy-tag) {
+    font-weight: 600;
+  }
+  .privacy-check :global(.privacy-pass) {
+    color: var(--color-success, var(--color-accent));
+  }
+  .privacy-check :global(.privacy-warn) {
+    color: var(--color-warning);
+  }
+  .privacy-check :global(.privacy-fail) {
+    color: var(--color-danger);
+  }
+  .privacy-check :global(.privacy-info) {
+    color: var(--color-info);
+  }
+  .privacy-input-line {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    margin-top: var(--space-3);
+  }
+  .privacy-prompt :global(.prompt) {
+    white-space: nowrap;
+  }
+  .privacy-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    caret-color: var(--color-accent);
+  }
+  .privacy-input:focus-visible {
+    outline: 1px dashed var(--color-accent);
+    outline-offset: 2px;
+  }
+  .privacy-input::placeholder {
+    color: var(--color-muted);
+    opacity: 0.7;
+  }
+  .privacy-hint {
+    margin: var(--space-2) 0;
+    color: var(--color-muted);
+    font-size: 0.85em;
+  }
+  .privacy-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .privacy-suggestion {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm, 4px);
+    background: var(--color-surface);
+    color: var(--color-link);
+    font: inherit;
+    font-size: 0.85em;
+    cursor: pointer;
+  }
+  .privacy-suggestion:hover,
+  .privacy-suggestion:focus-visible {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .privacy-noscript {
+    color: var(--color-warning);
+  }
+  @media (max-width: 40rem) {
+    .privacy-input-line {
+      flex-wrap: wrap;
+    }
+    .privacy-input {
+      flex-basis: 100%;
+    }
+  }
+</style>

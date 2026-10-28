@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../shared/layouts/BaseLayout.astro';
+import Prompt from '../shared/ui/Prompt.astro';
+import PrivacyCheck from '../features/privacy/PrivacyCheck.astro';
+import { profile } from '../features/seo/seo';
+---
+
+<BaseLayout
+  title={`Privacy check | ${profile.contact.name}`}
+  description="Check what your browser reveals to websites: privacy signals, ad blocking, fingerprinting, storage, WebRTC leaks and browser support. Runs locally; nothing is collected."
+  currentPage="/privacy-check"
+  panes={{
+    name: 'privacy-check - what this browser reveals to websites',
+    synopsis: 'run check [--offline] [--stun]\nrun check --help\nexplain <id>',
+    description:
+      'Runs seven read-only probes in your browser and explains each result. Fingerprint data is shown, never sent, and discarded when you leave.',
+    seeAlso: [
+      { href: '/privacy-policy/', label: 'privacy-policy(7)' },
+      { href: 'https://coveryourtracks.eff.org/', label: 'coveryourtracks(1)' },
+      { href: 'https://globalprivacycontrol.org/', label: 'gpc(7)' },
+    ],
+    skills: ['Security', 'Privacy', 'JavaScript', 'TypeScript'],
+  }}
+>
+  <Prompt path="~/privacy" command="cat README" />
+  <div class="output">
+    <PrivacyCheck />
+  </div>
+</BaseLayout>

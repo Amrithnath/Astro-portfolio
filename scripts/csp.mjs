@@ -93,12 +93,19 @@ export async function injectCsp(directory) {
   const policy = [template.replace('HASHES', sortedHashes.join(' ')), ...resources].join('; ');
   // Pagefind compiles WebAssembly; allow it only on the unlisted search page.
   const searchPolicy = policy.replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'");
+  // The privacy check compares browser versions with endoflife.date's public release list.
+  const privacyCheckPolicy = policy.replace("connect-src 'self'", "connect-src 'self' https://endoflife.date");
   for (const { path, html, nodes, edits, admin } of pages) {
     if (admin) {
       await writeFile(path, applyEdits(html, edits));
       continue;
     }
-    const page = /^search[\\/]/.test(relative(directory, path)) ? searchPolicy : policy;
+    const file = relative(directory, path);
+    const page = /^search[\\/]/.test(file)
+      ? searchPolicy
+      : /^privacy-check[\\/]/.test(file)
+        ? privacyCheckPolicy
+        : policy;
     const head = nodes.find(node => node.tagName === 'head');
     if (!head?.sourceCodeLocation) throw new Error(`Missing head: ${path}`);
     const charset = nodes.find(node => node.tagName === 'meta' && attribute(node, 'charset'));

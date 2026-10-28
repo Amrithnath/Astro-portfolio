@@ -8,6 +8,7 @@ export const ogPages: Record<string, string> = {
   '/contact': 'Contact',
   '/resume': 'Resume Generator',
   '/privacy-policy': 'Privacy Policy',
+  '/privacy-check': 'Privacy Check',
 };
 
 export function ogImagePath(pathname: string): string {

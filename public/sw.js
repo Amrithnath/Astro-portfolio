@@ -51,7 +51,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (/^\/(?:api|cdn-cgi|admin|pagefind)(?:\/|$)/.test(url.pathname)) return;
+  // pagead: the privacy check's blocker bait must always hit the network.
+  if (/^\/(?:api|cdn-cgi|admin|pagefind|pagead)(?:\/|$)/.test(url.pathname)) return;
   if (url.pathname === '/sw.js' || url.pathname === '/version.json') return;
 
   if (request.mode === 'navigate') {

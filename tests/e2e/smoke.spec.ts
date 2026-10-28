@@ -145,8 +145,57 @@ test('perf monitor and carbon badge measure locally without contacting Website C
   await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated locally');
   const status = page.getByRole('contentinfo').locator('.site-status');
   await expect(status.locator('[data-build-version]')).toHaveText(/^\d+\.\d+\.\d+$/);
-  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'rss', 'source']);
+  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'scan', 'rss', 'source']);
   expect(carbonRequests).toEqual([]);
+});
+
+test('privacy check runs locally when typed and explains itself', async ({ page }) => {
+  const external: string[] = [];
+  page.on('request', request => {
+    if (!['localhost', '127.0.0.1'].includes(new URL(request.url()).hostname)) external.push(request.url());
+  });
+  await page.route('https://endoflife.date/**', route =>
+    route.fulfill({
+      json: { result: { releases: [{ name: '999', isMaintained: true, latest: { name: '999.0.1' } }, { name: '998', isMaintained: false }] } },
+      headers: { 'access-control-allow-origin': '*' },
+    })
+  );
+  await page.goto('/privacy-check/');
+  await expect(page.locator('script[src*="beacon"]')).toHaveCount(0);
+  await expect(page.getByRole('note')).toContainText('fingerprints your browser locally');
+  const input = page.getByRole('textbox', { name: 'Privacy check command' });
+  const log = page.getByRole('log');
+
+  await input.fill('run check --help');
+  await input.press('Enter');
+  await expect(log).toContainText('usage: run check [--offline] [--stun]');
+  await expect(log.locator('.privacy-heading')).toHaveCount(7);
+  await expect(log.locator('.privacy-echo .sh-flag')).toHaveText('--help');
+
+  await input.fill('run check --offline');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-summary')).toContainText('done:');
+  await expect(log.locator('.privacy-result')).toHaveCount(7);
+  await expect(log).toContainText('support not checked offline');
+  expect(external.filter(url => url.includes('endoflife.date'))).toEqual([]);
+
+  await input.fill('clear');
+  await input.press('Enter');
+  await input.fill('run check');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-summary')).toContainText('done:');
+  await expect(log.locator('.privacy-result', { has: page.locator('.privacy-id', { hasText: /^browser\s*$/ }) })).toContainText(
+    'no longer receives security fixes'
+  );
+  await input.fill('explain browser');
+  await input.press('Enter');
+  await expect(log).toContainText('your result:');
+  await input.fill('sudo rm -rf /');
+  await input.press('Enter');
+  await expect(log.locator('.privacy-error')).toContainText('command not found');
+  await input.press('ArrowUp');
+  await expect(input).toHaveValue('sudo rm -rf /');
+  expect(external.filter(url => new URL(url).hostname !== 'endoflife.date')).toEqual([]);
 });
 
 test('about exposes the skills tree and a hidden crawler-readable profile', async ({ page }) => {
