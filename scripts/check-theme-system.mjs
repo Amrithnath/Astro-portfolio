@@ -239,10 +239,19 @@ const document = {
     ? [...elements.values()].filter((element) => element.id.startsWith('include-')) : [],
   addEventListener: () => {},
   body: { appendChild() {}, removeChild() {} },
-  createElement: () => ({ click() { downloads.push(this.download); } }),
+  createElement: () => ({ click() { downloads.push(this.download); }, append() {} }),
 };
+// The resume script imports the shell tokenizer; resolve it from source like the bundler does.
+const shellHighlight = {};
+vm.runInNewContext(ts.transpileModule(read('src/shared/lib/shell-highlight.ts'), {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+}).outputText, { exports: shellHighlight });
+const modules = { '../../shared/lib/shell-highlight': shellHighlight };
 const context = vm.createContext({
-  exports: {}, document, Blob, console, setTimeout: (callback) => callback(),
+  exports: {}, document, require: (id) => {
+    if (!(id in modules)) throw new Error(`Unexpected resume script import: ${id}`);
+    return modules[id];
+  }, Blob, console, setTimeout: (callback) => callback(),
   URL: { createObjectURL(blob) { blobs.push(blob); return 'blob:resume'; }, revokeObjectURL() {} },
   window: { open: () => ({
     document: { write: (html) => { printed = html; }, close() {} },

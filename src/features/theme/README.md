@@ -1,16 +1,16 @@
 # Portfolio themes
 
-`terminal` (dark) and `light` (Terminal Basic light profile) are enabled. Themes change tokens and optional
+`terminal` (dark) and `light` (warm paper terminal profile) are enabled. Themes change tokens and optional
 component styling, not content trees: render every component once and keep IDs unique.
 
 ## Light terminal profile
 
-The light profile uses a white, untextured transcript with neutral gray window chrome,
+The light profile uses a warm cream, untextured transcript with sand window chrome,
 traffic-light controls, a green active-tab rule and a separate statusline. Fira Code,
 `user@host:~$` prompts, ANSI-style green/blue/magenta/cyan/red inks and the block cursor
-are the same terminal language as dark; commands use bold black ink to distinguish
-input from regular-weight output. Cards/buttons are square terminal-tool panels, not
-rounded website tiles. No scanlines or decorative background overlay obscure text.
+are the same terminal language as dark; prompts are bold to distinguish input from
+regular-weight output. Cards/buttons are square terminal-tool panels, not rounded website
+tiles. No scanlines or decorative background overlay obscure text.
 
 Colors live only in `src/features/theme/styles/themes/light.css`; light-only shell and primitive
 rules live in `src/features/terminal/terminal-theme.css` and `src/shared/styles/ui.css`.
@@ -18,18 +18,34 @@ Dark selectors/tokens are unchanged.
 The registry's light `themeColor` matches the transcript background. Keep foregrounds
 AA on the transcript, surface **and** titlebar; keep inverse labels AA on ANSI fills.
 
-Key WCAG contrast ratios (foreground / white transcript / gray surface):
+Key WCAG contrast ratios (foreground / cream transcript / sand surface / titlebar):
 
-| Ink | Transcript | Surface |
-| --- | --- | --- |
-| Text `#24292f` | 14.65:1 | 13.31:1 |
-| Muted `#525860` | 7.18:1 | 6.53:1 |
-| Prompt green `#116329` | 7.39:1 | 6.72:1 |
-| Link blue `#0550ae` | 7.59:1 | 6.90:1 |
-| Cyan `#006570` (lowest ANSI pair) | 6.78:1 | 6.16:1 |
+| Ink | Transcript `#f8f4ea` | Surface `#eee8d9` | Titlebar `#e4dcc8` |
+| --- | --- | --- | --- |
+| Text `#2e2922` | 13.13:1 | 11.80:1 | 10.55:1 |
+| Muted `#5a5246` | 7.00:1 | 6.29:1 | 5.63:1 |
+| Prompt green `#2b6436` | 6.42:1 | 5.77:1 | 5.16:1 |
+| Link blue `#1d4f97` | 7.30:1 | 6.56:1 | 5.87:1 |
+| Cyan `#0e5f6e` (lowest ANSI pair) | 6.64:1 | 5.96:1 | 5.34:1 |
 
-Title text on the darkest titlebar gradient stop (`#e4e7eb`) is 11.81:1.
-Inverse white labels on green/blue are 7.39:1 / 7.59:1.
+Inverse cream labels on green/blue are 6.42:1 / 7.30:1.
+
+## Command highlighting
+
+`Prompt.astro` renders commands through `src/shared/ui/ShellCommand.astro`, which tokenises them at
+build time with `src/shared/lib/shell-highlight.ts` (zsh-syntax-highlighting style: `.sh-cmd`,
+`.sh-flag`, `.sh-string`, `.sh-var`, `.sh-op`, `.sh-path`, `.sh-arg`). Token colours are semantic
+tokens in `terminal-theme.css`, so every theme gets them. The resume CLI echo uses the same tokenizer
+with `textContent` only. Tests: `pnpm test:shell`.
+
+## Wide-screen side panes
+
+At `min-width: 110rem` `TerminalShell` shows tmux-style panes in the desktop gutters
+(`src/features/terminal/SidePanes.astro`): a `tree` of listed routes plus published projects/posts
+(current page marked with `aria-current`) and a `git log` of releases parsed from `CHANGELOG.md`
+(`releases.ts`) with build info. They sit below the sticky chrome (`--chrome-height`), scroll
+independently, are outside `<main>` (not indexed) and are hidden on narrower screens and in print.
+Only link listed routes there.
 
 ## Add a theme
 

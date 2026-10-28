@@ -1,0 +1,12 @@
+---
+// A shell command with build-time zsh-syntax-highlighting style token spans.
+import { tokenizeShell } from '../lib/shell-highlight';
+
+export interface Props {
+  command: string;
+}
+
+const tokens = tokenizeShell(Astro.props.command);
+---
+
+<span class="command">{tokens.map(({ kind, text }) => kind === 'space' ? text : <span class={`sh-${kind}`}>{text}</span>)}</span>

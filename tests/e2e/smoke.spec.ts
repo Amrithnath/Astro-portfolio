@@ -67,6 +67,42 @@ test('resume CLI renders markup as text, never an image or dialog', async ({ pag
   expect(dialogs).toEqual([]);
 });
 
+test('resume CLI echoes typed commands with syntax-highlighted tokens', async ({ page }) => {
+  await page.goto('/resume/');
+  await page.locator('#terminal-input').fill('generate pdf --force');
+  await page.locator('#terminal-input').press('Enter');
+  const echoed = page.locator('#terminal-output .command').last();
+  await expect(echoed.locator('.sh-cmd')).toHaveText('generate');
+  await expect(echoed.locator('.sh-flag')).toHaveText('--force');
+});
+
+test('prompt commands render zsh-style highlighted tokens', async ({ page }) => {
+  await page.goto('/about/');
+  const command = page.locator('#main-content .command', { hasText: 'ls -la' }).first();
+  await expect(command.locator('.sh-cmd')).toHaveText('ls');
+  await expect(command.locator('.sh-flag')).toHaveText('-la');
+});
+
+test('wide screens fill the gutters with tmux-style panes; narrower screens hide them', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/about/');
+  const tree = page.getByRole('complementary', { name: 'Site map' });
+  const log = page.getByRole('complementary', { name: 'Site releases' });
+  await expect(tree).toBeVisible();
+  await expect(log).toBeVisible();
+  await expect(tree.locator('a[aria-current="page"]')).toHaveText('about.md');
+  await expect(log.locator('.log-version').first()).toHaveAttribute('href', /\/releases\/tag\/v\d+\.\d+\.\d+$/);
+  const chrome = await page.locator('.window-chrome').boundingBox();
+  const pane = await tree.boundingBox();
+  const main = await page.locator('.terminal').boundingBox();
+  expect(Math.abs(pane!.y - chrome!.height)).toBeLessThan(2);
+  expect(pane!.x + pane!.width).toBeLessThanOrEqual(main!.x + 1);
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(tree).toBeHidden();
+  await expect(log).toBeHidden();
+});
+
 test('about exposes the skills tree and a hidden crawler-readable profile', async ({ page }) => {
   await page.goto('/about/');
   await expect(page.getByText('primary-language/', { exact: true })).toBeVisible();

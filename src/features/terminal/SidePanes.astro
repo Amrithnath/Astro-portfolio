@@ -1,0 +1,89 @@
+---
+// tmux-style side panes that fill the gutters on wide screens; hidden below the --bp-xl breakpoint.
+import Prompt from '../../shared/ui/Prompt.astro';
+import { contentPath, getPublishedCollection } from '../content/content';
+import { parseReleases } from './releases';
+import changelog from '../../../CHANGELOG.md?raw';
+
+export interface Props {
+  currentPage?: string;
+}
+
+interface TreeNode {
+  name: string;
+  href: string;
+  children?: TreeNode[];
+}
+
+const trim = (path: string) => path.replace(/\/$/, '') || '/';
+const current = trim(Astro.props.currentPage ?? '/');
+
+const byDate = <T extends { data: { pubDate: Date } }>(entries: T[]) =>
+  entries.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 5);
+const [posts, projects] = await Promise.all([
+  getPublishedCollection('blog').then(byDate),
+  getPublishedCollection('projects').then(byDate),
+]);
+const leaf = (entry: (typeof posts)[number] | (typeof projects)[number]): TreeNode => ({
+  name: entry.data.title,
+  href: `${contentPath(entry)}/`,
+});
+
+const tree: TreeNode[] = [
+  { name: 'portfolio.sh', href: '/' },
+  { name: 'about.md', href: '/about' },
+  { name: 'projects/', href: '/projects', children: projects.map(leaf) },
+  { name: 'resume.py', href: '/resume' },
+  { name: 'blog/', href: '/blog/', children: posts.map(leaf) },
+  { name: 'contact.json', href: '/contact' },
+];
+const directories = tree.filter(node => node.children).length;
+const files = tree.reduce((count, node) => count + (node.children ? node.children.length : 1), 0);
+
+const releases = parseReleases(changelog);
+const builtOn = new Date().toISOString().slice(0, 10);
+---
+
+<aside class="side-pane side-pane-left" aria-label="Site map">
+  <div class="pane-label" aria-hidden="true">0:tree</div>
+  <Prompt command="tree -L 2 ~/portfolio" />
+  <ul class="pane-tree">
+    {tree.map((node, i) => (
+      <li>
+        <span class="tree-branch" aria-hidden="true">{i === tree.length - 1 ? '└── ' : '├── '}</span>
+        <a href={node.href} aria-current={trim(node.href) === current ? 'page' : undefined}>{node.name}</a>
+        {node.children && node.children.length > 0 && (
+          <ul>
+            {node.children.map((child, j) => (
+              <li>
+                <span class="tree-branch" aria-hidden="true">{i === tree.length - 1 ? '    ' : '│   '}{j === node.children!.length - 1 ? '└── ' : '├── '}</span>
+                <a href={child.href} aria-current={trim(child.href) === current ? 'page' : undefined}>{child.name}</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </li>
+    ))}
+  </ul>
+  <p class="pane-muted">{directories} directories, {files} files</p>
+</aside>
+
+<aside class="side-pane side-pane-right" aria-label="Site releases">
+  <div class="pane-label" aria-hidden="true">1:log</div>
+  <Prompt command="git log --oneline --date=short" />
+  <ol class="pane-log">
+    {releases.map(release => (
+      <li>
+        <a class="log-version" href={release.url}>v{release.version}</a>
+        <time class="pane-muted" datetime={release.date}>{release.date}</time>
+        <span class="log-summary">{release.summary}</span>
+      </li>
+    ))}
+  </ol>
+  <Prompt command="cat ~/.build" />
+  <dl class="pane-build">
+    <dt>engine</dt><dd>{Astro.generator.toLowerCase()}</dd>
+    <dt>output</dt><dd>static</dd>
+    <dt>built</dt><dd><time datetime={builtOn}>{builtOn}</time></dd>
+  </dl>
+</aside>

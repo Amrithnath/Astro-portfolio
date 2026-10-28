@@ -4,6 +4,7 @@ import { resumeCompendium } from './resume-compendium';
 import { formatMonth, formatRange } from '../../shared/lib/format-date';
 import Button from '../../shared/ui/Button.astro';
 import Card from '../../shared/ui/Card.astro';
+import ShellCommand from '../../shared/ui/ShellCommand.astro';
 
 const resumeExportData = {
   contact: resumeCompendium.contact,
@@ -22,7 +23,7 @@ const resumeExportData = {
     <div class="terminal-output" id="terminal-output" tabindex="0" role="region" aria-label="Resume terminal output">
       <div class="command-line">
         <span class="prompt">amrith@portfolio:~/resume$ </span>
-        <span class="command">ls -la</span>
+        <ShellCommand command="ls -la" />
       </div>
       <div class="output">
         <pre>total 24
@@ -37,7 +38,7 @@ drwxr-xr-x  2 amrith amrith  4096 Dec 12 05:20 output/</pre>
       
       <div class="command-line">
         <span class="prompt">amrith@portfolio:~/resume$ </span>
-        <span class="command">cat README.md</span>
+        <ShellCommand command="cat README.md" />
       </div>
       <div class="output">
         <pre>## Resume Generator CLI
@@ -60,7 +61,7 @@ Examples:
       
       <div class="command-line">
         <span class="prompt">amrith@portfolio:~/resume$ </span>
-        <span class="command">python generator.py --help</span>
+        <ShellCommand command="python generator.py --help" />
       </div>
       <div class="output">
         <pre>Resume Generator v3.0
@@ -274,6 +275,7 @@ Try: python generator.py generate --format pdf</pre>
 </div>
 
 <script>
+  import { tokenizeShell } from '../../shared/lib/shell-highlight';
   import type { ResumeCompendium } from './resume-compendium';
 
   class ResumeGenerator {
@@ -385,7 +387,22 @@ Try: python generator.py generate --format pdf</pre>
       // Add user input to terminal
       const inputLine = document.createElement('div');
       inputLine.className = 'command-line';
-      inputLine.innerHTML = `<span class="prompt">amrith@portfolio:~/resume$ </span><span class="command">${safeCommand}</span>`;
+      const promptSpan = document.createElement('span');
+      promptSpan.className = 'prompt';
+      promptSpan.textContent = 'amrith@portfolio:~/resume$ ';
+      const commandSpan = document.createElement('span');
+      commandSpan.className = 'command';
+      for (const { kind, text } of tokenizeShell(command)) {
+        if (kind === 'space') {
+          commandSpan.append(text);
+          continue;
+        }
+        const token = document.createElement('span');
+        token.className = `sh-${kind}`;
+        token.textContent = text;
+        commandSpan.append(token);
+      }
+      inputLine.append(promptSpan, commandSpan);
       output.appendChild(inputLine);
       
       const responseDiv = document.createElement('div');
