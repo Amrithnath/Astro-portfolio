@@ -1,19 +1,17 @@
 ---
-// Website Carbon badge (https://www.websitecarbon.com/badge/), rebuilt natively so no third-party
+// Website Carbon badge (https://www.websitecarbon.com/badge/) as a status-bar segment, rebuilt so no third-party
 // script runs. On the production hostname, without GPC/DNT, it reads the page's result from the
 // Website Carbon API (cached for a day like the official badge); otherwise, or if the API fails, it
 // shows a local Sustainable Web Design v4 estimate from this page's cold-load bytes.
-import Prompt from '../../shared/ui/Prompt.astro';
 
 const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
 ---
 
-<div class="carbon-badge" data-carbon-badge data-host={host} hidden>
-  <Prompt command="carbon --badge" />
-  <div class="output">
-    <div class="command-output"><span class="carbon-value" data-carbon-value>measuring CO₂…</span> <span data-carbon-detail></span> <span class="carbon-source">· <a href="https://www.websitecarbon.com/" rel="noopener">Website Carbon</a></span></div>
-  </div>
-</div>
+<span class="status-segment carbon-badge" data-carbon-badge data-host={host} hidden>
+  <a href="https://www.websitecarbon.com/" rel="noopener">co₂<span class="visually-hidden"> (Website Carbon)</span></a>
+  <span class="carbon-value" data-carbon-value>measuring…</span>
+  <span class="carbon-detail" data-carbon-detail></span>
+</span>
 
 <script>
   import { carbonEstimate, transferTotals } from './perf';
@@ -28,7 +26,7 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
     const value = root.querySelector<HTMLElement>('[data-carbon-value]')!;
     const detail = root.querySelector<HTMLElement>('[data-carbon-detail]')!;
     const show = (grams: number, text: string) => {
-      value.textContent = `${grams.toFixed(grams < 0.01 ? 4 : 2)} g of CO₂/view`;
+      value.textContent = `${grams.toFixed(grams < 0.01 ? 4 : 2)} g/view`;
       detail.textContent = text;
     };
 
@@ -38,7 +36,7 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
         ...performance.getEntriesByType('resource'),
       ] as PerformanceResourceTiming[];
       const { grams, rating } = carbonEstimate(transferTotals(entries).firstVisit);
-      show(grams, `(${rating}, estimated in your browser)`);
+      show(grams, `${rating} · estimated locally`);
     };
     const localAfterLoad = () =>
       document.readyState === 'complete' ? local() : window.addEventListener('load', local, { once: true });
@@ -55,7 +53,7 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
       );
     };
     const remote = (result: Result) =>
-      show(Number(result.c), `· cleaner than ${Math.round(Number(result.p))}% of pages tested`);
+      show(Number(result.c), `cleaner than ${Math.round(Number(result.p))}% of pages`);
 
     const optedOut =
       (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true ||

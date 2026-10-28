@@ -1,6 +1,6 @@
 ---
 import Prompt from '../../shared/ui/Prompt.astro';
-import CarbonBadge from './CarbonBadge.astro';
+import SiteFooter from './SiteFooter.astro';
 import pkg from '../../../package.json';
 
 export interface Props {
@@ -21,7 +21,7 @@ const year = new Date().getFullYear();
   <Prompt command={'echo "Made with ❤  using Astro"'} />
   <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>
 
-  <CarbonBadge />
-
   {showCursor && <Prompt cursor />}
+
+  <SiteFooter />
 </footer>

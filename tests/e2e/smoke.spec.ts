@@ -140,8 +140,11 @@ test('perf monitor and carbon badge measure locally without contacting Website C
   await expect(monitor.locator('[data-metric="co2-cold"]')).toHaveText(/^\d+\.\d+ g \((A\+|[A-F])\)$/);
   const badge = page.locator('[data-carbon-badge]');
   await expect(badge).toBeVisible();
-  await expect(badge.locator('[data-carbon-value]')).toHaveText(/^\d+\.\d+ g of CO₂\/view$/);
-  await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated in your browser');
+  await expect(badge.locator('[data-carbon-value]')).toHaveText(/^\d+\.\d+ g\/view$/);
+  await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated locally');
+  const status = page.getByRole('contentinfo').locator('.site-status');
+  await expect(status.locator('[data-build-version]')).toHaveText(/^\d+\.\d+\.\d+$/);
+  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'rss', 'source']);
   expect(carbonRequests).toEqual([]);
 });
 

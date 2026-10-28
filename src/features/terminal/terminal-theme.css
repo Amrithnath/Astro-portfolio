@@ -407,8 +407,27 @@ body {
 /* tmux-style side panes (see SidePanes.astro): only on screens wide enough to leave real gutters. */
 .side-pane { display: none; }
 
-.carbon-badge .carbon-value { color: var(--color-accent); font-weight: 600; }
-.carbon-badge .carbon-source { color: var(--color-muted); }
+/* tmux-style site status line (SiteFooter.astro) */
+.site-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-1) var(--space-3);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+.site-status .status-widgets,
+.site-status .status-links { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.site-status .status-segment { display: inline-flex; flex-wrap: wrap; gap: 0 var(--space-2); }
+.site-status .status-segment[hidden] { display: none; }
+.site-status .carbon-value { color: var(--color-accent); font-weight: 600; }
+.site-status .status-links a::before { content: '['; color: var(--color-muted); }
+.site-status .status-links a::after { content: ']'; color: var(--color-muted); }
 
 @media (min-width: 110rem) {
   .side-pane {

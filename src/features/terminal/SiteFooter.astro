@@ -1,0 +1,26 @@
+---
+// tmux-style status line at the bottom of every page: live widgets left, build info centre,
+// utility links right. Add future site-wide widgets here as `.status-segment` children.
+import pkg from '../../../package.json';
+import { getBuildCommit } from '../../shared/lib/build-commit';
+import CarbonBadge from './CarbonBadge.astro';
+
+const commit = getBuildCommit().slice(0, 7);
+const repo = 'https://github.com/Amrithnath/Astro-portfolio';
+---
+
+<div class="site-status">
+  <div class="status-widgets">
+    <CarbonBadge />
+  </div>
+  <div class="status-build">
+    <span class="status-segment">
+      <span>v<span data-build-version>{pkg.version}</span></span> · <a href={commit === 'dev' ? repo : `${repo}/commit/${commit}`} data-build-commit>{commit}</a>
+    </span>
+  </div>
+  <nav class="status-links" aria-label="Site links">
+    <a href="/privacy-policy/">privacy</a>
+    <a href="/rss.xml">rss</a>
+    <a href={repo} rel="noopener">source</a>
+  </nav>
+</div>
