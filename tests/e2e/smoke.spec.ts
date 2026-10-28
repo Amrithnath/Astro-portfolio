@@ -20,11 +20,10 @@ const test = base.extend<{ browserErrors: void }>({
   }, { auto: true }],
 });
 
-for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/blogs/', '/photography/', '/does-not-exist/']) {
+for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/blog/', '/photography/', '/does-not-exist/']) {
   test(`${route} loads with the expected terminal cursor`, async ({ page }) => {
     const response = await page.goto(route);
     expect(response?.status()).toBe(route === '/does-not-exist/' ? 404 : 200);
-    if (route === '/blogs/') await expect(page).toHaveURL(/\/work-in-progress\/?$/);
     await expect(page.locator('.terminal')).toBeVisible();
     // Wait for deferred content and production service-worker registration as well.
     await page.waitForLoadState('networkidle');
@@ -411,4 +410,16 @@ test('article view counter only runs when PUBLIC_VIEWS_URL was set at build time
   await expect(counter).toHaveText('views: 1,234');
   expect(viewRequests).toHaveLength(1);
   expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
+});
+
+test('blog tab opens the blog index directly and /blogs/ falls back to it', async ({ page }) => {
+  await page.goto('/about/');
+  await page.locator('.terminal-tabs a[href="/blog/"]').click();
+  await expect(page).toHaveURL(/\/blog\/$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Blog' })).toBeVisible();
+  await expect(page.locator('.terminal-tabs a[href="/blog/"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('status')).toContainText('no posts are published yet');
+  await expect(page.getByRole('link', { name: 'Subscribe via RSS' })).toHaveAttribute('href', '/rss.xml');
+  await page.goto('/blogs/');
+  await expect(page).toHaveURL(/\/blog\/$/);
 });

@@ -10,11 +10,13 @@ const tabs = [
   { href: '/about', title: 'about.md' },
   { href: '/projects', title: 'projects.json' },
   { href: '/resume', title: 'resume.py' },
-  { href: '/blog', title: 'blog.log' },
+  { href: '/blog/', title: 'blog.log' },
 ];
 
-const isActive = (path: string) =>
-  path === '/' ? currentPage === '/' : currentPage.startsWith(path);
+const isActive = (href: string) => {
+  const path = href.replace(/\/$/, '');
+  return path === '' ? currentPage === '/' : currentPage === path || currentPage.startsWith(path + '/');
+};
 ---
 
 <nav class="terminal-tabs" aria-label="Primary">

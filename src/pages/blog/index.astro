@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/ui/Prompt.astro';
+import Card from '../../components/ui/Card.astro';
+import { contentPath, getPublishedCollection } from '../../lib/content';
+import { profile } from '../../lib/seo';
+
+const posts = (await getPublishedCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title={`Blog | ${profile.contact.name}`}
+  description={`Writing by ${profile.contact.name} on engineering, tooling and technology.`}
+  currentPage="/blog"
+>
+  <Prompt path="~/blog" command="tail -n 20 blog.log" />
+  <div class="output">
+    <h1>Blog</h1>
+    {posts.length ? (
+      <ol class="posts">
+        {posts.map(post => (
+          <li>
+            <Card href={`${contentPath(post)}/`}>
+              <h2>{post.data.title}</h2>
+              <p class="meta"><time datetime={isoDate(post.data.pubDate)}>{isoDate(post.data.pubDate)}</time>
+                {post.data.tags.length > 0 && <span> · {post.data.tags.join(', ')}</span>}</p>
+              <p>{post.data.description}</p>
+            </Card>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty" role="status">blog.log is empty: no posts are published yet.</p>
+    )}
+    <p class="meta"><a href="/rss.xml">Subscribe via RSS</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .posts {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-4) 0;
+    padding: 0;
+    list-style: none;
+  }
+  .posts h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-lg);
+  }
+  .meta,
+  .empty {
+    color: var(--color-muted);
+  }
+</style>

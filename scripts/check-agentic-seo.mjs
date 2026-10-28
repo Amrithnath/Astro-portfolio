@@ -105,8 +105,11 @@ assert.ok(read('index.html').includes('Raspberry Pi Weather Station'));
 
 const sitemap = read('sitemap-0.xml');
 assert.match(read('sitemap-index.xml'), /https:\/\/amrithnath\.dev\/sitemap-0\.xml/);
-assert.doesNotMatch(sitemap, /wedding|photograph|terminal-full|work-in-progress|404|\/blogs?\/<\/loc>/);
-for (const file of ['404.html', 'work-in-progress/index.html', 'blog/index.html', 'blogs/index.html']) {
+assert.doesNotMatch(sitemap, /wedding|photograph|terminal-full|work-in-progress|404|\/blogs\/<\/loc>/);
+assert.match(sitemap, /<loc>https:\/\/amrithnath\.dev\/blog\/<\/loc>/, 'Blog index must be in the sitemap');
+assert.match(head(read('blog/index.html')), /name="robots" content="index, follow/);
+assert.match(readFileSync('public/_redirects', 'utf8'), /^\/blogs\/ \/blog\/ 301$/m, '/blogs/ must be a single edge 301');
+for (const file of ['404.html', 'work-in-progress/index.html', 'blogs/index.html']) {
   assert.match(head(read(file)), /name="robots" content="noindex, follow"/);
 }
 // Unlisted pages ship to production but stay out of navigation and search until announced.

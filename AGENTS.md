@@ -49,8 +49,7 @@
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
 - Update `src/components/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`).
 - Update `src/data/navigation.ts` if the route should appear in terminal `ls` output.
-- `/blog` meta-refreshes to `/blogs/`.
-- `src/pages/blog.astro` and `src/pages/blogs.astro` use `RedirectPage.astro` meta-refreshes: `/blog` → `/blogs/` → `/work-in-progress`.
+- `/blog/` (`src/pages/blog/index.astro`) is the real blog index (published posts newest first, empty state when none). `/blogs` is a single edge 301 to `/blog/` via `public/_redirects`, mirrored into `vercel.json` by `pnpm sync:headers`; `src/pages/blogs.astro` is only a meta-refresh fallback for local preview. Add new redirects to `public/_redirects`, not as redirect pages.
 
 ## Styling And Themes
 - Do not assume Tailwind; styling is plain CSS in `src/styles/` plus page/component-local styles.

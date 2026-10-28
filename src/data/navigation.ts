@@ -42,7 +42,7 @@ export const homeDirectoryItems: LsItem[] = [
     size: 96,
     date: 'Dec 15',
     time: '16:20',
-    href: '/blog'
+    href: '/blog/'
   },
   {
     name: 'contact.txt',

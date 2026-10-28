@@ -253,5 +253,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/blogs",
+      "destination": "/blog/",
+      "statusCode": 301
+    },
+    {
+      "source": "/blogs/",
+      "destination": "/blog/",
+      "statusCode": 301
+    }
   ]
 }

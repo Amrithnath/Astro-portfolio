@@ -37,8 +37,7 @@ for (const file of files) {
   for (const match of html.matchAll(/(?:const|var) buildVersion = "([^"]+)"/g)) versions.add(match[1]);
 }
 assert.equal(versions.size, 1, 'All pages must register the same build version');
-assert.match(read('dist/blog/index.html'), /0;url=\/blogs\//);
-assert.match(read('dist/blogs/index.html'), /0;url=\/work-in-progress/);
+assert.match(read('dist/blogs/index.html'), /0;url=\/blog\//);
 const homepage = read('dist/index.html');
 assert.equal([...homepage.matchAll(/class="terminal"/g)].length, 1, 'One homepage terminal shell');
 const deferred = read('dist/terminal-full/index.html');
