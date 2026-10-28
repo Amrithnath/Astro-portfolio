@@ -48,6 +48,14 @@
 /uses/*
   X-Robots-Tag: noindex, nofollow
 
+# Search uses only same-origin Pagefind assets; WebAssembly is allowed on this route only.
+/search
+  X-Robots-Tag: noindex, nofollow
+/search/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://static.cloudflareinsights.com https://ajax.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://photos.amrithnath.dev; media-src 'self'; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Robots-Tag: noindex, nofollow
+
 # Content-hashed build output: safe to cache forever.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

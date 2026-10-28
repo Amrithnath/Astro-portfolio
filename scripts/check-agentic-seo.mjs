@@ -108,7 +108,7 @@ for (const file of ['404.html', 'work-in-progress/index.html', 'blog/index.html'
   assert.match(head(read(file)), /name="robots" content="noindex, follow"/);
 }
 // Unlisted pages ship to production but stay out of navigation and search until announced.
-for (const unlisted of ['photography', 'now', 'uses']) {
+for (const unlisted of ['photography', 'now', 'uses', 'search']) {
   for (const file of htmlFiles.filter(file => file.startsWith(unlisted + '/'))) {
     assert.match(head(read(file)), /name="robots" content="noindex, follow"/, file + ': must stay unlisted');
   }
@@ -116,10 +116,18 @@ for (const unlisted of ['photography', 'now', 'uses']) {
     assert.doesNotMatch(read(file), new RegExp(`href="(https://amrithnath\\.dev)?/${unlisted}`), `${file} links to unlisted /${unlisted}`);
   }
 }
+for (const file of htmlFiles) {
+  const html = read(file);
+  if (/name="robots" content="noindex/.test(html)) {
+    assert.doesNotMatch(html, /data-pagefind-body/, file + ': noindex content must not enter site search');
+  }
+}
+assert.ok(existsSync('dist/pagefind/pagefind.js'), 'Build must generate the Pagefind index');
+assert.doesNotMatch(read('search/index.html'), /beacon\.min\.js/, 'Search must not load analytics, even when configured');
 const robots = read('robots.txt');
 for (const group of robots.split(/\n\n/).filter(group => group.startsWith('User-agent:'))) {
   assert.match(group, /Allow: \//);
-  for (const path of ['/wedding', '/photography', '/now', '/uses', '/admin', '/api', '/terminal-full', '/work-in-progress']) {
+  for (const path of ['/wedding', '/photography', '/now', '/uses', '/search', '/admin', '/api', '/terminal-full', '/work-in-progress']) {
     assert.ok(group.includes(`Disallow: ${path}`), `${group.split('\n')[0]}: missing ${path}`);
   }
 }

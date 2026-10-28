@@ -300,6 +300,13 @@ analytics injection, or page views are counted twice.
 
 ## Search and AI discovery
 
+`/search/?q=Bluetooth` is an unlisted, browser-side site search. `pnpm build` runs Pagefind
+after Astro and writes `dist/pagefind/`; use `pnpm preview` to test it (the dev server has no
+index). Queries and index requests stay on this site, with no external search service, cookies,
+or credentials; the search page also omits analytics. Only public, indexable main content is indexed: unlisted photography, now, search,
+admin, fragments, redirects and offline pages are excluded. Search supports both themes and
+keyboard use; its WebAssembly CSP exception is scoped to `/search/*`. No owner setup is needed.
+
 The canonical origin is `https://amrithnath.dev`. Everything below is generated at build time.
 
 - `src/components/SEO.astro` emits canonical and social metadata and schema.org JSON-LD.

@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/ui/Prompt.astro';
+import Button from '../components/ui/Button.astro';
+import { profile } from '../lib/seo';
+---
+
+<BaseLayout
+  title={`Search | ${profile.contact.name}`}
+  description="Search public portfolio pages, projects and blog posts on this device."
+  currentPage="/search"
+  footerCursor={false}
+>
+  <Prompt command={'grep -ri "<query>" ~/'} />
+  <section class="output" data-site-search aria-labelledby="search-title">
+    <h1 id="search-title">Search</h1>
+    <p id="search-help">Search public pages, projects and posts. Queries stay in your browser.</p>
+    <form role="search" action="/search/" method="get">
+      <label for="search-query">Search this site</label>
+      <div class="search-controls">
+        <input id="search-query" name="q" type="search" aria-describedby="search-help" autocomplete="off" />
+        <Button type="submit">Search</Button>
+      </div>
+    </form>
+    <p data-search-status role="status" aria-live="polite" aria-atomic="true">Enter a query to search.</p>
+    <ul class="search-results" data-search-results aria-label="Search results"></ul>
+    <noscript><p>Search needs JavaScript to read the local index.</p></noscript>
+  </section>
+</BaseLayout>
+
+<script>
+  interface SearchDocument {
+    url: string;
+    meta: { title?: string };
+    excerpt: string;
+  }
+  interface SearchIndex {
+    search: (query: string) => Promise<{
+      results: { data: () => Promise<SearchDocument> }[];
+    }>;
+  }
+
+  function initSearch() {
+    const root = document.querySelector<HTMLElement>('[data-site-search]');
+    if (!root || root.dataset.initialized) return;
+    root.dataset.initialized = 'true';
+    const form = root.querySelector<HTMLFormElement>('form')!;
+    const input = root.querySelector<HTMLInputElement>('input')!;
+    const status = root.querySelector<HTMLElement>('[data-search-status]')!;
+    const results = root.querySelector<HTMLUListElement>('[data-search-results]')!;
+    let index: Promise<SearchIndex> | undefined;
+    let request = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    async function search() {
+      const current = ++request;
+      const query = input.value.trim();
+      const url = new URL(window.location.href);
+      if (query) url.searchParams.set('q', query);
+      else url.searchParams.delete('q');
+      window.history.replaceState(window.history.state, '', url);
+      results.replaceChildren();
+      if (!query) {
+        status.textContent = 'Enter a query to search.';
+        return;
+      }
+      status.textContent = 'Searching…';
+      try {
+        // Generated after Astro builds; keep this import out of Vite's bundle graph.
+        const modulePath = '/pagefind/pagefind.js';
+        index ??= import(/* @vite-ignore */ modulePath);
+        const response = await (await index).search(query);
+        const documents = await Promise.all(response.results.map(result => result.data()));
+        if (current !== request || !root?.isConnected) return;
+        const fragment = document.createDocumentFragment();
+        for (const result of documents) {
+          const item = document.createElement('li');
+          item.className = 'card';
+          const heading = document.createElement('h2');
+          const link = document.createElement('a');
+          link.href = result.url;
+          link.textContent = result.meta.title || result.url;
+          heading.append(link);
+          const excerpt = document.createElement('p');
+          // Pagefind adds <mark> highlights; render plain text, never inject result HTML.
+          excerpt.textContent = new DOMParser().parseFromString(result.excerpt, 'text/html').body.textContent;
+          item.append(heading, excerpt);
+          fragment.append(item);
+        }
+        results.replaceChildren(fragment);
+        status.textContent = documents.length
+          ? `${documents.length} result${documents.length === 1 ? '' : 's'} for “${query}”.`
+          : `No results for “${query}”.`;
+      } catch {
+        if (current !== request) return;
+        index = undefined;
+        status.textContent = 'Search is unavailable. Please reconnect and try again. Local preview requires pnpm build first.';
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      clearTimeout(timer);
+      void search();
+    });
+    input.addEventListener('input', () => {
+      // Invalidate pending responses immediately, before the next debounced request.
+      request++;
+      clearTimeout(timer);
+      timer = setTimeout(() => void search(), 200);
+    });
+    input.value = new URL(window.location.href).searchParams.get('q') || '';
+    if (input.value.trim()) void search();
+  }
+
+  initSearch();
+  document.addEventListener('astro:page-load', initSearch);
+</script>
+
+<style>
+  form { margin-block: var(--space-4); }
+  label { display: block; margin-bottom: var(--space-2); }
+  .search-controls { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+  input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .search-results { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
+  .search-results :global(h2) { font-size: var(--text-lg); margin: 0; }
+  .search-results :global(p) { margin-bottom: 0; }
+</style>

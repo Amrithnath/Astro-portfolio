@@ -1,0 +1,2 @@
+# No matching root means no indexed document. Never fall back to indexing entire HTML pages.
+root_selector: '[data-pagefind-body]'
