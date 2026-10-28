@@ -31,7 +31,7 @@ valid `portfolio-layout-theme` only if the new key is absent, removes the old ke
 and follows the system scheme on invalid values or unavailable storage. Changes
 persist when storage is available and synchronize between tabs. Auto is represented
 by no stored key; explicit choices store `terminal` or `light`. The switcher uses
-native pressed buttons, initializes on `astro:page-load`, and stays hidden without JS.
+native pressed buttons, initializes once per page load, and stays hidden without JS.
 Server HTML and CSS provide the terminal default even without JavaScript.
 
 `BaseHead` also preserves SEO, icons/manifest and production service worker setup.
@@ -45,11 +45,11 @@ Run `pnpm build`, `node scripts/check-agentic-seo.mjs`, and
 
 ## Navigation and sharing
 
-`BaseHead` enables Astro `ClientRouter` on indexable portfolio pages. Redirects,
-WIP and deferred fragments keep full-document navigation. Initialize page-specific
-behavior on `astro:page-load`, guard DOM roots against double binding, and ignore
-disconnected elements after asynchronous work. Theme bootstrap reruns after swaps
-but installs storage synchronization once; worker registration is also guarded.
+Every navigation is a full document load with native cross-document view transitions
+(`@view-transition { navigation: auto; }`) and Astro prefetch. ClientRouter is intentionally
+not used: its swaps copy the server's default `data-theme` onto `<html>` and flash the wrong
+theme. The blocking head bootstrap applies the saved theme before first paint on each page;
+page scripts initialize directly and guard DOM roots against double binding.
 The shared shell includes a keyboard skip link. Semantic text tokens meet WCAG AA
 on both background and elevated surfaces (checked in the theme verification script). Reduced-motion disables transition
 animations, and local Fira Code CSS uses `font-display: swap`.

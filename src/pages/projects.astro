@@ -171,6 +171,6 @@ ${projects.slice(0, 3).map(project => `
         update();
       });
     };
-    document.addEventListener('astro:page-load', initProjectFilters);
+    initProjectFilters();
   </script>
 </BaseLayout>

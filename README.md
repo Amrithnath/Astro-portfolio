@@ -305,9 +305,10 @@ so Vercel serves identical headers. `pnpm verify` rejects drift and checks every
 
 The `HTML-CSP` comment in that file supplies the script policy. An Astro build hook injects it
 after the charset and before scripts/styles in every non-admin head, with SHA-256 hashes of inline
-scripts, including the blocking pre-paint theme bootstrap. A build-wide allowlist supports
-ClientRouter swaps and deferred terminal content; JSON-LD is inert data, not executable script.
-Astro 7's built-in CSP currently does not support ClientRouter, so we do not enable it.
+scripts, including the blocking pre-paint theme bootstrap. A build-wide allowlist keeps one stable
+policy across pages and deferred terminal content; JSON-LD is inert data, not executable script.
+Navigation uses full page loads with native view transitions (no ClientRouter), so the theme
+bootstrap runs before first paint on every page.
 The response policy deliberately omits `default-src`/`script-src`: a second policy without the
 build hashes would block scripts even when the meta allows them. The meta supplies both, plus
 all resource restrictions; header-only `frame-ancestors` remains in the response. Scripts have

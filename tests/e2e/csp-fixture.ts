@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { expect, test as base } from '@playwright/test';
 
 // Preview ignores _headers. Apply the real response policy too, so both intersecting policies
-// are exercised, including ClientRouter fetches and the inherited about:blank print policy.
+// are exercised, including deferred fetches and the inherited about:blank print policy.
 export const test = base.extend<{ cspGuard: void }>({
   cspGuard: [async ({ context }, use) => {
     const headers = await readFile(new URL('../../public/_headers', import.meta.url), 'utf8');

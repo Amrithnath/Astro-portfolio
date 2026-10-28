@@ -3,7 +3,7 @@
 #
 # CSP notes:
 # - The build injects this HTML-CSP template before every non-admin page's scripts, adding a
-#   shared SHA-256 allowlist for ClientRouter swaps. Do not put script-src or default-src in the
+#   shared SHA-256 allowlist of inline scripts. Do not put script-src or default-src in the
 #   response policy: policies intersect, so a header without these hashes would block inline JS.
 # - Header-only frame-ancestors and resource restrictions remain below on both deploy targets.
 # - style-src needs unsafe-inline for Shiki/other style attributes, Astro scoped style tags, and

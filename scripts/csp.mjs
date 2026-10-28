@@ -81,8 +81,8 @@ export async function injectCsp(directory) {
     await writeFile(path, html);
     if (!relative(directory, path).startsWith('admin/')) pages.push({ path, html });
   }
-  // ClientRouter executes scripts from subsequent documents under the original policy. A shared
-  // build-wide allowlist permits these swaps without unsafe-inline or a mutable nonce.
+  // A shared build-wide allowlist keeps one stable policy for every page and the deferred
+  // terminal fragment without unsafe-inline or a mutable nonce.
   const hashes = [...new Set(pages.flatMap(({ html }) => inlineScripts(html).map(hashScript)))].sort();
   const header = headers.match(/^  Content-Security-Policy: (.+)$/m)[1];
   const resources = header.split(';').map(s => s.trim()).filter(s =>

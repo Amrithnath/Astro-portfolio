@@ -68,18 +68,10 @@ function themeContext(saved = {}, { blocked = false, light = false } = {}) {
   };
   const root = { dataset: { theme: 'terminal' }, style: {} };
   const meta = {};
-  const documentListeners = new Map();
   const context = {
     document: {
       documentElement: root,
-      querySelector: () => ({
-        setAttribute: (key, value) => { meta[key] = value; },
-        getAttribute: (key) => meta[key] ?? null,
-      }),
-      addEventListener: (type, callback) => {
-        assert.equal(documentListeners.has(type), false, 'Only one document listener per event');
-        documentListeners.set(type, callback);
-      },
+      querySelector: () => ({ setAttribute: (key, value) => { meta[key] = value; } }),
     },
     localStorage: {
       getItem: (key) => { if (blocked) throw Error('Storage disabled'); return storage.get(key) ?? null; },
@@ -100,7 +92,7 @@ function themeContext(saved = {}, { blocked = false, light = false } = {}) {
   context.window = context;
   vm.runInNewContext(bootstrap, context);
   return {
-    context, root, storage, listeners, documentListeners, meta, events,
+    context, root, storage, listeners, meta, events,
     systemChange(light) {
       media.matches = light;
       mediaListeners.forEach(callback => callback({ matches: light }));
@@ -176,30 +168,14 @@ for (const light of [false, true]) {
   blocked.systemChange(!light);
   assert.equal(blocked.context.__theme.current, light ? 'terminal' : 'light');
   for (const preference of ['auto', ...registry.themes.map(theme => theme.id)]) {
-    const swapped = themeContext({}, { light });
-    swapped.context.__theme.set(preference);
-    swapped.context.document.documentElement = { dataset: { theme: 'terminal' }, style: {} };
-    const themeApi = swapped.context.__theme;
-    vm.runInNewContext(bootstrap, swapped.context);
-    assert.equal(swapped.context.__theme, themeApi, 'Swaps must reuse the API and listeners');
-    assert.equal(themeApi.preference, preference);
-    assert.equal(themeApi.current, preference === 'auto' ? systemTheme : preference);
-    assert.equal(swapped.storage.has('portfolio-theme'), preference !== 'auto');
-    swapped.systemChange(!light);
-    assert.equal(themeApi.current, preference === 'auto' ? (light ? 'terminal' : 'light') : preference);
+    const previous = themeContext({}, { light });
+    previous.context.__theme.set(preference);
+    // Every navigation is a full page load: the next document starts from the server default.
+    const next = themeContext(Object.fromEntries(previous.storage), { light });
+    assert.equal(next.root.dataset.theme, preference === 'auto' ? systemTheme : preference,
+      'The saved preference is applied before first paint on the next page');
+    assert.equal(next.context.__theme.preference, preference);
   }
-  const incoming = themeContext({ 'portfolio-theme': 'light' }, { light });
-  const newRoot = { dataset: { theme: 'terminal' }, style: {} };
-  const newMeta = {};
-  incoming.documentListeners.get('astro:before-swap')({
-    newDocument: {
-      documentElement: newRoot,
-      querySelector: () => ({ setAttribute: (key, value) => { newMeta[key] = value; } }),
-    },
-  });
-  assert.equal(newRoot.dataset.theme, 'light', 'Incoming documents keep the active theme');
-  assert.equal(newRoot.style.colorScheme, 'light');
-  assert.equal(newMeta.content, incoming.meta.content);
 }
 
 const luminance = (hex) => {

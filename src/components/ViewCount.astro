@@ -75,13 +75,14 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
     } catch {}
   };
 
-  document.addEventListener('astro:page-load', () => {
+  const init = () => {
     document.querySelectorAll<HTMLElement>('[data-view-count]').forEach(element => {
       if (element.dataset.viewCountInit) return;
       element.dataset.viewCountInit = '1';
       void load(element);
     });
-  });
+  };
+  init();
 </script>
 
 <style>

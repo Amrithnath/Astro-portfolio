@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from './csp-fixture';
 
-test('CSP allows deferred terminal, theme changes and ClientRouter navigation', async ({ page }) => {
+test('CSP allows deferred terminal, theme changes and page navigation', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-terminal-fragment]')).toBeAttached();
   await page.getByRole('button', { name: 'light', exact: true }).click();
@@ -9,7 +9,8 @@ test('CSP allows deferred terminal, theme changes and ClientRouter navigation', 
   await page.evaluate(() => { (window as unknown as { __cspDocument: boolean }).__cspDocument = true; });
   await page.locator('.terminal-tabs a[href="/resume"]').click();
   await expect(page.locator('#terminal-input')).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { __cspDocument: boolean }).__cspDocument)).toBe(true);
+  // Tabs are full document loads (no ClientRouter), so the marker must be gone.
+  expect(await page.evaluate(() => (window as unknown as { __cspDocument?: boolean }).__cspDocument)).toBeUndefined();
   await page.goto('/blog/bluetooth-dystopia/');
   await expect(page.locator('article')).toBeVisible();
   await page.waitForLoadState('networkidle');

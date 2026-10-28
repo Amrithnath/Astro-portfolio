@@ -214,7 +214,7 @@ test('projects render an empty write-up state when no article is linked', async 
 });
 
 for (const choice of ['dark', 'light'] as const) {
-  test(`${choice} selection persists through reload and ClientRouter navigation`, async ({ page }) => {
+  test(`${choice} selection persists through reload and navigation`, async ({ page }) => {
     await page.goto('/');
     const switcher = page.getByRole('group', { name: 'Color theme', exact: true });
     await expect(switcher).toHaveCount(1);
@@ -238,20 +238,22 @@ for (const choice of ['dark', 'light'] as const) {
 }
 
 test('light theme never flashes the default theme during home to about navigation', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('portfolio-theme', 'light'));
-  await page.goto('/');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
+    localStorage.setItem('portfolio-theme', 'light');
+    // Record the theme at first paint and at every later change on each document.
     const seen: string[] = [];
     (window as unknown as { __seen: string[] }).__seen = seen;
+    requestAnimationFrame(() => seen.push('paint:' + document.documentElement.dataset.theme));
     new MutationObserver(() => seen.push(document.documentElement.dataset.theme ?? ''))
-      .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+      .observe(document, { attributes: true, subtree: true, attributeFilter: ['data-theme'] });
   });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.locator('.terminal-tabs a[href="/about"]').click();
   await expect(page).toHaveURL(/\/about\/?$/);
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  const seen = await page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
-  expect(seen.filter((theme) => theme !== 'light')).toEqual([]);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __seen: string[] }).__seen))
+    .toEqual(['light', 'paint:light']);
   expect(await page.evaluate(() => document.documentElement.style.colorScheme)).toBe('light');
 });
 

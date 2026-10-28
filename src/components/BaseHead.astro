@@ -1,6 +1,4 @@
 ---
-import { ClientRouter } from 'astro:transitions';
-import { isIndexablePath } from '../lib/seo';
 import '@fontsource/fira-code/400.css';
 import '@fontsource/fira-code/700.css';
 import regularFont from '@fontsource/fira-code/files/fira-code-latin-400-normal.woff2?url';
@@ -28,7 +26,6 @@ const theme = themes.find(({ id }) => id === defaultTheme)!;
 <link rel="preload" href={regularFont} as="font" type="font/woff2" crossorigin />
 <link rel="preload" href={boldFont} as="font" type="font/woff2" crossorigin />
 <ThemeBootstrap />
-{isIndexablePath(Astro.url.pathname) && <ClientRouter />}
 <SEO {...Astro.props} />
 <link rel="alternate" type="application/rss+xml" title="Blog RSS" href={new URL('/rss.xml', Astro.site).href} />
 <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />

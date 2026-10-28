@@ -34,14 +34,10 @@ import { themes } from '../themes';
       buttons.forEach((button) => {
         button.addEventListener('click', () => window.__theme.set(button.dataset.themeOption!));
       });
-      // Abort the window listener when ClientRouter removes this shell.
-      const controller = new AbortController();
-      window.addEventListener('portfolio:theme-change', reflect, { signal: controller.signal });
-      document.addEventListener('astro:before-swap', () => controller.abort(), { once: true });
+      window.addEventListener('portfolio:theme-change', reflect);
       reflect();
       root.hidden = false;
     });
   }
-  document.addEventListener('astro:page-load', initThemeSwitcher);
   initThemeSwitcher();
 </script>

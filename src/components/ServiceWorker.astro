@@ -17,7 +17,6 @@ import { buildVersion } from '../lib/build-version';
             console.warn('Service worker registration failed:', error);
           });
       };
-      document.addEventListener('astro:page-load', register);
       if (document.readyState === 'complete') register();
       else window.addEventListener('load', register, { once: true });
     }
