@@ -37,6 +37,8 @@ for (const theme of ['terminal', 'light']) {
     await expect(dialog).not.toBeVisible();
     await expect(opener).toBeFocused();
     await opener.click();
+    // The stage retains its previous scale while the lazy viewer initializes again.
+    await expect(dialog.locator('[data-preview]')).toHaveAttribute('style', /scale\(1\)/);
     await expect(stage).toHaveAttribute('data-scale', '1.000');
     await page.keyboard.press('+');
     await expect(stage).toHaveAttribute('data-scale', '1.250');
