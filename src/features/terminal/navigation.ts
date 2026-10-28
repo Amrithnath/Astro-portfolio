@@ -54,7 +54,7 @@ export const homeDirectoryItems: LsItem[] = [
     href: '/contact'
   },
   {
-    name: 'privacy-check.sh',
+    name: 'privacy-check.ts',
     isDirectory: false,
     isAccessible: true,
     size: 512,

@@ -54,7 +54,7 @@
 - `/now/` (`src/pages/now.astro`, single-entry `now` collection at `src/content/now/now.md`, CMS *Pages → Now*) is unlisted and currently placeholder text. Do not invent personal content for it.
 - `/uses/` (`src/pages/uses.astro`, single-entry `uses` collection at `src/content/uses/uses.md`, CMS *Pages → Uses*) follows the same pattern: unlisted, placeholder gear lists. Do not invent gear.
 - Route additions are manual across multiple surfaces; update every relevant file yourself.
-- Update `src/features/terminal/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`). Tabs are `portfolio.sh`, `about.md`, `projects.json`, `resume.py`, `blog.log` and `scan.sh` (`/privacy-check/`); they scroll horizontally on narrow screens.
+- Update `src/features/terminal/TerminalNav.astro` (shared by homepage and interior pages via `TerminalShell`). Tabs are `portfolio.sh`, `about.md`, `projects.json`, `resume.py`, `blog.log` and `scan.ts` (`/privacy-check/`); they scroll horizontally on narrow screens.
 - Update `src/features/terminal/navigation.ts` if the route should appear in terminal `ls` output.
 - `/blog/` (`src/pages/blog/index.astro`) is the real blog index (published posts newest first, empty state when none). `/blogs` is a single edge 301 to `/blog/` via `public/_redirects`, mirrored into `vercel.json` by `pnpm sync:headers`; `src/pages/blogs.astro` is only a meta-refresh fallback for local preview. Add new redirects to `public/_redirects`, not as redirect pages.
 
