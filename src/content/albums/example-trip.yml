@@ -1,0 +1,12 @@
+# Template only: replace these placeholders and dates before publishing.
+title: Example trip
+kind: trip
+description: Replace with your own trip notes.
+draft: true
+# startDate: 2026-01-01
+# endDate: 2026-01-02
+stops:
+  - name: TODO place name
+    country: TODO country
+    # region: Optional region
+    # date: 2026-01-01

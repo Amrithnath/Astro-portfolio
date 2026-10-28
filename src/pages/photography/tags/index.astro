@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Prompt from '../../../components/ui/Prompt.astro';
+import Card from '../../../components/ui/Card.astro';
+import PhotoNav from '../../../components/photos/PhotoNav.astro';
+import { getPhotos } from '../../../lib/content';
+import { tagIndex } from '../../../lib/photos';
+const entries = tagIndex(await getPhotos());
+---
+
+<BaseLayout
+  title="Photography tags"
+  description="Browse photographs by tags."
+  currentPage="/photography/tags"
+>
+  <h1>Photography tags</h1><PhotoNav /><Prompt command="ls ~/photography/tags" />
+  {
+    entries.length ? (
+      <ul role="list">
+        {entries.map((entry) => (
+          <li>
+            <Card href={'/photography/tags/' + entry.slug + '/'}>
+              {entry.name} ({entry.count})
+            </Card>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No tags added yet.</p>
+    )
+  }
+</BaseLayout>
