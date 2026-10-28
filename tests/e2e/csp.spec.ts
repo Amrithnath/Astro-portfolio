@@ -11,7 +11,7 @@ test('CSP allows deferred terminal, theme changes and page navigation', async ({
   await expect(page.locator('#terminal-input')).toBeVisible();
   // Tabs are full document loads (no ClientRouter), so the marker must be gone.
   expect(await page.evaluate(() => (window as unknown as { __cspDocument?: boolean }).__cspDocument)).toBeUndefined();
-  await page.goto('/blog/bluetooth-dystopia/');
+  await page.goto('/project/webDev/weather-app/');
   await expect(page.locator('article')).toBeVisible();
   await page.waitForLoadState('networkidle');
 });

@@ -93,8 +93,10 @@ for (const file of ['index.html', 'about/index.html', 'resume/index.html']) {
     assert.ok(text.includes(value), `${file}: missing JavaScript-free content: ${value}`);
   }
 }
-assert.ok(graphs.get('blog/bluetooth-dystopia/index.html')
-  .some(item => item['@type'] === 'BlogPosting'));
+// Draft posts must not ship anywhere in production.
+assert.equal(existsSync(join('dist', 'blog/bluetooth-dystopia')), false, 'Draft post page was built');
+assert.equal(existsSync(join('dist', 'blog/bluetooth-dystopia.md')), false, 'Draft post Markdown was built');
+assert.doesNotMatch(read('sitemap-0.xml') + read('rss.xml'), /bluetooth-dystopia/, 'Draft post leaked into sitemap/RSS');
 assert.ok(graphs.get('project/webDev/weather-app/index.html')
   .some(item => item['@type'] === 'SoftwareSourceCode'));
 assert.match(readFileSync('src/pages/index.astro', 'utf8'), /fetch\('\/terminal-full\//);
@@ -163,7 +165,6 @@ for (const [file, graph] of graphs) {
     assert.ok(rss.includes(`<pubDate>${new Date(article.datePublished).toUTCString()}</pubDate>`));
   }
 }
-assert.match(read('blog/bluetooth-dystopia.md'), /## Innovation/);
 assert.match(read('project/webDev/weather-app.md'), /Project description coming soon/);
 console.log(`SEO checks passed: ${htmlFiles.length} HTML files, ${blocks} JSON-LD blocks parsed; crawl policy, raw profile text, sitemap, RSS, article dates, and Markdown verified.`);
 
