@@ -14,7 +14,9 @@ const entries = placeIndex(await getPhotos());
   description="Browse photographs by places."
   currentPage="/photography/places"
 >
-  <h1>Photography places</h1><PhotoNav /><Prompt command="ls ~/photography/places" />
+  <h1>Photography places</h1><PhotoNav />
+  <p><a href="/photography/map/">View the places map</a></p>
+  <Prompt command="ls ~/photography/places" />
   {
     entries.length ? (
       <ul role="list">

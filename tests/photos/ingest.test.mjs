@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import sharp from 'sharp';
 import { parse } from 'yaml';
-import { ingestFile, settingsFromExif } from '../../scripts/photos-ingest.mjs';
+import { ingestFile, metadataFromExif, settingsFromExif } from '../../scripts/photos-ingest.mjs';
 
 test('dry-run ingests camera and coarse GPS metadata, strips derivatives and never overwrites', async () => {
   const root = '.photos-tests-' + randomUUID();
@@ -59,6 +59,10 @@ test('dry-run ingests camera and coarse GPS metadata, strips derivatives and nev
     assert.equal(data.location.country, undefined);
     assert.equal(data.camera, 'Test Camera Model One');
     assert.equal(data.lens, 'Test lens');
+    assert.equal(data.focalLength, 35);
+    assert.equal(data.aperture, 1.8);
+    assert.equal(data.exposureTime, 1 / 250);
+    assert.equal(data.iso, 100);
     assert.match(data.date, /^2026-01-02/);
     assert.equal(data.settings, '35mm · f/1.8 · 1/250s · ISO 100');
     assert.deepEqual(data.tags, ['golden-hour']);
@@ -128,5 +132,23 @@ test('orients photos before sizing and does not upscale small originals', async 
     assert.equal(metadata.orientation, undefined);
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('ingest EXIF allowlist omits missing, invalid and private tags without inventing fields', () => {
+  assert.deepEqual(metadataFromExif({}), {});
+  assert.deepEqual(metadataFromExif({
+    GPSLatitude: 12.3456, GPSLongitude: 56.789, latitude: 12.3456, longitude: 56.789,
+    BodySerialNumber: 'private', LensSerialNumber: 'private', DateTimeOriginal: new Date(NaN),
+    FocalLength: -1, FNumber: 0, ExposureTime: Infinity, ISO: 1.5,
+  }), {});
+  assert.deepEqual(metadataFromExif({ ExposureTime: 0.3, ISO: 200 }), {
+    exposureTime: 0.3, iso: 200, settings: '0.3s · ISO 200',
+  });
+});
+
+test('ingest rejects reserved route names before creating an entry', async () => {
+  for (const filename of ['map.jpg', 'feed.jpg', 'rss.jpg', 'prints.jpg']) {
+    await assert.rejects(ingestFile(filename, { dryRun: true }), /Reserved or invalid photo slug/);
   }
 });

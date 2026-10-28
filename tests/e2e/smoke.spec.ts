@@ -143,7 +143,7 @@ test('photography flag filters update the prompt and lightbox sees only visible 
   await expect(page.locator('[data-filter-prompt]')).toContainText('--album landscapes');
 });
 
-for (const route of ['tags/', 'tags/landscape/', 'places/', 'albums/', 'albums/landscapes/', 'pine-ridge/']) {
+for (const route of ['tags/', 'tags/landscape/', 'places/', 'map/', 'prints/', 'albums/', 'albums/landscapes/', 'pine-ridge/']) {
   test('photography/' + route + ' stays unlisted and renders connected pages', async ({ page }) => {
     await page.goto('/photography/' + route);
     await expect(page.locator('h1')).toBeVisible();
@@ -158,7 +158,22 @@ for (const route of ['tags/', 'tags/landscape/', 'places/', 'albums/', 'albums/l
       await expect(page.getByRole('link', { name: 'Landscapes', exact: true })).toHaveAttribute('href', '/photography/albums/landscapes/');
       await expect(page.getByRole('navigation', { name: 'Adjacent photos' })).toContainText('Golden hour');
     }
-    if (route === 'places/') await expect(page.getByText('No places added yet.')).toBeVisible();
+    if (route === 'places/') {
+      await expect(page.getByText('No places added yet.')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'View the places map' })).toHaveAttribute('href', '/photography/map/');
+    }
+    if (route === 'pine-ridge/') {
+      await expect(page.getByRole('region', { name: 'Photo information' })).toHaveCount(0);
+    }
+    if (route === 'map/') {
+      await expect(page.getByText('No places with coordinates added yet.')).toBeVisible();
+      await expect(page.getByRole('group', { name: 'Photography places' })).toBeVisible();
+    }
+    if (route === 'prints/') {
+      await expect(page.getByText('PLACEHOLDER — details have not been set by the photographer.')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'hello@amrithnath.dev' })).toHaveAttribute('href', 'mailto:hello@amrithnath.dev');
+      await expect(page.getByText(/All photographs ©/)).toContainText('All rights reserved unless explicitly stated otherwise.');
+    }
   });
 }
 
@@ -299,4 +314,57 @@ test('uses page is unlisted and flags its placeholder content', async ({ page, r
   await expect(page.getByRole('heading', { name: 'Photography gear', level: 2 })).toBeVisible();
   expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/uses');
   expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /uses');
+});
+
+test('photo RSS is linked only inside photography and includes usable image media', async ({ page, request }) => {
+  await page.goto('/photography/');
+  await expect(page.getByRole('link', { name: 'Photo RSS feed' })).toHaveAttribute('href', '/photography/rss.xml');
+  const response = await request.get('/photography/rss.xml');
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toContain('xml');
+  const xml = await response.text();
+  const feed = await page.evaluate((source) => {
+    const document = new DOMParser().parseFromString(source, 'application/xml');
+    return {
+      errors: document.querySelectorAll('parsererror').length,
+      items: [...document.querySelectorAll('item')].map((item) => ({
+        title: item.querySelector('title')?.textContent,
+        description: item.querySelector('description')?.textContent,
+        link: item.querySelector('link')?.textContent,
+        image: item.getElementsByTagNameNS('http://search.yahoo.com/mrss/', 'content')[0]?.getAttribute('url'),
+      })),
+    };
+  }, xml);
+  expect(feed.errors).toBe(0);
+  expect(feed.items).toHaveLength(2);
+  for (const item of feed.items) {
+    expect(item.title).toBeTruthy();
+    expect(item.description).toBeTruthy();
+    expect(item.link).toMatch(/^https:\/\/amrithnath\.dev\/photography\/[\w-]+\/$/);
+    const imagePath = new URL(item.image!).pathname;
+    expect(imagePath).toMatch(/\.webp$/);
+    expect((await request.get(imagePath)).status()).toBe(200);
+  }
+  for (const resource of ['/robots.txt', '/llms.txt', '/sitemap-0.xml']) {
+    expect(await (await request.get(resource)).text()).not.toContain('/photography/rss.xml');
+  }
+  await page.goto('/');
+  await expect(page.locator('a[href^="/photography"], link[href*="/photography"]')).toHaveCount(0);
+});
+
+test('places map is self-contained and available without JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    const external: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== new URL(baseURL!).origin) external.push(request.url());
+    });
+    await page.goto(baseURL + '/photography/places/');
+    await page.getByRole('link', { name: 'View the places map' }).click();
+    await expect(page.locator('svg .land')).toHaveAttribute('d', /^M/);
+    await expect(page.getByText('No places with coordinates added yet.')).toBeVisible();
+    await expect(page.locator('svg image, svg script, svg use, iframe')).toHaveCount(0);
+    expect(external).toEqual([]);
+  } finally { await context.close(); }
 });

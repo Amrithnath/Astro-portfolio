@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Prompt from '../../components/ui/Prompt.astro';
 import PhotoNav from '../../components/photos/PhotoNav.astro';
 import PhotoImage from '../../components/photos/PhotoImage.astro';
+import ExifPanel from '../../components/photos/ExifPanel.astro';
 import { getPhotos, getPublishedCollection } from '../../lib/content';
 import { neighbors, placeName, placeSlug } from '../../lib/photos';
 export async function getStaticPaths() {
@@ -30,36 +31,8 @@ const { data } = photo;
   <figure>
     <PhotoImage photo={photo} eager priority /><figcaption>{data.caption ?? data.alt}</figcaption>
   </figure>
+  <ExifPanel data={data} />
   <dl>
-    {
-      data.date && (
-        <>
-          <>
-            <dt>Taken</dt>
-            <dd>
-              <time datetime={data.date.toISOString()}>{data.date.toISOString().slice(0, 10)}</time>
-            </dd>
-          </>
-        </>
-      )
-    }
-    {
-      [
-        ['Camera', data.camera],
-        ['Lens', data.lens],
-        ['Settings', data.settings],
-      ].map(
-        ([label, value]) =>
-          value && (
-            <>
-              <>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </>
-            </>
-          )
-      )
-    }
     {
       data.location && (
         <>

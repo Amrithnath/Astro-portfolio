@@ -163,6 +163,10 @@ collections:
         required: false
       - { name: camera, label: Camera, widget: string, required: false }
       - { name: lens, label: Lens, widget: string, required: false }
+      - { name: focalLength, label: Focal length (mm), widget: number, value_type: float, min: 0.01, required: false }
+      - { name: aperture, label: Aperture (f-number), widget: number, value_type: float, min: 0.01, required: false }
+      - { name: exposureTime, label: Exposure time (seconds), widget: number, value_type: float, min: 0.000001, required: false }
+      - { name: iso, label: ISO, widget: number, value_type: int, min: 1, required: false }
       - { name: settings, label: Settings (e.g. 35mm · f/1.8 · 1/250s · ISO 100), widget: string, required: false }
       - { name: tags, label: Tags, widget: list, required: false, default: [] }
       - { name: featured, label: Featured (shown first), widget: boolean, default: false, required: false }
