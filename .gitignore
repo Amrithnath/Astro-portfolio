@@ -64,3 +64,6 @@ project-archive/wedding-api/internal/gen/
 .photos-inbox/
 .photos-output/
 .photos-tests-*/
+
+# Release build archive (attached to GitHub releases, never committed)
+portfolio-dist.zip
