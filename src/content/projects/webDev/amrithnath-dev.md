@@ -5,6 +5,7 @@ github: https://github.com/Amrithnath/Astro-portfolio
 client: Self
 pubDate: 2020-01-01 00:00:00
 updatedDate: 2026-10-28 00:00:00
+img: /images/projects/amrithnath-dev.webp
 description: |
   This site. A terminal-themed Astro portfolio with a built-in privacy scanner, a live perf monitor and a carbon estimate, all running in your browser.
 tech:
