@@ -1,6 +1,6 @@
 /*
- * Terminal theme: the only file that should contain raw color values (plus the
- * static /offline/ page, which inlines a copy). A new theme must define every token here.
+ * Terminal palette. Raw colors belong in theme files (or the static offline
+ * snapshot and resume print tokens). A new theme must define every token here.
  */
 [data-theme='terminal'] {
   color-scheme: dark;

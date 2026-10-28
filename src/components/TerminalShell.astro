@@ -3,6 +3,7 @@
 import TerminalWindow from './ui/TerminalWindow.astro';
 import TerminalNav from './TerminalNav.astro';
 import TerminalFooter from './TerminalFooter.astro';
+import ThemeSwitcher from './ThemeSwitcher.astro';
 
 export interface Props {
   currentPage?: string;
@@ -23,8 +24,7 @@ const { currentPage = '/', footerCursor = true } = Astro.props;
       <span class="status-indicator">✓</span>
     </div>
     <div class="status-right">
-      <span class="terminal-mode">INSERT</span>
-      <span class="position">Ln 1, Col 1</span>
+      <ThemeSwitcher />
     </div>
   </div>
   <main id="main-content" tabindex="-1"><slot /></main>

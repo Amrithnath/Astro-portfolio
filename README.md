@@ -239,12 +239,15 @@ unlisted pages out of `TerminalNav.astro` and `src/data/navigation.ts` until the
 
 ## Themes
 
-Only the terminal theme is enabled. To add one:
+Choose **auto**, **dark**, or **light** from the terminal statusline's
+`:set background=` buttons (click or Tab + Enter/Space; no commands to type).
+Light uses warm paper surfaces and high-contrast ink colors; dark keeps the original
+terminal palette. Auto follows your system color scheme live and is the first-visit
+default. Explicit choices persist across reloads, navigation, and tabs; selecting auto
+clears the stored choice. Without JavaScript, the site stays dark and hides the switcher.
 
-1. Register it in `src/themes/index.ts`.
-2. Add scoped CSS tokens.
-3. Import the stylesheet in `BaseHead.astro`.
-
+To add a theme, register it in `src/themes/index.ts`, define every scoped palette
+token, and import its CSS in `BaseHead.astro`. Content is rendered once for all themes.
 See [the theme guide](src/themes/README.md).
 
 ## Contributing and releases
