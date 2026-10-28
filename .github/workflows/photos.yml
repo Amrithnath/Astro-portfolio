@@ -11,6 +11,10 @@ on:
         description: Comma-separated tags (optional)
         required: false
         type: string
+      maps:
+        description: Google Maps link for every photo in this batch (optional; otherwise EXIF GPS)
+        required: false
+        type: string
 
 concurrency:
   group: photo-ingest
@@ -34,6 +38,7 @@ jobs:
       GH_TOKEN: ${{ secrets.PHOTOS_PR_TOKEN || github.token }}
       PHOTO_ALBUM: ${{ inputs.album }}
       PHOTO_TAGS: ${{ inputs.tags }}
+      PHOTO_MAPS: ${{ inputs.maps }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -49,6 +54,7 @@ jobs:
           args=(--from-r2-inbox)
           if [ -n "$PHOTO_ALBUM" ]; then args+=(--album "$PHOTO_ALBUM"); fi
           if [ -n "$PHOTO_TAGS" ]; then args+=(--tags "$PHOTO_TAGS"); fi
+          if [ -n "$PHOTO_MAPS" ]; then args+=(--maps "$PHOTO_MAPS"); fi
           pnpm photos:ingest -- "${args[@]}"
       - name: Validate and open metadata PR
         env:
@@ -64,7 +70,7 @@ jobs:
           git add src/content/photos
           git commit -m "feat(photos): ✨ add $count photos"
           git push origin "photos/ingest-$RUN_ID"
-          gh pr create --title "feat(photos): ✨ add $count photos" --body 'Review alt text, TODO location names/countries, tags and album membership. Entries remain drafts until reviewed. Originals stay in the private inbox archive; only stripped derivatives are public. GITHUB_TOKEN-created PRs do not trigger CI; configure PHOTOS_PR_TOKEN for automatic checks.'
+          gh pr create --title "feat(photos): ✨ add $count photos" --body 'Review alt text, locations (filled from EXIF GPS or the Maps link via OpenStreetMap; check any TODO names), tags and album membership. Entries remain drafts until reviewed. Originals stay in the private inbox archive; only stripped derivatives are public. GITHUB_TOKEN-created PRs do not trigger CI; configure PHOTOS_PR_TOKEN for automatic checks.'
       # Archive only after the metadata is safely persisted in a PR. Never publish originals.
       - name: Archive processed originals privately
         run: pnpm photos:ingest -- --archive-inbox

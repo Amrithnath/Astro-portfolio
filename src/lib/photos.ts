@@ -18,7 +18,7 @@ export function coarseCoordinate(value: number): boolean {
 export interface Place {
   name: string;
   region?: string;
-  country: string;
+  country?: string;
   lat?: number;
   lng?: number;
 }

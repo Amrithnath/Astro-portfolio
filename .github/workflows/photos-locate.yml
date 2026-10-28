@@ -1,0 +1,44 @@
+name: Locate photos
+
+# Resolves pasted Google Maps links (including short links) and fills missing place names from
+# coordinates via OpenStreetMap, then commits the coarse location back to the PR branch.
+on:
+  pull_request:
+    paths: ['src/content/photos/**']
+  workflow_dispatch:
+
+concurrency:
+  group: photos-locate-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  locate:
+    # Only same-repository branches (CMS and owner PRs); forks never get a write token.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          # A PAT makes the pushed commit re-run CI; GITHUB_TOKEN pushes do not trigger workflows.
+          token: ${{ secrets.PHOTOS_PR_TOKEN || github.token }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm photos:locate
+      - name: Commit resolved locations
+        run: |
+          if git diff --quiet -- src/content/photos; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs(photos): 📝 resolve photo locations' -- src/content/photos
+          git push

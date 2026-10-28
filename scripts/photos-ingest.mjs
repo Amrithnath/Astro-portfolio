@@ -8,9 +8,56 @@ import { AwsClient } from 'aws4fetch';
 import { stringify } from 'yaml';
 import { derivativeWidths } from '../src/data/photos-config.ts';
 import { normalizeTags, reservedPhotoIds, slugify } from '../src/lib/photos.ts';
+import {
+  isGoogleMapsUrl,
+  isShortMapsUrl,
+  parseGoogleMapsUrl,
+  resolveGoogleMapsUrl,
+  reverseGeocode,
+} from '../src/lib/geo.ts';
 
 const imagePattern = /\.(jpe?g|png|tiff?|webp|avif|heic)$/i;
 const round = (value) => Math.round(value * 100) / 100;
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+let lastGeocode = 0;
+// Nominatim allows at most one request per second.
+async function politeReverseGeocode(coordinates, fetchImpl) {
+  await sleep(Math.max(0, lastGeocode + 1100 - Date.now()));
+  lastGeocode = Date.now();
+  try {
+    return await reverseGeocode(coordinates, fetchImpl);
+  } catch (error) {
+    console.warn('Reverse geocoding failed: ' + error.message);
+    return undefined;
+  }
+}
+/**
+ * Builds the coarse location for an entry. A Maps link wins over EXIF GPS; names come from the
+ * link or, when geocoding is enabled, from OpenStreetMap. Unknown names stay as a TODO for review.
+ */
+export async function locate(exif, { maps, geocode = false, fetchImpl = fetch } = {}) {
+  let place = {};
+  if (maps) {
+    if (!isGoogleMapsUrl(maps)) throw new Error('--maps must be a Google Maps link');
+    place = (isShortMapsUrl(maps) ? await resolveGoogleMapsUrl(maps, fetchImpl) : parseGoogleMapsUrl(maps)) ?? {};
+    if (place.lat === undefined && place.name === undefined)
+      throw new Error('Could not read a place from the Google Maps link');
+  } else if (Number.isFinite(exif.latitude) && Number.isFinite(exif.longitude)) {
+    place = { lat: round(exif.latitude), lng: round(exif.longitude) };
+  }
+  if (geocode && place.lat !== undefined) {
+    const found = await politeReverseGeocode({ lat: place.lat, lng: place.lng }, fetchImpl);
+    place = { ...found, ...place, name: place.name ?? found?.name };
+  }
+  if (place.lat === undefined && place.name === undefined) return undefined;
+  const { name, region, country, lat, lng } = place;
+  return {
+    name: name ?? 'TODO place name',
+    ...(region ? { region } : {}),
+    ...(country ? { country } : {}),
+    ...(lat !== undefined ? { lat, lng } : {}),
+  };
+}
 export function settingsFromExif(exif) {
   const shutter = exif.ExposureTime;
   return [
@@ -55,6 +102,9 @@ export async function ingestFile(file, options = {}) {
     contentDir = 'src/content/photos',
     album,
     tags = [],
+    maps,
+    geocode = !dryRun,
+    fetchImpl = fetch,
   } = options;
   const slug = slugify(basename(file, extname(file)));
   if (!slug || reservedPhotoIds.includes(slug))
@@ -106,16 +156,12 @@ export async function ingestFile(file, options = {}) {
       }
     }
   }
+  const location = await locate(exif, { maps, geocode, fetchImpl });
   const data = {
     title: basename(file, extname(file)).replace(/[-_]+/g, ' '),
     alt: 'TODO: describe this photograph',
     remote: { key, width: metadata.width, height: metadata.height, placeholder },
-    location: {
-      name: 'TODO place name',
-      country: 'TODO country',
-      ...(Number.isFinite(exif.latitude) ? { lat: round(exif.latitude) } : {}),
-      ...(Number.isFinite(exif.longitude) ? { lng: round(exif.longitude) } : {}),
-    },
+    ...(location ? { location } : {}),
     ...(exif.DateTimeOriginal instanceof Date ? { date: exif.DateTimeOriginal.toISOString() } : {}),
     ...([exif.Make, exif.Model].some(Boolean)
       ? { camera: [...new Set([exif.Make, exif.Model].filter(Boolean))].join(' ') }
@@ -204,7 +250,9 @@ export async function main(args = process.argv.slice(2)) {
     if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--from-r2-inbox') fromInbox = true;
     else if (arg === '--archive-inbox') archive = true;
-    else if (['--out', '--album', '--tags'].includes(arg)) {
+    else if (arg === '--geocode') options.geocode = true;
+    else if (arg === '--no-geocode') options.geocode = false;
+    else if (['--out', '--album', '--tags', '--maps'].includes(arg)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error(`Missing value for ${arg}`);
       options[arg.slice(2)] = arg === '--tags' ? value.split(',') : value;
@@ -212,7 +260,7 @@ export async function main(args = process.argv.slice(2)) {
     else paths.push(arg);
   }
   if (options.dryRun && (fromInbox || archive)) {
-    throw new Error('Inbox operations require R2; local --dry-run never uses the network');
+    throw new Error('Inbox operations require R2; local --dry-run uploads nothing');
   }
   if (archive) return archiveInbox();
   if (options.album) {

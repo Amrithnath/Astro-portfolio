@@ -33,7 +33,8 @@
     "commitlint": "commitlint",
     "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun",
     "test:photos": "node --test tests/photos/*.test.mjs",
-    "photos:ingest": "node scripts/photos-ingest.mjs"
+    "photos:ingest": "node scripts/photos-ingest.mjs",
+    "photos:locate": "node scripts/photos-locate.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
