@@ -41,11 +41,22 @@ with `textContent` only. Tests: `pnpm test:shell`.
 ## Wide-screen side panes
 
 At `min-width: 110rem` `TerminalShell` shows tmux-style panes in the desktop gutters
-(`src/features/terminal/SidePanes.astro`): a `tree` of listed routes plus published projects/posts
-(current page marked with `aria-current`) and a `git log` of releases parsed from `CHANGELOG.md`
-(`releases.ts`) with build info. They sit below the sticky chrome (`--chrome-height`), scroll
-independently, are outside `<main>` (not indexed) and are hidden on narrower screens and in print.
-Only link listed routes there.
+(`src/features/terminal/SidePanes.astro`, pure helpers in `panes.ts`, tested by `pnpm test:shell`).
+They vary with the page through the `panes` prop (`PaneContext`) passed by pages, `BaseLayout` and
+`ArticleLayout`:
+
+- **Left (`0:man`)**: a `man ./<page>` entry (name, synopsis, description, in-page sections, see
+  also), then `git log --graph ~/career` from the resume compendium. Articles mark the role current
+  at their `pubDate`; `/resume` expands each role's technologies. Photography routes show albums,
+  places and tags instead of the career graph.
+- **Right (`1:whoami`)**: `neofetch --short` contact details (latest photos on photography routes),
+  `htop` skill meters (bar fill is years relative to the most-practised skill, colour is the level;
+  articles show matching tech/tags, `/resume` shows every category) and `tail -f ~/.now`, which stays
+  hidden while `/now` is a placeholder.
+
+They sit below the sticky chrome (`--chrome-height`), scroll independently, are outside `<main>`
+(not indexed) and are hidden on narrower screens and in print. Only link listed routes there, except
+photography links on photography routes.
 
 ## Add a theme
 

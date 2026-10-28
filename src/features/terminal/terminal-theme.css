@@ -457,49 +457,85 @@ body {
   .side-pane-left .pane-label { align-self: flex-end; }
   .side-pane-right .pane-label { align-self: flex-start; }
 
-  .pane-tree,
-  .pane-tree ul,
-  .pane-log {
+  .pane-list,
+  .career-graph {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .pane-tree li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tree-branch { color: var(--color-muted); white-space: pre; }
-  .pane-tree a { color: var(--color-link); text-decoration: none; }
-  .pane-tree a:hover,
-  .pane-tree a:focus-visible { text-decoration: underline; }
-  .pane-tree a[aria-current='page'] {
-    color: var(--color-on-accent);
-    background: var(--color-link);
-    padding: 0 var(--space-1);
+  .pane-list li {
+    padding-left: calc(var(--depth, 0) * var(--space-3));
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .pane-muted { color: var(--color-muted); margin: var(--space-2) 0 0; }
+  .side-pane a { color: var(--color-link); text-decoration: none; }
+  .side-pane a:hover,
+  .side-pane a:focus-visible { text-decoration: underline; }
 
-  .pane-log li {
+  .pane-muted { color: var(--color-muted); }
+
+  /* man ./page */
+  .man-page { margin: 0; }
+  .man-page dt { color: var(--color-heading); font-weight: 600; margin-top: var(--space-2); }
+  .man-page dd { margin: 0 0 0 var(--space-4); color: var(--color-text); }
+  .man-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* git log --graph ~/career */
+  .career-graph li {
     display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: var(--space-3);
-    padding: var(--space-1) 0;
+    grid-template-columns: 1.5ch 1fr;
+    column-gap: var(--space-2);
+    padding-bottom: var(--space-3);
+    background: linear-gradient(var(--color-border), var(--color-border)) no-repeat 0.7ch var(--space-4) / 1px 100%;
   }
+  .career-graph li:last-child { background: none; }
+  .graph-rail { color: var(--color-warning); font-weight: 700; }
+  .career-graph li > div { display: flex; flex-direction: column; min-width: 0; }
+  .commit-date { color: var(--color-warning); }
+  .commit-ref { color: var(--color-info); font-weight: 600; }
+  .commit-title { color: var(--color-text); font-weight: 600; }
+  .commit-org { color: var(--color-muted); }
+  .commit-tech { color: var(--color-secondary); }
+  .career-graph li.focused .commit-title { color: var(--color-accent); }
 
-  .log-version { color: var(--color-warning); font-weight: 600; text-decoration: none; }
-  .log-version:hover,
-  .log-version:focus-visible { text-decoration: underline; }
-  .pane-log time { margin: 0; }
-  .log-summary { grid-column: 1 / -1; color: var(--color-text); }
-
-  .pane-build {
+  /* neofetch --short */
+  .pane-fetch {
     display: grid;
     grid-template-columns: max-content 1fr;
     gap: var(--space-1) var(--space-3);
     margin: 0;
   }
+  .pane-fetch dt { color: var(--color-accent); font-weight: 600; }
+  .pane-fetch dd { margin: 0; color: var(--color-text); overflow-wrap: anywhere; }
+  .pane-fetch .pane-fetch-title { grid-column: 1 / -1; color: var(--color-link); }
+  .pane-fetch .pane-fetch-rule { grid-column: 1 / -1; color: var(--color-muted); }
 
-  .pane-build dt { color: var(--color-info); }
-  .pane-build dd { margin: 0; color: var(--color-text); }
+  /* htop */
+  .htop-group { margin: var(--space-2) 0 var(--space-1); color: var(--color-heading); font-weight: 600; }
+  .htop-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    column-gap: var(--space-2);
+  }
+  .htop-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text); }
+  .htop-bar { color: var(--color-muted); white-space: pre; }
+  .htop-fill { font-weight: 700; }
+  .htop-fill.level-expert { color: var(--color-accent); }
+  .htop-fill.level-advanced { color: var(--color-info); }
+  .htop-fill.level-intermediate { color: var(--color-warning); }
+  .htop-fill.level-beginner { color: var(--color-danger); }
+
+  /* tail -f ~/.now */
+  .now-log { margin: 0; }
+  .now-log dt { color: var(--color-secondary); font-weight: 600; }
+  .now-log dd { margin: 0 0 var(--space-2); color: var(--color-text); }
 }
 
 @media print {

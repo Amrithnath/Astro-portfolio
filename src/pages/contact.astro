@@ -33,6 +33,7 @@ const channels = [
   title={`Contact | ${contact.name}`}
   description={`Reach ${contact.name} through email or social links.`}
   currentPage="/contact"
+  panes={{ seeAlso: [{ href: '/about', label: 'about(1)' }, { href: '/resume', label: 'resume(1)' }] }}
 >
   <h1 class="visually-hidden">Contact</h1>
   <div class="command-output">Open channels for project work, collaborations, or just saying hi.</div>

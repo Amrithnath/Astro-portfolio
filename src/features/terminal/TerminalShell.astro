@@ -4,6 +4,7 @@ import TerminalWindow from '../../shared/ui/TerminalWindow.astro';
 import TerminalNav from './TerminalNav.astro';
 import TerminalFooter from './TerminalFooter.astro';
 import SidePanes from './SidePanes.astro';
+import type { PaneContext } from './panes';
 import ThemeSwitcher from '../theme/ThemeSwitcher.astro';
 import { isIndexablePath } from '../seo/seo';
 
@@ -11,9 +12,13 @@ export interface Props {
   currentPage?: string;
   /** Pages with their own live input (e.g. the resume CLI) hide the decorative footer cursor. */
   footerCursor?: boolean;
+  /** Page title/description and optional context for the wide-screen side panes. */
+  title?: string;
+  description?: string;
+  panes?: PaneContext;
 }
 
-const { currentPage = '/', footerCursor = true } = Astro.props;
+const { currentPage = '/', footerCursor = true, title, description, panes } = Astro.props;
 ---
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -35,6 +40,6 @@ const { currentPage = '/', footerCursor = true } = Astro.props;
     data-pagefind-body={isIndexablePath(Astro.url.pathname) || undefined}
     data-pagefind-ignore={!isIndexablePath(Astro.url.pathname) || undefined}
   ><slot /></main>
-  <SidePanes slot="panes" currentPage={currentPage} />
+  <SidePanes slot="panes" currentPage={currentPage} title={title} description={description} panes={panes} />
 </TerminalWindow>
 <TerminalFooter showCursor={footerCursor} />

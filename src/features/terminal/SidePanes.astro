@@ -1,89 +1,171 @@
 ---
-// tmux-style side panes that fill the gutters on wide screens; hidden below the --bp-xl breakpoint.
+// tmux-style side panes that fill the gutters on wide screens (min-width: 110rem); content varies by page.
+import { getEntry } from 'astro:content';
 import Prompt from '../../shared/ui/Prompt.astro';
-import { contentPath, getPublishedCollection } from '../content/content';
-import { parseReleases } from './releases';
-import changelog from '../../../CHANGELOG.md?raw';
+import { getPublishedCollection } from '../content/content';
+import { resumeCompendium } from '../resume/resume-compendium';
+import { careerGraph, nowItems, skillMeters, type PaneContext } from './panes';
 
 export interface Props {
   currentPage?: string;
+  title?: string;
+  description?: string;
+  panes?: PaneContext;
 }
 
-interface TreeNode {
-  name: string;
-  href: string;
-  children?: TreeNode[];
-}
+const { currentPage = '/', title, description, panes = {} } = Astro.props;
+const page = currentPage.replace(/\/$/, '').split('/').filter(Boolean).at(-1) ?? 'portfolio';
+const name = panes.name ?? `${page} - ${(title ?? '').split(' | ')[0] || 'terminal portfolio'}`;
+const summary = panes.description ?? description;
+const sections = panes.sections ?? [];
+const seeAlso = panes.seeAlso ?? [];
 
-const trim = (path: string) => path.replace(/\/$/, '') || '/';
-const current = trim(Astro.props.currentPage ?? '/');
+// Photography routes are unlisted, so only they show (and link to) photography content.
+const photography = currentPage.startsWith('/photography');
+const contact = resumeCompendium.contact;
+const career = photography ? [] : careerGraph(resumeCompendium, panes.focusDate);
+const skills = skillMeters(resumeCompendium, { focus: panes.skills, all: panes.allSkills });
+const nowEntry = await getEntry('now', 'now');
+const now = nowItems(nowEntry?.body, nowEntry?.data.placeholder ?? true);
 
-const byDate = <T extends { data: { pubDate: Date } }>(entries: T[]) =>
-  entries.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 5);
-const [posts, projects] = await Promise.all([
-  getPublishedCollection('blog').then(byDate),
-  getPublishedCollection('projects').then(byDate),
-]);
-const leaf = (entry: (typeof posts)[number] | (typeof projects)[number]): TreeNode => ({
-  name: entry.data.title,
-  href: `${contentPath(entry)}/`,
-});
+const [albums, photos] = photography
+  ? await Promise.all([
+      getPublishedCollection('albums'),
+      getPublishedCollection('photos').then(entries =>
+        entries.sort((a, b) => (b.data.date?.valueOf() ?? 0) - (a.data.date?.valueOf() ?? 0)).slice(0, 5)
+      ),
+    ])
+  : [[], []];
 
-const tree: TreeNode[] = [
-  { name: 'portfolio.sh', href: '/' },
-  { name: 'about.md', href: '/about' },
-  { name: 'projects/', href: '/projects', children: projects.map(leaf) },
-  { name: 'resume.py', href: '/resume' },
-  { name: 'blog/', href: '/blog/', children: posts.map(leaf) },
-  { name: 'contact.json', href: '/contact' },
-];
-const directories = tree.filter(node => node.children).length;
-const files = tree.reduce((count, node) => count + (node.children ? node.children.length : 1), 0);
-
-const releases = parseReleases(changelog);
-const builtOn = new Date().toISOString().slice(0, 10);
+const bar = (percent: number) => {
+  const filled = Math.round(percent / 10);
+  return `${'|'.repeat(filled)}${' '.repeat(10 - filled)}`;
+};
+const host = (value?: string) => value?.replace(/^https?:\/\//, '');
 ---
 
-<aside class="side-pane side-pane-left" aria-label="Site map">
-  <div class="pane-label" aria-hidden="true">0:tree</div>
-  <Prompt command="tree -L 2 ~/portfolio" />
-  <ul class="pane-tree">
-    {tree.map((node, i) => (
-      <li>
-        <span class="tree-branch" aria-hidden="true">{i === tree.length - 1 ? '└── ' : '├── '}</span>
-        <a href={node.href} aria-current={trim(node.href) === current ? 'page' : undefined}>{node.name}</a>
-        {node.children && node.children.length > 0 && (
-          <ul>
-            {node.children.map((child, j) => (
-              <li>
-                <span class="tree-branch" aria-hidden="true">{i === tree.length - 1 ? '    ' : '│   '}{j === node.children!.length - 1 ? '└── ' : '├── '}</span>
-                <a href={child.href} aria-current={trim(child.href) === current ? 'page' : undefined}>{child.name}</a>
-              </li>
+<aside class="side-pane side-pane-left" aria-label="Page manual and career">
+  <div class="pane-label" aria-hidden="true">0:man</div>
+  <Prompt command={`man ./${page}`} />
+  <dl class="man-page">
+    <dt>NAME</dt>
+    <dd>{name}</dd>
+    {panes.synopsis && <><dt>SYNOPSIS</dt><dd>{panes.synopsis}</dd></>}
+    {summary && <><dt>DESCRIPTION</dt><dd class="man-description">{summary}</dd></>}
+    {sections.length > 0 && (
+      <>
+        <dt>SECTIONS</dt>
+        <dd>
+          <ul class="pane-list">
+            {sections.map(({ href, label, depth = 2 }) => (
+              <li style={depth > 2 ? `--depth: ${depth - 2}` : undefined}><a href={href}>{label}</a></li>
             ))}
           </ul>
-        )}
-      </li>
-    ))}
-  </ul>
-  <p class="pane-muted">{directories} directories, {files} files</p>
+        </dd>
+      </>
+    )}
+    {seeAlso.length > 0 && (
+      <>
+        <dt>SEE ALSO</dt>
+        <dd>
+          <ul class="pane-list">
+            {seeAlso.map(({ href, label }) => <li><a href={href}>{label}</a></li>)}
+          </ul>
+        </dd>
+      </>
+    )}
+  </dl>
+
+  {photography ? (
+    <>
+      <Prompt command="ls ~/photography/albums" />
+      <ul class="pane-list">
+        {albums.map(album => (
+          <li><a href={`/photography/albums/${album.id}/`}>{album.data.title}/</a></li>
+        ))}
+        <li><a href="/photography/places/">places/</a></li>
+        <li><a href="/photography/tags/">tags/</a></li>
+      </ul>
+    </>
+  ) : (
+    <>
+      <Prompt command="git log --graph ~/career" />
+      <ol class="career-graph">
+        {career.map((commit, i) => (
+          <li class:list={{ focused: commit.focused }}>
+            <span class="graph-rail" aria-hidden="true">*</span>
+            <div>
+              <span class="commit-date">
+                <time datetime={commit.start}>{commit.start}</time>
+                {commit.end ? <> → <time datetime={commit.end}>{commit.end}</time></> : ' → now'}
+              </span>
+              {commit.head && <span class="commit-ref"> (HEAD -&gt; main)</span>}
+              {commit.focused && <span class="commit-ref"> (written here)</span>}
+              <span class="commit-title">{commit.title}</span>
+              <span class="commit-org">{commit.org}</span>
+              {panes.expandCareer && commit.technologies.length > 0 && (
+                <span class="commit-tech">{commit.technologies.join(' · ')}</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </>
+  )}
 </aside>
 
-<aside class="side-pane side-pane-right" aria-label="Site releases">
-  <div class="pane-label" aria-hidden="true">1:log</div>
-  <Prompt command="git log --oneline --date=short" />
-  <ol class="pane-log">
-    {releases.map(release => (
-      <li>
-        <a class="log-version" href={release.url}>v{release.version}</a>
-        <time class="pane-muted" datetime={release.date}>{release.date}</time>
-        <span class="log-summary">{release.summary}</span>
-      </li>
+<aside class="side-pane side-pane-right" aria-label="Profile and skills">
+  <div class="pane-label" aria-hidden="true">1:whoami</div>
+  {photography ? (
+    <>
+      <Prompt command="ls -t ~/photography | head -5" />
+      <ul class="pane-list">
+        {photos.map(photo => (
+          <li>
+            <a href={`/photography/${photo.id}/`}>{photo.data.title}</a>
+            {photo.data.location?.name && <span class="pane-muted"> — {photo.data.location.name}</span>}
+          </li>
+        ))}
+      </ul>
+    </>
+  ) : (
+    <>
+      <Prompt command="neofetch --short" />
+      <dl class="pane-fetch">
+        <dt class="pane-fetch-title">{contact.name.split(' ')[0].toLowerCase()}@portfolio</dt>
+        <dd class="pane-fetch-rule" aria-hidden="true">{'-'.repeat(18)}</dd>
+        <dt>Role</dt><dd>{contact.title}</dd>
+        {contact.location && <><dt>Location</dt><dd>{contact.location}</dd></>}
+        <dt>Mail</dt><dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+        {contact.github && <><dt>GitHub</dt><dd><a href={`https://${host(contact.github)}`}>{host(contact.github)?.replace('github.com/', '')}</a></dd></>}
+        {contact.linkedin && <><dt>LinkedIn</dt><dd><a href={`https://${host(contact.linkedin)}`}>{host(contact.linkedin)?.replace('linkedin.com/in/', '')}</a></dd></>}
+      </dl>
+    </>
+  )}
+
+  <Prompt command={panes.allSkills ? 'htop --tree' : 'htop'} />
+  <div class="htop">
+    {skills.map(group => (
+      <section aria-label={group.category}>
+        <p class="htop-group">{group.category}</p>
+        <ul class="pane-list">
+          {group.meters.map(skill => (
+            <li class="htop-row">
+              <span class="htop-name">{skill.name}</span>
+              <span class="htop-bar" role="img" aria-label={`${skill.name}: ${skill.level}${skill.years ? `, ${skill.years} years` : ''}`}>[<span class:list={['htop-fill', `level-${skill.level}`]}>{bar(skill.percent)}</span>]{skill.years ? ` ${String(skill.years).padStart(2)}y` : ''}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
     ))}
-  </ol>
-  <Prompt command="cat ~/.build" />
-  <dl class="pane-build">
-    <dt>engine</dt><dd>{Astro.generator.toLowerCase()}</dd>
-    <dt>output</dt><dd>static</dd>
-    <dt>built</dt><dd><time datetime={builtOn}>{builtOn}</time></dd>
-  </dl>
+  </div>
+
+  {now.length > 0 && (
+    <>
+      <Prompt command="tail -f ~/.now" />
+      <dl class="now-log">
+        {now.map(item => <><dt>{item.heading}</dt><dd>{item.text}</dd></>)}
+      </dl>
+    </>
+  )}
 </aside>
