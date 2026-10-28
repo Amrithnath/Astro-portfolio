@@ -54,3 +54,29 @@ export function transferTotals(entries: TransferEntry[]): { transferred: number;
     { transferred: 0, firstVisit: 0 }
   );
 }
+
+export type Rating = 'good' | 'ok' | 'poor';
+export type RatedMetric = 'ttfb' | 'fcp' | 'lcp' | 'cls';
+
+// Google's Core Web Vitals thresholds (web.dev/vitals): [good up to, needs improvement up to].
+const THRESHOLDS: Record<RatedMetric, [number, number]> = {
+  ttfb: [800, 1800],
+  fcp: [1800, 3000],
+  lcp: [2500, 4000],
+  cls: [0.1, 0.25],
+};
+
+const WORDS: Record<RatedMetric, Record<Rating, string>> = {
+  ttfb: { good: 'fast', ok: 'okay', poor: 'slow' },
+  fcp: { good: 'fast', ok: 'okay', poor: 'slow' },
+  lcp: { good: 'fast', ok: 'okay', poor: 'slow' },
+  cls: { good: 'steady', ok: 'shifty', poor: 'jumpy' },
+};
+
+/** Plain-language verdict for a Web Vitals value, or undefined when it was not measured. */
+export function rateMetric(metric: RatedMetric, value: number | undefined): { rating: Rating; word: string } | undefined {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  const [good, ok] = THRESHOLDS[metric];
+  const rating: Rating = value <= good ? 'good' : value <= ok ? 'ok' : 'poor';
+  return { rating, word: WORDS[metric][rating] };
+}

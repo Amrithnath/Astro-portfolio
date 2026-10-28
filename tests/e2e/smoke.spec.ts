@@ -138,6 +138,10 @@ test('perf monitor and carbon badge measure locally without contacting Website C
   await expect(monitor).toBeVisible();
   await expect(monitor.locator('[data-metric="ttfb"]')).toHaveText(/\d+(\.\d+)? m?s/);
   await expect(monitor.locator('[data-metric="requests"]')).toHaveText(/^[1-9]\d*$/);
+  await expect(monitor.locator('[data-rating="ttfb"]')).toHaveText(/^· (fast|okay|slow)$/);
+  await expect(monitor.locator('[data-metric-label="ttfb"]')).toHaveText('server reply');
+  await monitor.getByText('what do these mean?').click();
+  await expect(monitor.locator('.pane-help')).toContainText('Largest Contentful Paint');
   await expect(monitor.locator('[data-metric="co2-cold"]')).toHaveText(/^\d+\.\d+ g \((A\+|[A-F])\)$/);
   const badge = page.locator('[data-carbon-badge]');
   await expect(badge).toBeVisible();
