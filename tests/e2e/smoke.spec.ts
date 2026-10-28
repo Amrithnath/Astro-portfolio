@@ -290,3 +290,26 @@ test('now page is unlisted and flags its placeholder content', async ({ page, re
   expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/now');
   expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /now');
 });
+
+test('article view counter only runs when PUBLIC_VIEWS_URL was set at build time', async ({ page }) => {
+  const viewRequests: string[] = [];
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === '/views') viewRequests.push(`${request.method()} ${request.url()}`);
+  });
+  await page.route(/\/views(\?|$)/, route => route.fulfill({
+    json: { path: '/project/webDev/weather-app/', count: 1234 },
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  }));
+  await page.goto('/project/webDev/weather-app/');
+  await page.waitForLoadState('networkidle');
+  const counter = page.locator('[data-view-count]');
+  if (!(await counter.count())) {
+    // CI default: no VIEWS_URL variable, so no markup and no network calls.
+    expect(viewRequests).toEqual([]);
+    return;
+  }
+  // Off the production hostname the counter only reads, never increments.
+  await expect(counter).toHaveText('views: 1,234');
+  expect(viewRequests).toHaveLength(1);
+  expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
+});
