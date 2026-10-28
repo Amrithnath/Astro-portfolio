@@ -175,7 +175,20 @@ ordered itinerary stops; `src/content/albums/example-trip.yml` is a draft templa
 GPS-bearing originals and uncatalogued assets. Astro emits metadata-free AVIF/WebP derivatives.
 Optional fields include caption, date, camera, lens, settings, tags, albums, featured and draft.
 Use exactly one image source: local `image` **or** R2 `remote: { key, width, height, placeholder? }`.
-Photo IDs `tags`, `places` and `albums` are reserved and fail the build.
+Photo IDs `tags`, `places`, `albums`, `map`, `prints`, `feed`, `feed.xml`, `rss` and `rss.xml` are reserved.
+
+**Extras (still unlisted):** places link to `/photography/map/`, an inline SVG with no third-party
+requests. One linked marker per named place uses reviewed, coarse coordinates; the text list is
+available without JavaScript. Unknown locations stay unset. The bundled simplified Natural Earth
+110m land outline is public domain (source, version and licence in `src/data/world-land.json`).
+`/photography/rss.xml` lists published photos newest first (undated last), with metadata-free
+WebP media links; only the photography index advertises it. The optional `exiftool`-style photo
+panel shows camera, lens, taken date and exposure fields, never GPS or serial numbers. Ingest fills
+`focalLength` (mm), `aperture` (f-number), `exposureTime` (seconds) and `iso` when available;
+these are also editable in the CMS. Photos with no EXIF information have no panel.
+`/photography/prints/` is explicitly **PLACEHOLDER**: the owner must supply print availability,
+prices/delivery and licensing terms before treating it as an offer. Contact uses the profile email;
+all photos remain © the owner, all rights reserved unless stated otherwise.
 
 **R2 ingest (no local Cloudflare login required):**
 

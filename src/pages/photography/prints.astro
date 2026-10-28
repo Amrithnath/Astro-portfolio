@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/ui/Prompt.astro';
+import PhotoNav from '../../components/photos/PhotoNav.astro';
+import { resumeCompendium } from '../../data/resume-compendium';
+const { contact } = resumeCompendium;
+---
+<BaseLayout
+  title="Photography prints & licensing"
+  description="Placeholder information for photography prints and usage requests."
+  currentPage="/photography/prints"
+>
+  <h1>Prints &amp; licensing</h1><PhotoNav /><Prompt command="cat ~/photography/prints.txt" />
+  <div class="prose">
+    <p><strong>PLACEHOLDER — details have not been set by the photographer.</strong></p>
+    <h2>Prints</h2>
+    <p>PLACEHOLDER: print availability, sizes, materials, pricing and delivery details are not yet published.</p>
+    <h2>Licensing &amp; usage requests</h2>
+    <p>PLACEHOLDER: licensing options and terms are not yet published. Contact the photographer with the photo link and your intended use; this page does not grant permission to reuse a photo.</p>
+    <h2>Contact</h2>
+    <p><a href={'mailto:' + contact.email}>{contact.email}</a></p>
+    <p>All photographs © {contact.name}. All rights reserved unless explicitly stated otherwise.</p>
+  </div>
+</BaseLayout>

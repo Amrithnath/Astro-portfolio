@@ -7,7 +7,7 @@ import exifr from 'exifr';
 import { AwsClient } from 'aws4fetch';
 import { stringify } from 'yaml';
 import { derivativeWidths } from '../src/data/photos-config.ts';
-import { normalizeTags, reservedPhotoIds, slugify } from '../src/lib/photos.ts';
+import { normalizeTags, reservedPhotoIds, shutterSpeed, slugify } from '../src/lib/photos.ts';
 import {
   isGoogleMapsUrl,
   isShortMapsUrl,
@@ -58,17 +58,41 @@ export async function locate(exif, { maps, geocode = false, fetchImpl = fetch } 
     ...(lat !== undefined ? { lat, lng } : {}),
   };
 }
+function exposureFields(exif) {
+  return Object.fromEntries(
+    [
+      ['focalLength', exif.FocalLength],
+      ['aperture', exif.FNumber],
+      ['exposureTime', exif.ExposureTime],
+      ['iso', exif.ISO],
+    ].filter(([key, value]) =>
+      Number.isFinite(value) && value > 0 && (key !== 'iso' || Number.isInteger(value))
+    )
+  );
+}
 export function settingsFromExif(exif) {
-  const shutter = exif.ExposureTime;
+  const { focalLength, aperture, exposureTime, iso } = exposureFields(exif);
   return [
-    exif.FocalLength && `${round(exif.FocalLength)}mm`,
-    exif.FNumber && `f/${exif.FNumber}`,
-    shutter && (shutter < 1 ? `1/${Math.round(1 / shutter)}s` : `${shutter}s`),
-    exif.ISO && `ISO ${exif.ISO}`,
+    focalLength && round(focalLength) + 'mm',
+    aperture && 'f/' + aperture,
+    exposureTime && shutterSpeed(exposureTime),
+    iso && 'ISO ' + iso,
   ]
     .filter(Boolean)
     .join(' · ');
 }
+export function metadataFromExif(exif) {
+  const camera = [...new Set([exif.Make, exif.Model].filter(Boolean))].join(' ');
+  const date = exif.DateTimeOriginal;
+  return {
+    ...(date instanceof Date && Number.isFinite(date.valueOf()) ? { date: date.toISOString() } : {}),
+    ...(camera ? { camera } : {}),
+    ...(exif.LensModel ? { lens: String(exif.LensModel) } : {}),
+    ...exposureFields(exif),
+    ...(settingsFromExif(exif) ? { settings: settingsFromExif(exif) } : {}),
+  };
+}
+
 function r2() {
   for (const name of [
     'R2_ACCOUNT_ID',
@@ -162,12 +186,7 @@ export async function ingestFile(file, options = {}) {
     alt: 'TODO: describe this photograph',
     remote: { key, width: metadata.width, height: metadata.height, placeholder },
     ...(location ? { location } : {}),
-    ...(exif.DateTimeOriginal instanceof Date ? { date: exif.DateTimeOriginal.toISOString() } : {}),
-    ...([exif.Make, exif.Model].some(Boolean)
-      ? { camera: [...new Set([exif.Make, exif.Model].filter(Boolean))].join(' ') }
-      : {}),
-    ...(exif.LensModel ? { lens: String(exif.LensModel) } : {}),
-    ...(settingsFromExif(exif) ? { settings: settingsFromExif(exif) } : {}),
+    ...metadataFromExif(exif),
     tags: normalizeTags(tags),
     albums: album ? [album] : [],
     draft: true,

@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/ui/Prompt.astro';
+import PhotoNav from '../../components/photos/PhotoNav.astro';
+import { getPhotos } from '../../lib/content';
+import { mapPoint, placeIndex } from '../../lib/photos';
+import { geocoderAttribution } from '../../lib/geo';
+import land from '../../data/world-land.json';
+const places = placeIndex(await getPhotos()).flatMap((place) => {
+  const point = mapPoint(place.location);
+  return point ? [{ ...place, ...point }] : [];
+});
+---
+
+<BaseLayout
+  title="Photography places map"
+  description="An offline world map of approximate photography locations."
+  currentPage="/photography/map"
+>
+  <h1>Photography places map</h1><PhotoNav /><Prompt command="plot ~/photography/places" />
+  <p>Approximate locations only, rounded to at most two decimals. No map tiles or external requests.</p>
+  <figure>
+    <svg viewBox="0 0 720 360" role="group" aria-labelledby="map-title map-description">
+      <title id="map-title">Photography places</title>
+      <desc id="map-description">World map with linked places. The same links are listed below.</desc>
+      <path d={land.path} class="land" aria-hidden="true" />
+      {places.map((place) => (
+        <a href={'/photography/places/' + place.slug + '/'} aria-label={place.name}>
+          <title>{place.name}</title>
+          <circle cx={place.x} cy={place.y} r="4" />
+        </a>
+      ))}
+    </svg>
+    <figcaption>
+      <small>Made with Natural Earth. Public-domain 1:110m land outline.</small>
+      {places.length > 0 && <small> {geocoderAttribution}</small>}
+    </figcaption>
+  </figure>
+  <h2>Places on this map</h2>
+  {places.length ? (
+    <ul role="list">
+      {places.map((place) => (
+        <li><a href={'/photography/places/' + place.slug + '/'}>{place.name}</a> ({place.count})</li>
+      ))}
+    </ul>
+  ) : <p>No places with coordinates added yet.</p>}
+  <p><a href="/photography/places/">All places, including those without coordinates</a></p>
+</BaseLayout>
+<style>
+  figure {
+    margin: var(--space-4) 0;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+  }
+  .land {
+    fill: var(--color-surface);
+    stroke: var(--color-border);
+    stroke-width: 0.5;
+  }
+  circle {
+    fill: var(--color-link);
+    stroke: var(--color-bg);
+    stroke-width: 1;
+  }
+  a:hover circle,
+  a:focus-visible circle {
+    fill: var(--color-accent);
+    stroke-width: 2;
+  }
+  svg a:focus-visible {
+    outline: 2px solid var(--color-accent);
+  }
+</style>
