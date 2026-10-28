@@ -129,7 +129,8 @@ test('side panes vary with page content', async ({ page }) => {
 test('perf monitor and carbon badge measure locally without contacting Website Carbon off production', async ({ page }) => {
   const carbonRequests: string[] = [];
   page.on('request', request => {
-    if (request.url().includes('websitecarbon.com')) carbonRequests.push(request.url());
+    const { hostname } = new URL(request.url());
+    if (hostname === 'websitecarbon.com' || hostname.endsWith('.websitecarbon.com')) carbonRequests.push(request.url());
   });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/about/', { waitUntil: 'load' });
