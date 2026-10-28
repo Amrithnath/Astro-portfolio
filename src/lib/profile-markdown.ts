@@ -1,20 +1,38 @@
 import { formatRange } from './format-date';
-import { contentPath, getPublishedCollection } from './content';
+import { contentPath, getProjectWriteups, getPublishedCollection } from './content';
 import { absoluteProfileUrl, isIndexablePath, profile, profileLinks } from './seo';
 
 export async function getPosts() {
-  const documents = [
-    ...(await getPublishedCollection('blog')),
-    ...(await getPublishedCollection('projects')),
-  ];
-  return documents.map(entry => ({
-    path: contentPath(entry),
-    title: entry.data.title,
-    description: entry.data.description,
-    body: entry.body?.trim() || '',
-  })).filter(post => isIndexablePath(post.path));
+  const blogs = await getPublishedCollection('blog');
+  const projects = await getPublishedCollection('projects');
+  const docs = [...blogs, ...projects];
+  return Promise.all(docs.map(async entry => {
+    const path = contentPath(entry);
+    const isProject = entry.collection === 'projects';
+    const relatedProject = !isProject && entry.data.project
+      ? projects.find(project => project.id === entry.data.project?.id)
+      : undefined;
+    const writeups = isProject ? await getProjectWriteups(entry.id) : [];
+    const tech = 'tech' in entry.data && entry.data.tech?.length ? entry.data.tech : entry.data.tags || [];
+    const links = isProject ? [
+      ['GitHub', entry.data.github], ['Live', entry.data.live], ['Demo', entry.data.demo], ['Project link', entry.data.link],
+    ].filter((link): link is [string, string] => Boolean(link[1])) : [];
+    const details = isProject ? [
+      `Status: ${entry.data.status || 'Not specified'}`,
+      tech.length ? `Technologies: ${tech.join(', ')}` : '',
+      ...links.map(([label, url]) => `${label}: ${url}`),
+      writeups.length ? `Write-ups:\n${writeups.map(post => `- [${post.data.title}](/blog/${post.id}/)`).join('\n')}` : 'Write-ups: None linked',
+    ].filter(Boolean) : relatedProject ? [
+      `Part of project: [${relatedProject.data.title}](/project/${relatedProject.id}/)`,
+    ] : [];
+    return {
+      path,
+      title: entry.data.title,
+      description: entry.data.description,
+      body: [details.join('\n\n'), entry.body?.trim() || ''].filter(Boolean).join('\n\n'),
+    };
+  })).then(posts => posts.filter(post => isIndexablePath(post.path)));
 }
-
 export const keyPages = [
   { path: '/', label: 'Home', description: profile.contact.title, markdown: '/index.md' },
   { path: '/about/', label: 'About', description: 'Professional background, education, and skills.', markdown: '/about.md' },

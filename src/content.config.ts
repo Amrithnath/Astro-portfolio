@@ -1,4 +1,4 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
@@ -27,7 +27,7 @@ const loader = (base: string) =>
 
 const blog = defineCollection({
   loader: loader('./src/content/blog'),
-  schema: articleSchema,
+  schema: articleSchema.extend({ project: reference('projects').optional() }),
 });
 
 const projects = defineCollection({
@@ -39,6 +39,8 @@ const projects = defineCollection({
     live: z.url().optional(),
     demo: z.url().optional(),
     tech: z.array(z.string()).optional(),
+    status: z.enum(['active', 'maintained', 'archived', 'concept']).optional(),
+    featured: z.boolean().default(false),
   }),
 });
 

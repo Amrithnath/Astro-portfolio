@@ -1,39 +1,30 @@
 ---
+import { Image } from 'astro:assets';
 import { getProjectPreviews } from '../lib/content';
 import { profile } from '../lib/seo';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LsOutput from '../components/LsOutput.astro';
 import Prompt from '../components/ui/Prompt.astro';
 import CatOutput from '../components/CatOutput.astro';
+import Card from '../components/ui/Card.astro';
+import Button from '../components/ui/Button.astro';
 
 const projects = await getProjectPreviews();
+const techCounts = new Map<string, number>();
+for (const project of projects) {
+  for (const tech of new Set(project.frontmatter.tech?.length ? project.frontmatter.tech : project.frontmatter.tags || [])) {
+    techCounts.set(tech, (techCounts.get(tech) || 0) + 1);
+  }
+}
+const filters = [...techCounts].sort(([a], [b]) => a.localeCompare(b));
+const techList = (project: typeof projects[number]) =>
+  project.frontmatter.tech?.length ? project.frontmatter.tech : project.frontmatter.tags || [];
 
 // Projects directory items for ls command
 const projectsDirectoryItems = [
-  {
-    name: '.',
-    isDirectory: true,
-    isAccessible: true,
-    size: 4096,
-    date: 'Dec 12',
-    time: '04:20'
-  },
-  {
-    name: '..',
-    isDirectory: true,
-    isAccessible: true,
-    size: 4096,
-    date: 'Dec 12',
-    time: '04:20'
-  },
-  {
-    name: 'README.md',
-    isDirectory: false,
-    isAccessible: true,
-    size: 2048,
-    date: 'Dec 12',
-    time: '04:20'
-  },
+  { name: '.', isDirectory: true, isAccessible: true, size: 4096, date: 'Dec 12', time: '04:20' },
+  { name: '..', isDirectory: true, isAccessible: true, size: 4096, date: 'Dec 12', time: '04:20' },
+  { name: 'README.md', isDirectory: false, isAccessible: true, size: 2048, date: 'Dec 12', time: '04:20' },
   ...projects.map((project, index) => ({
     name: `${project.frontmatter.title.toLowerCase().replace(/\s+/g, '-')}.md`,
     isDirectory: false,
@@ -41,8 +32,8 @@ const projectsDirectoryItems = [
     size: 1024 + index * 256,
     date: 'Dec 12',
     time: '04:20',
-    href: project.url
-  }))
+    href: project.url,
+  })),
 ];
 
 // Markdown content for cat README.md
@@ -57,7 +48,7 @@ ${projects.slice(0, 3).map(project => `
 <div class="project-entry">
   <div class="md-subheader">### ${project.frontmatter.title}</div>
   <div class="md-text">${project.frontmatter.description}</div>
-  <div class="md-list-item">**Tech:** ${project.frontmatter.tags?.join(', ') || 'N/A'}</div>
+  <div class="md-list-item">**Tech:** ${techList(project).join(', ') || 'N/A'}</div>
   <div class="md-list-item">**Date:** ${project.frontmatter.pubDate.toISOString().slice(0, 10)}</div>
 </div>
 `).join('')}
@@ -81,4 +72,105 @@ ${projects.slice(0, 3).map(project => `
   <Prompt path="~/projects" command="ls -la ~/projects/" />
   <div class="output"><LsOutput items={projectsDirectoryItems} totalSize={projects.length + 8} /></div>
 
+  <section class="project-browser" aria-labelledby="project-browser-title">
+    <Prompt path="~/projects" command="ls projects" />
+    <h2 id="project-browser-title">Project files</h2>
+    <div class="project-filters" id="projects-filters" hidden aria-label="Filter projects by technology">
+      <span class="filter-label">Filter:</span>
+      {filters.map(([tech, count]) => (
+        <Button class="tech-filter" variant="ghost" data-tech-filter={tech} aria-pressed="false">
+          --tech {tech} ({count})
+        </Button>
+      ))}
+    </div>
+    <p class="filter-command" id="project-filter-command" hidden aria-live="polite">$ ls projects</p>
+    <p class="project-count" id="project-count" aria-live="polite">Showing {projects.length} projects</p>
+    <div class="project-grid" id="project-grid">
+      {projects.map(project => {
+        const data = project.frontmatter;
+        const tech = techList(project);
+        const image = data.img || data.image;
+        const links = [
+          ['GitHub', data.github], ['Live', data.live], ['Demo', data.demo], ['Project link', data.link],
+        ].filter((item): item is [string, string] => Boolean(item[1]));
+        return (
+          <Card class="project-card" data-tech={tech.join('|').toLowerCase()}>
+            {image && <Image class="project-cover" src={image} alt={`${data.title} cover`} width={640} height={360} widths={[320, 640]} sizes="(max-width: 48rem) 100vw, 50vw" format="avif" loading="lazy" decoding="async" />}
+            <h3 class="card-title"><a href={project.url}>{data.title}</a></h3>
+            <p>{data.description}</p>
+            <p class="project-badges">
+              <span class="status-badge" data-status={data.status || 'unspecified'}>{data.status || 'Status not specified'}</span>
+              {data.featured && <span class="status-badge">Featured</span>}
+            </p>
+            {tech.length > 0 && (
+              <ul class="tag-list" aria-label={`${data.title} technologies`}>
+                {tech.map(item => <li>#{item}</li>)}
+              </ul>
+            )}
+            <p class="writeup-count">
+              <a href={`${project.url}#writeups-title`}>{project.writeups.length} {project.writeups.length === 1 ? 'write-up' : 'write-ups'}</a>
+            </p>
+            {links.length > 0 && (
+              <div class="link-row" aria-label={`${data.title} links`}>
+                {links.map(([label, href]) => <Button href={href} target="_blank" rel="noopener noreferrer">{label}</Button>)}
+              </div>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  </section>
+
+  <style>
+    .project-browser { margin-block: var(--space-6); }
+    .project-browser h2 { margin-block: var(--space-3); }
+    .project-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-block: var(--space-3); }
+    .filter-label, .filter-command, .project-count { color: var(--color-muted); font-size: var(--text-sm); }
+    .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: var(--space-3); }
+    .project-card p { margin: 0; }
+    .project-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-md); }
+    .project-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .status-badge { padding: 0.1rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-accent); font-size: var(--text-sm); }
+    .project-card .tag-list { margin: 0; gap: var(--space-2); font-size: var(--text-sm); }
+    .project-filters[hidden], .filter-command[hidden] { display: none; }
+    .tech-filter[aria-pressed='true'] { border-color: var(--color-accent); color: var(--color-accent); }
+    .filter-command { font-family: var(--font-mono); }
+    @media (max-width: 48rem) { .project-grid { grid-template-columns: 1fr; } }
+  </style>
+
+  <script>
+    const initProjectFilters = () => {
+      const filters = document.querySelector<HTMLElement>('#projects-filters');
+      const grid = document.querySelector<HTMLElement>('#project-grid');
+      const count = document.querySelector<HTMLElement>('#project-count');
+      const command = document.querySelector<HTMLElement>('#project-filter-command');
+      if (!filters || !grid || !count || !command || filters.dataset.bound) return;
+      filters.dataset.bound = 'true';
+      filters.hidden = false;
+      command.hidden = false;
+      const buttons = [...filters.querySelectorAll<HTMLButtonElement>('[data-tech-filter]')];
+      const cards = [...grid.querySelectorAll<HTMLElement>('.project-card')];
+      let activeTech = '';
+      const update = () => {
+        let visible = 0;
+        for (const card of cards) {
+          const matches = !activeTech || (card.dataset.tech || '').split('|').includes(activeTech.toLowerCase());
+          card.hidden = !matches;
+          if (matches) visible++;
+        }
+        for (const button of buttons) {
+          button.setAttribute('aria-pressed', String(button.dataset.techFilter === activeTech));
+        }
+        count.textContent = `Showing ${visible} of ${cards.length} projects`;
+        command.textContent = activeTech ? `$ ls projects --tech ${activeTech.toLowerCase()}` : '$ ls projects';
+      };
+      filters.addEventListener('click', event => {
+        const button = (event.target as Element).closest<HTMLButtonElement>('[data-tech-filter]');
+        if (!button) return;
+        activeTech = activeTech === button.dataset.techFilter ? '' : button.dataset.techFilter || '';
+        update();
+      });
+    };
+    document.addEventListener('astro:page-load', initProjectFilters);
+  </script>
 </BaseLayout>

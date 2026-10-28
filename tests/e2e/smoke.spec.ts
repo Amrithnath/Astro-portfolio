@@ -122,3 +122,26 @@ test('photography is unlisted and its lightbox opens, cycles and restores focus'
   await expect(dialog).toBeHidden();
   await expect(links.first()).toBeFocused();
 });
+
+
+test('projects can be filtered by technology and announce the result count', async ({ page }) => {
+  await page.goto('/projects/');
+  const card = page.locator('.project-card');
+  await expect(card).toHaveCount(1);
+  const filter = page.getByRole('button', { name: /--tech dev/ });
+  await expect(filter).toBeVisible();
+  await expect(filter).toHaveAttribute('aria-pressed', 'false');
+  await filter.click();
+  await expect(filter).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects --tech dev');
+  await expect(page.locator('#project-count')).toHaveText('Showing 1 of 1 projects');
+  await filter.click();
+  await expect(filter).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#project-filter-command')).toHaveText('$ ls projects');
+});
+
+test('projects render an empty write-up state when no article is linked', async ({ page }) => {
+  await page.goto('/project/webDev/weather-app/');
+  await expect(page.getByRole('heading', { name: 'Write-ups' })).toBeVisible();
+  await expect(page.getByText('No write-ups are linked to this project yet.')).toBeVisible();
+});
