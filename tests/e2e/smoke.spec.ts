@@ -290,3 +290,13 @@ test('now page is unlisted and flags its placeholder content', async ({ page, re
   expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/now');
   expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /now');
 });
+
+test('uses page is unlisted and flags its placeholder content', async ({ page, request }) => {
+  await page.goto('/uses/');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('What I use');
+  await expect(page.getByRole('note')).toContainText('placeholder');
+  await expect(page.getByRole('heading', { name: 'Photography gear', level: 2 })).toBeVisible();
+  expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('/uses');
+  expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /uses');
+});

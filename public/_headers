@@ -43,6 +43,10 @@
   X-Robots-Tag: noindex, nofollow
 /now/*
   X-Robots-Tag: noindex, nofollow
+/uses
+  X-Robots-Tag: noindex, nofollow
+/uses/*
+  X-Robots-Tag: noindex, nofollow
 
 # Content-hashed build output: safe to cache forever.
 /_astro/*
