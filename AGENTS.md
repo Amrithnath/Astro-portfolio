@@ -7,7 +7,7 @@
 ## Commands
 - Install with `pnpm install --frozen-lockfile` to match CI.
 - Use `pnpm dev` for local development.
-- Use `pnpm check` for Astro/TypeScript diagnostics and `pnpm build` to generate the static site.
+- Use `pnpm check` for Astro/TypeScript diagnostics (TypeScript 6, whose defaults include `strict`; `astro check` refuses TypeScript 7, so Dependabot ignores 7.x) and `pnpm build` to generate the static site.
 - Use `pnpm check:seo`, `pnpm check:theme`, and `pnpm check:links` to validate the built `dist/`; `pnpm verify` builds and runs them plus `pnpm check:headers`.
 - `public/_headers` is the source of truth for response headers. Vercel ignores it, so after editing it run `pnpm sync:headers` to regenerate `vercel.json`; `pnpm check:headers` fails on drift.
 - Use `pnpm exec playwright install chromium` once (or set `PLAYWRIGHT_CHANNEL=chrome` to use installed Chrome, as CI does), then `pnpm test:e2e` after building for Chromium smoke tests and axe-core accessibility checks (`tests/e2e/a11y.spec.ts`, fails on serious/critical WCAG 2.1 AA violations). The test runner starts its own preview on port `4321`; use `PORT=4326 pnpm test:e2e` if that port is occupied.

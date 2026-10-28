@@ -8,6 +8,10 @@ updates:
       default-days: 1
     commit-message:
       prefix: 'build'
+    ignore:
+      # astro check rejects TypeScript 7; revisit once @astrojs/check supports it.
+      - dependency-name: typescript
+        versions: ['>=7']
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
