@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.7.0...v2.8.0) (2026-10-28)
+
+
+### ✨ Features
+
+* **privacy:** ✨ add terminal privacy check, plain-text policy and scoped agents ([#80](https://github.com/Amrithnath/Astro-portfolio/issues/80)) ([d279ab7](https://github.com/Amrithnath/Astro-portfolio/commit/d279ab71c531479885a9dea6f7d66d0424464662))
+
 ## [2.7.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.6.0...v2.7.0) (2026-10-28)
 
 
