@@ -30,13 +30,14 @@
     "check:headers": "node scripts/sync-vercel-headers.mjs --check",
     "check:photos": "node scripts/check-photos.mjs",
     "sync:headers": "node scripts/sync-vercel-headers.mjs",
-    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos && pnpm check:csp",
+    "verify": "pnpm build && pnpm check:seo && pnpm check:theme && pnpm check:links && pnpm check:headers && pnpm check:photos && pnpm check:csp && pnpm test:ci",
     "commitlint": "commitlint",
     "lighthouse": "pnpm dlx @lhci/cli@0.15.1 autorun",
     "test:photos": "node --test tests/photos/*.test.mjs",
     "photos:ingest": "node scripts/photos-ingest.mjs",
     "photos:locate": "node scripts/photos-locate.mjs",
     "check:csp": "node --test tests/csp/*.test.mjs && node scripts/check-csp.mjs",
+    "test:ci": "node --test tests/ci/*.test.mjs",
     "test:visual": "playwright test --project=visual-desktop --project=visual-mobile"
   },
   "dependencies": {

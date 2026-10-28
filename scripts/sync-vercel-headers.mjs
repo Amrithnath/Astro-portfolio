@@ -56,7 +56,9 @@ const redirects = readFileSync(new URL('public/_redirects', root), 'utf8').split
     const [source, destination, status = '302'] = line.split(/\s+/);
     return { source, destination, statusCode: Number(status) };
   });
-const json = `${JSON.stringify({ $schema: 'https://openapi.vercel.sh/vercel.json', headers, redirects }, null, 2)}\n`;
+// Release Please PRs only bump versions; the post-merge main build deploys the release.
+const git = { deploymentEnabled: { 'release-please--*': false } };
+const json = `${JSON.stringify({ $schema: 'https://openapi.vercel.sh/vercel.json', git, headers, redirects }, null, 2)}\n`;
 if (process.argv.includes('--check')) {
   let current = '';
   try {
