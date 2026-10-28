@@ -471,3 +471,15 @@ current version.
 
 Fork the code freely, but replace the personal content with your own.
 Third-party attributions (Sveltia CMS Authenticator, MIT; Fira Code, OFL 1.1) are listed in [NOTICE](NOTICE).
+
+### Build performance
+
+`pnpm build` keeps Astro's default route concurrency: measurements with 2, 4 and
+CPU-count concurrency did not improve this small static site. Image optimization
+is the main cold-build cost. Local builds reuse Astro's default
+`node_modules/.astro/assets` cache; the CI Build job persists only that directory
+with an exact OS/architecture/Node/lockfile/config/source/public-input key. No
+`dist`, HTML, content store or secrets are cached. Cloudflare Pages still runs the
+same build command and benefits when its environment preserves Astro's cache.
+CSP injection parses each document once and applies insertions in reverse source
+offset order, preserving script text, hashes and Rocket Loader opt-outs.
