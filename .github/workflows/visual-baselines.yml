@@ -1,0 +1,60 @@
+name: Update visual baselines
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: visual-baselines-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Update visual baselines
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      PLAYWRIGHT_CHANNEL: chrome
+    steps:
+      # workflow_dispatch runs repository branches only, never pull_request_target/fork code.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test:visual --update-snapshots=all
+      - name: Verify snapshot stability
+        run: pnpm test:visual
+      - name: Commit Linux baselines
+        run: |
+          git add tests/e2e/__screenshots__/linux/
+          if git diff --cached --quiet; then
+            echo "::notice::Visual baselines are already up to date."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'test: ✅ update Linux visual baselines'
+          git push origin "HEAD:$BRANCH"
+          echo '::notice::Review the PNG commit, then manually run Portfolio Quality on this branch (GITHUB_TOKEN pushes do not trigger CI).'
+        env:
+          BRANCH: ${{ github.ref_name }}
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines-and-report
+          path: |
+            tests/e2e/__screenshots__/linux/
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
