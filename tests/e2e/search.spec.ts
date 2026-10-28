@@ -64,7 +64,8 @@ test('only the search page CSP allows WebAssembly', () => {
       .flatMap(rule => rule.headers.filter(header => header.key === 'Content-Security-Policy'));
     expect(policies).toHaveLength(1);
     expect(policies[0].value).not.toContain("'wasm-unsafe-eval'");
-    expect(policies[0].value.includes('https://unpkg.com')).toBe(path === '/admin/');
+    const scriptSources = policies[0].value.split(';').map(d => d.trim().split(/\s+/)).find(([name]) => name === 'script-src')?.slice(1) ?? [];
+    expect(scriptSources.includes('https://unpkg.com')).toBe(path === '/admin/');
   }
   for (const file of ['about/index.html', 'search/index.html']) {
     const meta = readFileSync('dist/' + file, 'utf8').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
