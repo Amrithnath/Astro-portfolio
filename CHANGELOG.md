@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.2.0...v2.3.0) (2026-10-28)
+
+
+### ✨ Features
+
+* ✨ add an unlisted now page with placeholder content ([aafec69](https://github.com/Amrithnath/Astro-portfolio/commit/aafec69b457f8ca861b5ededd0ea086e5aef0a08))
+* ✨ photo locations from Maps links, unlisted now page, TypeScript 6 ([9602b8b](https://github.com/Amrithnath/Astro-portfolio/commit/9602b8ba42b09d07853f90bf38bdb0da9365a6d4))
+* **photos:** ✨ fill photo locations from EXIF GPS and Google Maps links ([92e7e92](https://github.com/Amrithnath/Astro-portfolio/commit/92e7e9234d59df842219eebed9c0e488b5537901))
+
+
+### 📦 Build
+
+* **deps:** 📦 upgrade TypeScript to 6.0 with strict-mode fixes ([272c7a9](https://github.com/Amrithnath/Astro-portfolio/commit/272c7a94051ee34d74f44694564f49ad86c73ca6))
+
 ## [2.2.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.1.0...v2.2.0) (2026-10-28)
 
 
