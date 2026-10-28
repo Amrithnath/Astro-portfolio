@@ -247,12 +247,39 @@ items, and turn off `placeholder`.
 | Types | `pnpm check` |
 | Build contracts (SEO, theme, links) | `pnpm verify` |
 | Browser and accessibility (WCAG 2.1 AA via axe) | `pnpm test:e2e` |
+| Visual regression (separate baselines) | `pnpm test:visual` |
 | CMS sign-in Worker | `pnpm test:cms-auth` |
 | View counter Worker | `pnpm test:views` |
 | Photography helpers and offline ingest | `pnpm test:photos` |
 | Photo originals/catalogue privacy | `pnpm check:photos` |
 | Photo ingest (offline rehearsal) | `pnpm photos:ingest -- <files-or-dirs> --dry-run --out .photos-output` |
 | Dependencies | `pnpm audit` |
+
+### Visual regression
+
+Build first, then run `pnpm test:visual`. Twenty viewport snapshots cover home (after
+its deferred terminal fragment loads), resume, a blog post, projects and 404, in terminal/light
+and desktop/mobile. Animations/carets are disabled, fonts/images are awaited, and random homepage
+copy/glyphs, dates and build metadata are masked. Pixel differences have a 1% budget.
+Regular `pnpm test:e2e` never requires snapshots.
+
+**CI truth is Ubuntu + Google Chrome**, shared by the visual gate and **Update visual baselines**
+(`.github/workflows/visual-baselines.yml`). Snapshots live in
+`tests/e2e/__screenshots__/{platform}/{project}/`; never substitute macOS or Chromium
+images for Linux/Chrome. Missing Linux images skip individually with a workflow notice; existing
+images are still checked, and failures upload the `visual-diffs` artifact.
+
+**One-time bootstrap / intentional UI updates:** once this workflow exists on the default branch,
+open Actions → Update visual baselines → Run workflow and select the target branch. It builds,
+generates all Linux PNGs, verifies a second run, and commits them back with `GITHUB_TOKEN`
+(`contents: write`). Review the committed images before merging. Protected branches may
+reject the push: use a writable feature branch. Token-created commits do not trigger CI, so then
+manually run **Portfolio Quality** on that branch. The workflow never accepts fork code with a
+write token. Chrome/Ubuntu upgrades may also require reviewed baseline refreshes.
+
+For disposable local checks on macOS, use `pnpm test:visual --update-snapshots` and then
+`pnpm test:visual` (set `PLAYWRIGHT_CHANNEL=chrome` for installed Chrome). Darwin
+snapshots are ignored by Git and are not CI baselines.
 
 ### Lighthouse
 
@@ -305,8 +332,8 @@ events/console errors through navigation, themes, photography, resume exports an
 
 1. **At once:** Conventions (PRs only: PR title and commit messages), CodeQL, Build (audit, type
    check, build, SEO/theme/link/header checks) and Node 24.
-2. **As soon as Build is done:** E2E (Playwright + axe on the runner's Chrome) and Lighthouse
-   (mobile and desktop, each split into two URL shards).
+2. **As soon as Build is done:** E2E (Playwright + axe), Visual regression (both on the runner's
+   Chrome) and Lighthouse (mobile and desktop, each split into two URL shards).
 3. **Deploy**, once every check has passed: GitHub Pages on `main`, plus Cloudflare Pages and Vercel
    once their secrets are set.
 
@@ -315,6 +342,7 @@ It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 
 Other workflows:
 
+- **Update visual baselines** (`visual-baselines.yml`): manual Ubuntu/Chrome snapshot refresh; see Testing.
 - **CMS Auth Worker** (`cms-auth.yml`): tests and deploys `workers/cms-auth/`.
 - **Views Worker** (`views.yml`): tests `workers/views/`, applies its D1 migrations and deploys it.
 - **Photo ingest** (`photos.yml`): manual; publishes R2 inbox photos and opens a draft metadata PR.
