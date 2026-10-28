@@ -1,37 +1,37 @@
-/* Terminal Basic: a white phosphor-free canvas, neutral chrome and AA ANSI inks. */
+/* Warm paper terminal: cream canvas, sand chrome and AA-contrast ANSI inks. */
 [data-theme='light'] {
   color-scheme: light;
 
   /* Core semantic tokens */
-  --color-bg: #ffffff;
-  --color-text: #24292f;
-  --color-muted: #525860;
-  --color-surface: #f3f4f6;
-  --color-border: #89939e;
-  --color-accent: #116329;
-  --color-link: #0550ae;
-  --color-secondary: #6639a6;
-  --color-heading: #006570;
-  --color-on-accent: #ffffff;
+  --color-bg: #f8f4ea;
+  --color-text: #2e2922;
+  --color-muted: #5a5246;
+  --color-surface: #eee8d9;
+  --color-border: #8c8270;
+  --color-accent: #2b6436;
+  --color-link: #1d4f97;
+  --color-secondary: #713a87;
+  --color-heading: #1b5c64;
+  --color-on-accent: #f8f4ea;
   --font-mono: 'Fira Code', 'Consolas', 'Courier New', monospace;
 
   /* Status colors */
-  --color-success: #116329;
-  --color-warning: #7d4e00;
-  --color-danger: #a12635;
-  --color-info: #006570;
+  --color-success: #2b6436;
+  --color-warning: #774b00;
+  --color-danger: #a0263a;
+  --color-info: #0e5f6e;
 
   /* Overlays and shadows */
-  --color-overlay: rgba(36, 41, 47, 0.04);
-  --color-overlay-strong: rgba(36, 41, 47, 0.08);
-  --color-shadow: rgba(36, 41, 47, 0.16);
+  --color-overlay: rgba(46, 41, 34, 0.04);
+  --color-overlay-strong: rgba(46, 41, 34, 0.08);
+  --color-shadow: rgba(46, 41, 34, 0.16);
 
   /* Window chrome */
-  --window-bg: #e4e7eb;
-  --window-border: #b0b7c0;
-  --window-control-close: #c4313f;
-  --window-control-min: #956500;
-  --window-control-max: #116329;
+  --window-bg: #e4dcc8;
+  --window-border: #c2b79f;
+  --window-control-close: #b33341;
+  --window-control-min: #896000;
+  --window-control-max: #2b6436;
 
   /* Palette aliases used by terminal content and the resume tools. */
   --terminal-bg: var(--color-bg);

@@ -5,7 +5,8 @@
  * Breakpoints (custom properties cannot be used inside @media, so use these constants):
  *   --bp-md = 48rem (768px)  narrow layouts: stack grids, tighter shell padding
  *   --bp-lg = 64rem (1024px) wide layouts: two-column tools (resume)
- * Write @media (max-width: 48rem) / (max-width: 64rem) and nothing else.
+ *   --bp-xl = 110rem (1760px) desktop gutters: tmux-style side panes (features/terminal/SidePanes.astro)
+ * Write @media (max-width: 48rem) / (max-width: 64rem); (min-width: 110rem) is reserved for the side panes.
  */
 :root {
   --space-1: 0.25rem;
@@ -38,6 +39,8 @@
 
   --content-width: 72ch;
   --shell-width: 80rem;
+  /* Desktop height of the sticky .window-chrome; side panes start below it. */
+  --chrome-height: 7.15625rem;
   --shell-padding: var(--space-5);
 
   --z-base: 1;

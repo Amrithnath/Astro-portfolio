@@ -73,7 +73,18 @@ body {
 .symbol { color: var(--color-muted); }
 .host { color: var(--color-link); }
 .path { color: var(--color-secondary); }
-.command { color: var(--color-warning); margin-left: var(--space-2); }
+.command { color: var(--color-text); margin-left: var(--space-2); }
+/* zsh-syntax-highlighting inspired command tokens (see src/shared/lib/shell-highlight.ts). */
+.sh-cmd { color: var(--color-accent); font-weight: 600; }
+.sh-flag { color: var(--color-info); }
+.sh-string { color: var(--color-warning); }
+.sh-var { color: var(--color-secondary); }
+.sh-op { color: var(--color-danger); font-weight: 600; }
+.sh-path {
+  text-decoration: underline;
+  text-decoration-color: var(--color-border);
+  text-underline-offset: 0.2em;
+}
 
 .cursor { animation: blink 1s infinite; color: var(--color-accent); }
 
@@ -386,10 +397,111 @@ body {
 }
 
 [data-theme='light'] .prompt { font-weight: 600; }
-[data-theme='light'] .command { color: var(--color-text); }
 [data-theme='light'] .cursor { color: var(--color-text); }
 [data-theme='light'] .nf-ascii::before { content: none; }
 [data-theme='light'] ::selection {
   background: var(--color-link);
   color: var(--color-on-accent);
+}
+
+/* tmux-style side panes (see SidePanes.astro): only on screens wide enough to leave real gutters. */
+.side-pane { display: none; }
+
+@media (min-width: 110rem) {
+  .side-pane {
+    --pane-width: calc((100vw - var(--shell-width)) / 2);
+    position: fixed;
+    top: var(--chrome-height);
+    bottom: 0;
+    z-index: calc(var(--z-nav) - 1);
+    display: flex;
+    flex-direction: column;
+    width: var(--pane-width);
+    padding: var(--space-3) var(--space-5) var(--space-5);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-surface);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+  }
+
+  .side-pane > * {
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  .side-pane-left {
+    left: 0;
+    align-items: flex-end;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .side-pane-right {
+    right: 0;
+    align-items: flex-start;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .side-pane .prompt { margin-top: var(--space-3); }
+
+  .pane-label {
+    align-self: stretch;
+    max-width: none;
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+    font-weight: 600;
+    padding: 0 var(--space-2);
+    width: max-content;
+  }
+
+  .side-pane-left .pane-label { align-self: flex-end; }
+  .side-pane-right .pane-label { align-self: flex-start; }
+
+  .pane-tree,
+  .pane-tree ul,
+  .pane-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pane-tree li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tree-branch { color: var(--color-muted); white-space: pre; }
+  .pane-tree a { color: var(--color-link); text-decoration: none; }
+  .pane-tree a:hover,
+  .pane-tree a:focus-visible { text-decoration: underline; }
+  .pane-tree a[aria-current='page'] {
+    color: var(--color-on-accent);
+    background: var(--color-link);
+    padding: 0 var(--space-1);
+  }
+
+  .pane-muted { color: var(--color-muted); margin: var(--space-2) 0 0; }
+
+  .pane-log li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--space-3);
+    padding: var(--space-1) 0;
+  }
+
+  .log-version { color: var(--color-warning); font-weight: 600; text-decoration: none; }
+  .log-version:hover,
+  .log-version:focus-visible { text-decoration: underline; }
+  .pane-log time { margin: 0; }
+  .log-summary { grid-column: 1 / -1; color: var(--color-text); }
+
+  .pane-build {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+  }
+
+  .pane-build dt { color: var(--color-info); }
+  .pane-build dd { margin: 0; color: var(--color-text); }
+}
+
+@media print {
+  .side-pane { display: none; }
 }
