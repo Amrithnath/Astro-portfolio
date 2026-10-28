@@ -343,9 +343,14 @@ events/console errors through navigation, themes, photography, resume exports an
 If any check fails, it cancels the rest of the run, so failures don't waste minutes.
 It runs on PRs and on pushes to `main`. A new push cancels the older PR run.
 
-**Release fast path:** a `Changes` job runs `scripts/ci-release-only.mjs` first. If the diff
-only touches `CHANGELOG.md`, `.release-please-manifest.json` and the `package.json` version,
-the release PR skips every gate. The merge to `main` runs only Build and the deploys, because
+**Path filters:** a `Changes` job runs `scripts/ci-changes.mjs` first. Docs-only changes run only
+Conventions. Worker, other-workflow, Dependabot, commitlint and `project-archive/` changes also run
+CodeQL, but skip Build, Node 24, E2E, Visual, Lighthouse and the deploys (Workers have their own
+workflows). Changes under `src/`, `public/`, `scripts/`, `tests/`, `ci.yml`, dependencies, config, or
+any path not on those lists run everything, as do scheduled and manual runs.
+
+**Release fast path:** if the diff only touches `CHANGELOG.md`, `.release-please-manifest.json`
+and the `package.json` version, the release PR skips every gate. The merge to `main` runs only Build and the deploys, because
 the code was already verified. Vercel also skips `release-please--*` branches (`vercel.json`).
 
 **Runners:** jobs that only call APIs, deploy artifacts, or run git and small Node tests use
