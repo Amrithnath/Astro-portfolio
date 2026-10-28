@@ -8,6 +8,9 @@ const urls = [
   '/contact/',
   '/resume/',
   '/project/webDev/weather-app/',
+  '/project/webDev/amrithnath-dev/',
+  '/privacy-check/',
+  '/privacy-policy/',
 ].filter((_, i) => i % shardTotal === shardIndex);
 const reportName = `${desktop ? 'desktop' : 'mobile'}${shardTotal > 1 ? `-${shardIndex}` : ''}`;
 
