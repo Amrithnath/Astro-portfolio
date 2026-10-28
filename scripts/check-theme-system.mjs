@@ -68,10 +68,18 @@ function themeContext(saved = {}, { blocked = false, light = false } = {}) {
   };
   const root = { dataset: { theme: 'terminal' }, style: {} };
   const meta = {};
+  const documentListeners = new Map();
   const context = {
     document: {
       documentElement: root,
-      querySelector: () => ({ setAttribute: (key, value) => { meta[key] = value; } }),
+      querySelector: () => ({
+        setAttribute: (key, value) => { meta[key] = value; },
+        getAttribute: (key) => meta[key] ?? null,
+      }),
+      addEventListener: (type, callback) => {
+        assert.equal(documentListeners.has(type), false, 'Only one document listener per event');
+        documentListeners.set(type, callback);
+      },
     },
     localStorage: {
       getItem: (key) => { if (blocked) throw Error('Storage disabled'); return storage.get(key) ?? null; },
@@ -92,7 +100,7 @@ function themeContext(saved = {}, { blocked = false, light = false } = {}) {
   context.window = context;
   vm.runInNewContext(bootstrap, context);
   return {
-    context, root, storage, listeners, meta, events,
+    context, root, storage, listeners, documentListeners, meta, events,
     systemChange(light) {
       media.matches = light;
       mediaListeners.forEach(callback => callback({ matches: light }));
@@ -180,6 +188,18 @@ for (const light of [false, true]) {
     swapped.systemChange(!light);
     assert.equal(themeApi.current, preference === 'auto' ? (light ? 'terminal' : 'light') : preference);
   }
+  const incoming = themeContext({ 'portfolio-theme': 'light' }, { light });
+  const newRoot = { dataset: { theme: 'terminal' }, style: {} };
+  const newMeta = {};
+  incoming.documentListeners.get('astro:before-swap')({
+    newDocument: {
+      documentElement: newRoot,
+      querySelector: () => ({ setAttribute: (key, value) => { newMeta[key] = value; } }),
+    },
+  });
+  assert.equal(newRoot.dataset.theme, 'light', 'Incoming documents keep the active theme');
+  assert.equal(newRoot.style.colorScheme, 'light');
+  assert.equal(newMeta.content, incoming.meta.content);
 }
 
 const luminance = (hex) => {

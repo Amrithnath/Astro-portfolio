@@ -237,6 +237,24 @@ for (const choice of ['dark', 'light'] as const) {
   });
 }
 
+test('light theme never flashes the default theme during home to about navigation', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('portfolio-theme', 'light'));
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { __seen: string[] }).__seen = seen;
+    new MutationObserver(() => seen.push(document.documentElement.dataset.theme ?? ''))
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+  });
+  await page.locator('.terminal-tabs a[href="/about"]').click();
+  await expect(page).toHaveURL(/\/about\/?$/);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  const seen = await page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
+  expect(seen.filter((theme) => theme !== 'light')).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.style.colorScheme)).toBe('light');
+});
+
 test('auto follows live system changes and the switcher is keyboard-accessible on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ colorScheme: 'dark' });

@@ -45,6 +45,15 @@ import { defaultTheme, themes } from '../themes';
       auto: () => apply('auto'),
     });
     apply(preference);
+    // ClientRouter copies the incoming <html> attributes (always the server default) before
+    // this script re-runs, which flashes the dark theme, especially when Rocket Loader delays it.
+    document.addEventListener('astro:before-swap', (event) => {
+      const root = event.newDocument.documentElement;
+      root.dataset.theme = document.documentElement.dataset.theme;
+      root.style.colorScheme = document.documentElement.style.colorScheme;
+      const color = document.querySelector('meta[name="theme-color"]')?.getAttribute('content');
+      if (color) event.newDocument.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
+    });
     media?.addEventListener('change', () => {
       if (preference === 'auto') apply('auto', false);
     });
