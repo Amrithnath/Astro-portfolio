@@ -25,6 +25,7 @@
     "check:theme": "node scripts/check-theme-system.mjs",
     "test:e2e": "playwright test",
     "test:cms-auth": "node --test \"workers/cms-auth/test/*.test.js\"",
+    "test:views": "node --test \"workers/views/test/*.test.js\"",
     "check:links": "node scripts/check-links.mjs",
     "check:headers": "node scripts/sync-vercel-headers.mjs --check",
     "check:photos": "node scripts/check-photos.mjs",

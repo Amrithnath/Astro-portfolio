@@ -1,0 +1,19 @@
+# Deployed by .github/workflows/views.yml, which applies D1 migrations first and substitutes the
+# real database_id from the VIEWS_D1_DATABASE_ID repository variable.
+name = "amrithnath-views"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = false
+routes = [{ pattern = "views.amrithnath.dev", custom_domain = true }]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portfolio-views"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+# Exact origins allowed to read and increment counts (comma-separated, no wildcards).
+ALLOWED_ORIGINS = "https://amrithnath.dev,https://portfolio-e0a.pages.dev,http://localhost:4321"
+# New counters are only created for paths that return 200 from this site.
+SITE_URL = "https://amrithnath.dev"

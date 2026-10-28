@@ -1,0 +1,71 @@
+name: Views Worker
+
+# Tests the article view counter Worker on PRs that touch it, and deploys it with wrangler on main.
+# Required secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID. Required variable:
+# VIEWS_D1_DATABASE_ID (the portfolio-views D1 database). Deploy skips itself (with a notice) until
+# they are set; otherwise it applies D1 migrations, then deploys.
+on:
+  pull_request:
+    paths:
+      - 'workers/views/**'
+      - '.github/workflows/views.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workers/views/**'
+      - '.github/workflows/views.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test "workers/views/test/*.test.js"
+
+  deploy:
+    name: Deploy
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      VIEWS_D1_DATABASE_ID: ${{ vars.VIEWS_D1_DATABASE_ID }}
+    steps:
+      - if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.VIEWS_D1_DATABASE_ID == ''
+        run: echo "::notice::Cloudflare secrets or VIEWS_D1_DATABASE_ID not set; skipping Worker deploy."
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.VIEWS_D1_DATABASE_ID != ''
+        uses: actions/checkout@v7
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.VIEWS_D1_DATABASE_ID != ''
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Set D1 database id
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.VIEWS_D1_DATABASE_ID != ''
+        run: |
+          if ! [[ "$VIEWS_D1_DATABASE_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+            echo "::error::VIEWS_D1_DATABASE_ID must be a D1 database UUID."
+            exit 1
+          fi
+          sed -i "s/^database_id = .*/database_id = \"$VIEWS_D1_DATABASE_ID\"/" workers/views/wrangler.toml
+      - name: Apply D1 migrations
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.VIEWS_D1_DATABASE_ID != ''
+        run: npx -y wrangler@4 d1 migrations apply portfolio-views --remote -c workers/views/wrangler.toml
+      - name: Deploy Worker
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.VIEWS_D1_DATABASE_ID != ''
+        run: npx -y wrangler@4 deploy -c workers/views/wrangler.toml
