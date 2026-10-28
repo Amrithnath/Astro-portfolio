@@ -61,7 +61,7 @@ test('search lazily loads its index and handles unavailable assets', async ({ pa
   await expect(page.getByRole('status')).toContainText('Search is unavailable.');
 });
 
-test('header overrides isolate search WebAssembly from the site and CMS', () => {
+test('only the search page CSP allows WebAssembly', () => {
   const { headers: rules } = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
     headers: { source: string; headers: { key: string; value: string }[] }[];
   };
@@ -69,7 +69,12 @@ test('header overrides isolate search WebAssembly from the site and CMS', () => 
     const policies = rules.filter(rule => new RegExp('^' + rule.source + '$').test(path))
       .flatMap(rule => rule.headers.filter(header => header.key === 'Content-Security-Policy'));
     expect(policies).toHaveLength(1);
-    expect(policies[0].value.includes("'wasm-unsafe-eval'")).toBe(path === '/search/');
+    expect(policies[0].value).not.toContain("'wasm-unsafe-eval'");
     expect(policies[0].value.includes('https://unpkg.com')).toBe(path === '/admin/');
+  }
+  for (const file of ['about/index.html', 'search/index.html']) {
+    const meta = readFileSync('dist/' + file, 'utf8').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
+    expect(meta).toBeTruthy();
+    expect(meta!.includes("'wasm-unsafe-eval'")).toBe(file.startsWith('search/'));
   }
 });
