@@ -159,6 +159,8 @@ jobs:
           path: node_modules/.astro/assets
           # Exact inputs only; never restore rendered HTML, dist, or the content store.
           key: astro-images-v1-${{ runner.os }}-${{ runner.arch }}-node26-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'package.json', 'astro.config.mjs', 'src/**', 'public/**') }}
+          # Astro keys cached images by source content and transform, so stale entries are never served.
+          restore-keys: astro-images-v1-${{ runner.os }}-${{ runner.arch }}-node26-
       - run: pnpm build
         env:
           PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
