@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Card from '../../../components/ui/Card.astro';
+import PhotoNav from '../../../components/photos/PhotoNav.astro';
+import { getPublishedCollection } from '../../../lib/content';
+const albums = await getPublishedCollection('albums');
+---
+
+<BaseLayout
+  title="Albums & trips | Photography"
+  description="Photographic albums and trip itineraries."
+  currentPage="/photography/albums"
+>
+  <h1>Albums &amp; trips</h1><PhotoNav />
+  {
+    (['album', 'trip'] as const).map((kind) => (
+      <section>
+        <ul role="list">
+          {albums
+            .filter((a) => a.data.kind === kind)
+            .map((a) => (
+              <li>
+                <Card href={'/photography/albums/' + a.id + '/'}>{a.data.title}</Card>
+              </li>
+            ))}
+        </ul>
+        {!albums.some((a) => a.data.kind === kind) && <p>Nothing published yet.</p>}
+      </section>
+    ))
+  }
+</BaseLayout>

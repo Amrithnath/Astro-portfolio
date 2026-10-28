@@ -1,0 +1,21 @@
+---
+// Cookieless Cloudflare Web Analytics. Rendered only when PUBLIC_CF_BEACON_TOKEN is set at build
+// time, and the beacon only loads on the production hostname for visitors without GPC/DNT.
+const token = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
+---
+
+{
+  token && (
+    <script is:inline define:vars={{ token, host }}>
+      const optedOut = navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
+      if (location.hostname === host && !optedOut) {
+        const beacon = document.createElement('script');
+        beacon.defer = true;
+        beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+        beacon.dataset.cfBeacon = JSON.stringify({ token, spa: true });
+        document.head.append(beacon);
+      }
+    </script>
+  )
+}

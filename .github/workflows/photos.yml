@@ -1,0 +1,70 @@
+name: Photo ingest
+
+on:
+  workflow_dispatch:
+    inputs:
+      album:
+        description: Existing album/trip slug (optional)
+        required: false
+        type: string
+      tags:
+        description: Comma-separated tags (optional)
+        required: false
+        type: string
+
+concurrency:
+  group: photo-ingest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_INBOX_BUCKET: ${{ vars.R2_INBOX_BUCKET }}
+      R2_PUBLIC_BUCKET: ${{ vars.R2_PUBLIC_BUCKET }}
+      GH_TOKEN: ${{ secrets.PHOTOS_PR_TOKEN || github.token }}
+      PHOTO_ALBUM: ${{ inputs.album }}
+      PHOTO_TAGS: ${{ inputs.tags }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.PHOTOS_PR_TOKEN || github.token }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download private originals and publish derivatives
+        run: |
+          args=(--from-r2-inbox)
+          if [ -n "$PHOTO_ALBUM" ]; then args+=(--album "$PHOTO_ALBUM"); fi
+          if [ -n "$PHOTO_TAGS" ]; then args+=(--tags "$PHOTO_TAGS"); fi
+          pnpm photos:ingest -- "${args[@]}"
+      - name: Validate and open metadata PR
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          count=$(node -e 'console.log(JSON.parse(require("fs").readFileSync(".photos-inbox/processed.json")).length)')
+          if [ "$count" -eq 0 ]; then exit 0; fi
+          pnpm check:photos
+          CI=1 pnpm check </dev/null
+          git switch -c "photos/ingest-$RUN_ID"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/content/photos
+          git commit -m "feat(photos): ✨ add $count photos"
+          git push origin "photos/ingest-$RUN_ID"
+          gh pr create --title "feat(photos): ✨ add $count photos" --body 'Review alt text, TODO location names/countries, tags and album membership. Entries remain drafts until reviewed. Originals stay in the private inbox archive; only stripped derivatives are public. GITHUB_TOKEN-created PRs do not trigger CI; configure PHOTOS_PR_TOKEN for automatic checks.'
+      # Archive only after the metadata is safely persisted in a PR. Never publish originals.
+      - name: Archive processed originals privately
+        run: pnpm photos:ingest -- --archive-inbox

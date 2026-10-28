@@ -59,3 +59,11 @@ project-archive/wedding-api/internal/gen/
 
 # Lighthouse CI reports
 .lighthouseci/
+
+# Local photo ingest scratch (may contain private originals).
+.photos-inbox/
+.photos-output/
+.photos-tests-*/
+
+# Release build archive (attached to GitHub releases, never committed)
+portfolio-dist.zip

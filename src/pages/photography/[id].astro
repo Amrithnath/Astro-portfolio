@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/ui/Prompt.astro';
+import PhotoNav from '../../components/photos/PhotoNav.astro';
+import PhotoImage from '../../components/photos/PhotoImage.astro';
+import { getPhotos, getPublishedCollection } from '../../lib/content';
+import { neighbors, placeName, placeSlug } from '../../lib/photos';
+export async function getStaticPaths() {
+  const photos = await getPhotos();
+  const albums = await getPublishedCollection('albums');
+  return photos.map((photo) => ({
+    params: { id: photo.id },
+    props: {
+      photo,
+      ...neighbors(photos, photo.id),
+      albums: albums.filter((a) => photo.data.albums.some((ref) => ref.id === a.id)),
+    },
+  }));
+}
+const { photo, prev, next, albums } = Astro.props;
+const { data } = photo;
+---
+
+<BaseLayout
+  title={data.title + ' | Photography'}
+  description={data.caption ?? data.alt}
+  currentPage={'/photography/' + photo.id}
+>
+  <h1>{data.title}</h1><PhotoNav /><Prompt command={'cat ~/photography/' + photo.id} />
+  <figure>
+    <PhotoImage photo={photo} eager priority /><figcaption>{data.caption ?? data.alt}</figcaption>
+  </figure>
+  <dl>
+    {
+      data.date && (
+        <>
+          <>
+            <dt>Taken</dt>
+            <dd>
+              <time datetime={data.date.toISOString()}>{data.date.toISOString().slice(0, 10)}</time>
+            </dd>
+          </>
+        </>
+      )
+    }
+    {
+      [
+        ['Camera', data.camera],
+        ['Lens', data.lens],
+        ['Settings', data.settings],
+      ].map(
+        ([label, value]) =>
+          value && (
+            <>
+              <>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </>
+            </>
+          )
+      )
+    }
+    {
+      data.location && (
+        <>
+          <>
+            <dt>Location</dt>
+            <dd>
+              <a href={'/photography/places/' + placeSlug(data.location) + '/'}>
+                {placeName(data.location)}
+              </a>
+              {data.location.lat !== undefined && data.location.lng !== undefined && (
+                <span>
+                  {' '}
+                  · {data.location.lat.toFixed(2)}, {data.location.lng.toFixed(2)} (approximate)
+                </span>
+              )}
+            </dd>
+          </>
+        </>
+      )
+    }
+    <dt>Tags</dt><dd>
+      {data.tags.map((tag) => <a href={'/photography/tags/' + tag + '/'}>#{tag} </a>)}
+    </dd>
+    <dt>Albums</dt><dd>
+      {albums.map((a) => <a href={'/photography/albums/' + a.id + '/'}>{a.data.title} </a>)}
+    </dd>
+  </dl>
+  <nav aria-label="Adjacent photos">
+    {prev && <a href={'/photography/' + prev.id + '/'}>← {prev.data.title}</a>}
+    {next && <a href={'/photography/' + next.id + '/'}>{next.data.title} →</a>}
+  </nav>
+</BaseLayout>
+<style>
+  figure {
+    margin: var(--space-4) 0;
+  }
+  dd {
+    margin-bottom: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+</style>

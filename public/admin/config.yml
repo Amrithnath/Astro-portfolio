@@ -52,7 +52,52 @@ collections:
       - { name: tags, label: Tags, widget: list, required: false, default: [] }
       - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
       - { name: img, label: Cover image, widget: image, required: false }
+      - { name: project, label: Related project, widget: relation, collection: projects, search_fields: [title], value_field: '{{slug}}', display_fields: [title], required: false }
       - { name: lang, label: Language code, widget: string, required: false }
+      - { name: body, label: Body, widget: markdown }
+
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/content/projects
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    identifier_field: title
+    preview_path: project/{{slug}}/
+    summary: '{{title}} ({{pubDate}})'
+    sortable_fields:
+      fields: [pubDate, title]
+      default: { field: pubDate, direction: descending }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Description, widget: text }
+      - name: pubDate
+        label: Published
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        default: '{{now}}'
+      - name: updatedDate
+        label: Updated
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        required: false
+      - { name: tags, label: Tags, widget: list, required: false, default: [] }
+      - { name: tech, label: Technologies, widget: list, required: false }
+      - { name: status, label: Status, widget: select, options: [active, maintained, archived, concept], required: false }
+      - { name: featured, label: Featured, widget: boolean, default: false, required: false }
+      - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
+      - { name: img, label: Cover image, widget: image, required: false }
+      - { name: image, label: Alternate cover image, widget: image, required: false }
+      - { name: lang, label: Language code, widget: string, required: false }
+      - { name: link, label: Project link, widget: string, required: false }
+      - { name: client, label: Client, widget: string, required: false }
+      - { name: github, label: GitHub URL, widget: string, required: false }
+      - { name: live, label: Live URL, widget: string, required: false }
+      - { name: demo, label: Demo URL, widget: string, required: false }
       - { name: body, label: Body, widget: markdown }
 
   # Unlisted gallery at /photography/ (not linked from the site). Images are committed to
@@ -76,10 +121,38 @@ collections:
       default: { field: date, direction: descending }
     fields:
       - { name: title, label: Title, widget: string }
-      - { name: image, label: Photo, widget: image, choose_url: false }
+      - { name: image, label: Local photo (leave empty for R2), widget: image, choose_url: false, required: false }
       - { name: alt, label: Alt text (describe the photo), widget: text }
       - { name: caption, label: Caption, widget: text, required: false }
-      - { name: location, label: Location, widget: string, required: false }
+      - name: remote
+        label: R2 source (managed by ingest; do not combine with local photo)
+        widget: object
+        required: false
+        fields:
+          - { name: key, widget: hidden }
+          - { name: width, widget: hidden }
+          - { name: height, widget: hidden }
+          - { name: placeholder, widget: hidden, required: false }
+      - name: location
+        label: Approximate location
+        widget: object
+        required: false
+        fields:
+          - { name: name, label: Place name, widget: string }
+          - { name: region, label: Region, widget: string, required: false }
+          - { name: country, label: Country, widget: string }
+          - { name: lat, label: Latitude (at most 2 decimals), widget: number, value_type: float, min: -90, max: 90, step: 0.01, required: false }
+          - { name: lng, label: Longitude (at most 2 decimals), widget: number, value_type: float, min: -180, max: 180, step: 0.01, required: false }
+      - name: albums
+        label: Albums and trips
+        widget: relation
+        collection: albums
+        search_fields: [title]
+        value_field: '{{slug}}'
+        display_fields: [title]
+        multiple: true
+        required: false
+        default: []
       - name: date
         label: Taken
         widget: datetime
@@ -91,4 +164,38 @@ collections:
       - { name: settings, label: Settings (e.g. 35mm · f/1.8 · 1/250s · ISO 100), widget: string, required: false }
       - { name: tags, label: Tags, widget: list, required: false, default: [] }
       - { name: featured, label: Featured (shown first), widget: boolean, default: false, required: false }
+      - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }
+
+  - name: albums
+    label: Albums and trips
+    folder: src/content/albums
+    extension: yml
+    format: yaml
+    create: true
+    slug: '{{slug}}'
+    identifier_field: title
+    preview_path: photography/albums/{{slug}}/
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Description, widget: text, required: false }
+      - { name: kind, label: Kind, widget: select, options: [album, trip], default: album }
+      - name: cover
+        label: Cover photo
+        widget: relation
+        collection: photos
+        search_fields: [title]
+        value_field: '{{slug}}'
+        display_fields: [title]
+        required: false
+      - { name: startDate, label: Start date, widget: datetime, format: YYYY-MM-DD, time_format: false, required: false }
+      - { name: endDate, label: End date, widget: datetime, format: YYYY-MM-DD, time_format: false, required: false }
+      - name: stops
+        label: Ordered itinerary
+        widget: list
+        required: false
+        fields:
+          - { name: name, label: Place name, widget: string }
+          - { name: country, label: Country, widget: string }
+          - { name: region, label: Region, widget: string, required: false }
+          - { name: date, label: Date, widget: datetime, format: YYYY-MM-DD, time_format: false, required: false }
       - { name: draft, label: Hide on site (draft), widget: boolean, default: false, required: false }

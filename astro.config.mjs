@@ -10,6 +10,25 @@ export default defineConfig({
   site: 'https://amrithnath.dev',
   integrations: [sitemap({ filter: page => isIndexablePath(new URL(page).pathname) })],
   output: 'static',
+  markdown: {
+    shikiConfig: {
+      theme: {
+        name: 'portfolio-tokens',
+        type: 'dark',
+        colors: {
+          'editor.background': 'var(--color-surface)',
+          'editor.foreground': 'var(--color-text)',
+        },
+        tokenColors: [
+          { scope: ['comment', 'punctuation'], settings: { foreground: 'var(--color-muted)' } },
+          { scope: ['string'], settings: { foreground: 'var(--color-success)' } },
+          { scope: ['keyword', 'storage'], settings: { foreground: 'var(--color-secondary)' } },
+          { scope: ['constant', 'variable'], settings: { foreground: 'var(--color-warning)' } },
+          { scope: ['entity', 'support'], settings: { foreground: 'var(--color-link)' } },
+        ],
+      },
+    },
+  },
   build: {
     inlineStylesheets: 'always',
     assets: '_astro'
