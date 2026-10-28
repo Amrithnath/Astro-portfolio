@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 const routes = [
   { name: 'home', path: '/' },
   { name: 'resume', path: '/resume/' },
-  { name: 'blog', path: '/blog/bluetooth-dystopia/' },
+  { name: 'project', path: '/project/webDev/weather-app/' },
   { name: 'projects', path: '/projects/' },
   { name: '404', path: '/does-not-exist/' },
 ];

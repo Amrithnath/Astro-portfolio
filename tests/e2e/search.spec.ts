@@ -3,16 +3,16 @@ import { expect } from '@playwright/test';
 import { test } from './csp-fixture';
 
 for (const colorScheme of ['dark', 'light'] as const) {
-  test(`search finds a post under its production CSP (${colorScheme})`, async ({ page }) => {
+  test(`search finds an article under its production CSP (${colorScheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
     // The CSP fixture applies the production response policy on top of the built meta policy.
     const failures: string[] = [];
     page.on('pageerror', error => failures.push(error.message));
-    await page.goto('/search/?q=headphone');
-    await expect(page.getByRole('searchbox', { name: 'Search this site' })).toHaveValue('headphone');
+    await page.goto('/search/?q=weather');
+    await expect(page.getByRole('searchbox', { name: 'Search this site' })).toHaveValue('weather');
     await expect(page.getByRole('status')).toContainText(/\d+ results? for/);
-    await expect(page.getByRole('link', { name: 'Bring back the headphone jack, seriously.' }))
-      .toHaveAttribute('href', '/blog/bluetooth-dystopia/');
+    await expect(page.getByRole('link', { name: 'Weather app' }))
+      .toHaveAttribute('href', '/project/webDev/weather-app/');
     await expect(page.locator('[data-search-results] a[href^="/photography/"]')).toHaveCount(0);
     await expect(page.locator('[data-search-results] a[href^="/now/"]')).toHaveCount(0);
     expect(failures).toEqual([]);
@@ -37,7 +37,8 @@ test('index contains public pages, never unlisted or nonindexable documents', as
     const { results } = await pagefind.search(null);
     return Promise.all(results.map(async (result: { data: () => Promise<{ url: string }> }) => (await result.data()).url));
   });
-  expect(urls).toEqual(expect.arrayContaining(['/', '/about/', '/projects/', '/resume/', '/blog/bluetooth-dystopia/', '/project/webDev/weather-app/']));
+  expect(urls).toEqual(expect.arrayContaining(['/', '/about/', '/projects/', '/resume/', '/project/webDev/weather-app/']));
+  expect(urls).not.toContain('/blog/bluetooth-dystopia/');
   expect(urls.some(url => /^\/(?:photography|now|search|admin|terminal-full|offline|404|work-in-progress)(?:\/|$)/.test(url) || ['/blog/', '/blogs/'].includes(url))).toBe(false);
 });
 
@@ -50,7 +51,7 @@ test('search lazily loads its index and handles unavailable assets', async ({ pa
   await expect(page.getByRole('status')).toHaveText('Enter a query to search.');
   expect(requests).toEqual([]);
   await page.route('**/pagefind/**', route => route.abort());
-  await page.getByRole('searchbox').fill('headphone');
+  await page.getByRole('searchbox').fill('weather');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Search is unavailable.');
 });
