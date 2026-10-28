@@ -27,7 +27,10 @@ for (const route of ['/', '/about/', '/projects/', '/contact/', '/resume/', '/bl
     await expect(page.locator('.terminal')).toBeVisible();
     // Wait for deferred content and production service-worker registration as well.
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('.cursor:visible')).toHaveCount(route === '/resume/' ? 0 : 1);
+    // Only narrative pages end with the terminal sign-off and its idle cursor.
+    const signoff = ['/', '/about/', '/projects/'].includes(route);
+    await expect(page.locator('.cursor:visible')).toHaveCount(signoff ? 1 : 0);
+    await expect(page.getByText('Thanks for visiting!', { exact: true })).toHaveCount(signoff ? 1 : 0);
     if (route === '/does-not-exist/') {
       await expect(page.getByText("ls: cannot access '/requested/path': No such file or directory")).toBeVisible();
     }

@@ -5,23 +5,29 @@ import pkg from '../../../package.json';
 
 export interface Props {
   showCursor?: boolean;
+  /** Narrative pages (portfolio, about, projects) end with a terminal sign-off; others skip it. */
+  signoff?: boolean;
 }
 
-const { showCursor = true } = Astro.props;
+const { showCursor = true, signoff = false } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
 <footer class="terminal-footer">
-  <Prompt command={'printf "Thanks for visiting!\\n"'} />
-  <div class="output"><div class="command-output">Thanks for visiting!</div></div>
+  {signoff && (
+    <>
+      <Prompt command={'printf "Thanks for visiting!\\n"'} />
+      <div class="output"><div class="command-output">Thanks for visiting!</div></div>
 
-  <Prompt command="uname -srv" />
-  <div class="output"><div class="command-output">Astro/Terminal v{pkg.version} — © {year} Amrith — All rights reserved</div></div>
+      <Prompt command="uname -srv" />
+      <div class="output"><div class="command-output">Astro/Terminal v{pkg.version} — © {year} Amrith — All rights reserved</div></div>
 
-  <Prompt command={'echo "Made with ❤  using Astro"'} />
-  <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>
+      <Prompt command={'echo "Made with ❤  using Astro"'} />
+      <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>
+    </>
+  )}
 
-  {showCursor && <Prompt cursor />}
+  {showCursor && signoff && <Prompt cursor />}
 
   <SiteFooter />
 </footer>

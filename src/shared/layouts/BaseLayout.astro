@@ -10,10 +10,11 @@ export interface Props extends HeadProps {
   currentPage?: string;
   lang?: string;
   footerCursor?: boolean;
+  signoff?: boolean;
   panes?: PaneContext;
 }
 
-const { currentPage = '/', lang = 'en', footerCursor = true, panes, ...head } = Astro.props;
+const { currentPage = '/', lang = 'en', footerCursor = true, signoff = false, panes, ...head } = Astro.props;
 const wip = isWip(currentPage);
 ---
 
@@ -27,6 +28,7 @@ const wip = isWip(currentPage);
     <TerminalShell
       currentPage={currentPage}
       footerCursor={wip ? true : footerCursor}
+      signoff={!wip && signoff}
       title={head.title}
       description={head.description}
       panes={wip ? undefined : panes}
