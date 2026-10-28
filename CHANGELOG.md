@@ -1,6 +1,12 @@
 # Changelog
 
-## [2.4.1](https://github.com/Amrithnath/Astro-portfolio/compare/v2.4.0...v2.4.1) (2026-10-28)
+## [2.5.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.4.0...v2.5.0) (2026-10-28)
+
+
+### ✨ Features
+
+* **blog:** ✨ serve a real blog index and replace the redirect chain with one edge 301 ([8e394a4](https://github.com/Amrithnath/Astro-portfolio/commit/8e394a4ae83c4e72c5036c90509753fa8d11b593))
+* **blog:** ✨ serve a real blog index and replace the redirect chain with one edge 301 ([9bc03f1](https://github.com/Amrithnath/Astro-portfolio/commit/9bc03f141e9fd4ec1fdfaa024a222345a20aef33))
 
 
 ### 👷 CI
