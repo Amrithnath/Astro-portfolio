@@ -40,6 +40,10 @@ import { profile } from '../features/seo/seo';
       <p>Blog posts and project pages may show a public view count. It is a single anonymous number per page, kept by a small service at <code>views.amrithnath.dev</code> on Cloudflare. When you open an article, your browser asks that service for the count and, the first time you view that article, adds one to it. The service stores only the page path and its total. It does not set cookies and does not store your IP address, browser details, or any identifier, so views cannot be linked to you or to each other.</p>
       <p>To avoid counting you twice, your browser remembers in local storage which articles it has already counted; this never leaves your device, and you can clear it at any time. If your browser sends a Global Privacy Control or Do Not Track signal, the count is only displayed and never increased.</p>
 
+      <h3>Carbon badge</h3>
+      <p>The footer shows an estimate of the page's carbon footprint. On this site, your browser asks the Website Carbon API (<code>api.websitecarbon.com</code>, run by Wholegrain Digital) for the result for the page address you are viewing, without cookies or a referrer, and caches the answer in local storage for a day. As with any web request, that service receives your IP address. If your browser sends a Global Privacy Control or Do Not Track signal, no request is made; in that case, or if the service is unavailable, the estimate is calculated entirely in your browser from the page's own size.</p>
+      <p>On wide screens the side panel also shows live page performance and a carbon estimate calculated in your browser; that data never leaves your device apart from a running byte total kept in session storage.</p>
+
       <h2>Third-Party Links</h2>
       <p>The website may contain links to third-party sites. We are not responsible for the privacy practices of these external sites, and we encourage you to review their privacy policies before providing personal information.</p>
 

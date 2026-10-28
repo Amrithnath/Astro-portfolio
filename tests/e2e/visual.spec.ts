@@ -59,7 +59,7 @@ for (const theme of ['terminal', 'light'] as const) {
           }),
           page.locator(
             'time, [data-build-version], [data-build-commit], [data-timestamp], ' +
-            '[data-view-count], [data-clock]'
+            '[data-view-count], [data-clock], [data-carbon-badge]'
           ),
           page.locator('[aria-label="About JSON"] .json-string').nth(2),
           page.locator('[aria-label="About JSON"] .json-string').nth(3),

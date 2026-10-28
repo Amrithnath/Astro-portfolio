@@ -1,0 +1,93 @@
+---
+// Website Carbon badge (https://www.websitecarbon.com/badge/) as a status-bar segment, rebuilt so no third-party
+// script runs. On the production hostname, without GPC/DNT, it reads the page's result from the
+// Website Carbon API (cached for a day like the official badge); otherwise, or if the API fails, it
+// shows a local Sustainable Web Design v4 estimate from this page's cold-load bytes.
+
+const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
+---
+
+<span class="status-segment carbon-badge" data-carbon-badge data-host={host} hidden>
+  <a href="https://www.websitecarbon.com/" rel="noopener">co₂<span class="visually-hidden"> (Website Carbon)</span></a>
+  <span class="carbon-value" data-carbon-value>measuring…</span>
+  <span class="carbon-detail" data-carbon-detail></span>
+</span>
+
+<script>
+  import { carbonEstimate, transferTotals } from './perf';
+
+  const API = 'https://api.websitecarbon.com/b';
+  const DAY = 864e5;
+
+  const root = document.querySelector<HTMLElement>('[data-carbon-badge]');
+  if (root && !root.dataset.ready) {
+    root.dataset.ready = 'true';
+    root.hidden = false;
+    const value = root.querySelector<HTMLElement>('[data-carbon-value]')!;
+    const detail = root.querySelector<HTMLElement>('[data-carbon-detail]')!;
+    const show = (grams: number, text: string) => {
+      value.textContent = `${grams.toFixed(grams < 0.01 ? 4 : 2)} g/view`;
+      detail.textContent = text;
+    };
+
+    const local = () => {
+      const entries = [
+        ...performance.getEntriesByType('navigation'),
+        ...performance.getEntriesByType('resource'),
+      ] as PerformanceResourceTiming[];
+      const { grams, rating } = carbonEstimate(transferTotals(entries).firstVisit);
+      show(grams, `${rating} · estimated locally`);
+    };
+    const localAfterLoad = () =>
+      document.readyState === 'complete' ? local() : window.addEventListener('load', local, { once: true });
+
+    type Result = { c: number; p: number; t: number };
+    const valid = (data: unknown): data is Result => {
+      const result = data as Partial<Result> | null;
+      return (
+        Number.isFinite(Number(result?.c)) &&
+        Number(result?.c) >= 0 &&
+        Number.isFinite(Number(result?.p)) &&
+        Number(result?.p) >= 0 &&
+        Number(result?.p) <= 100
+      );
+    };
+    const remote = (result: Result) =>
+      show(Number(result.c), `cleaner than ${Math.round(Number(result.p))}% of pages`);
+
+    const optedOut =
+      (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true ||
+      navigator.doNotTrack === '1';
+    const url = `${location.origin}${location.pathname}`;
+    const key = `portfolio-carbon:${location.pathname}`;
+
+    if (location.hostname !== root.dataset.host || optedOut) {
+      localAfterLoad();
+    } else {
+      let cached: Result | undefined;
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) ?? 'null');
+        if (valid(parsed) && Date.now() - Number(parsed.t) < DAY) cached = parsed;
+      } catch {
+        cached = undefined;
+      }
+      if (cached) {
+        remote(cached);
+      } else {
+        fetch(`${API}?url=${encodeURIComponent(url)}`, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+          .then(response => (response.ok ? response.json() : Promise.reject(response.status)))
+          .then((data: unknown) => {
+            if (!valid(data)) throw new Error('Unexpected Website Carbon response');
+            const result = { c: Number(data.c), p: Number(data.p), t: Date.now() };
+            remote(result);
+            try {
+              localStorage.setItem(key, JSON.stringify(result));
+            } catch {
+              // Storage blocked: fetch again next time.
+            }
+          })
+          .catch(localAfterLoad);
+      }
+    }
+  }
+</script>

@@ -1,5 +1,6 @@
 ---
 import Prompt from '../../shared/ui/Prompt.astro';
+import SiteFooter from './SiteFooter.astro';
 import pkg from '../../../package.json';
 
 export interface Props {
@@ -21,4 +22,6 @@ const year = new Date().getFullYear();
   <div class="output"><div class="command-output">Made with ❤  using Astro</div></div>
 
   {showCursor && <Prompt cursor />}
+
+  <SiteFooter />
 </footer>

@@ -86,21 +86,67 @@ test('prompt commands render zsh-style highlighted tokens', async ({ page }) => 
 test('wide screens fill the gutters with tmux-style panes; narrower screens hide them', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/about/');
-  const tree = page.getByRole('complementary', { name: 'Site map' });
-  const log = page.getByRole('complementary', { name: 'Site releases' });
-  await expect(tree).toBeVisible();
-  await expect(log).toBeVisible();
-  await expect(tree.locator('a[aria-current="page"]')).toHaveText('about.md');
-  await expect(log.locator('.log-version').first()).toHaveAttribute('href', /\/releases\/tag\/v\d+\.\d+\.\d+$/);
+  const left = page.getByRole('complementary', { name: 'Page manual and career' });
+  const right = page.getByRole('complementary', { name: 'Profile and skills' });
+  await expect(left).toBeVisible();
+  await expect(right).toBeVisible();
+  await expect(left.locator('.man-page')).toContainText('NAME');
+  await expect(left.locator('.career-graph li').first()).toContainText('HEAD -> main');
+  await expect(right.locator('.pane-fetch')).toContainText('hello@amrithnath.dev');
+  await expect(right.locator('.htop-group')).toHaveText(['Top skills']);
+  // /now is placeholder text, so its section stays hidden.
+  await expect(right.locator('.now-log')).toHaveCount(0);
   const chrome = await page.locator('.window-chrome').boundingBox();
-  const pane = await tree.boundingBox();
+  const pane = await left.boundingBox();
   const main = await page.locator('.terminal').boundingBox();
   expect(Math.abs(pane!.y - chrome!.height)).toBeLessThan(2);
   expect(pane!.x + pane!.width).toBeLessThanOrEqual(main!.x + 1);
 
   await page.setViewportSize({ width: 1440, height: 900 });
-  await expect(tree).toBeHidden();
-  await expect(log).toBeHidden();
+  await expect(left).toBeHidden();
+  await expect(right).toBeHidden();
+});
+
+test('side panes vary with page content', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/resume/');
+  const right = page.getByRole('complementary', { name: 'Profile and skills' });
+  expect(await right.locator('.htop-group').count()).toBeGreaterThan(3);
+  await expect(page.locator('.commit-tech').first()).toBeVisible();
+
+  await page.goto('/project/webDev/weather-app/');
+  const left = page.getByRole('complementary', { name: 'Page manual and career' });
+  await expect(left.locator('.man-page')).toContainText('weather-app - Weather app');
+  await expect(left.locator('.career-graph li.focused')).toHaveCount(1);
+  await expect(left.getByRole('link', { name: 'projects(1)' })).toHaveAttribute('href', '/projects');
+
+  await page.goto('/photography/');
+  await expect(left.locator('.career-graph')).toHaveCount(0);
+  await expect(left.getByRole('link', { name: 'places/' })).toBeVisible();
+  await expect(right.locator('.pane-fetch')).toHaveCount(0);
+});
+
+test('perf monitor and carbon badge measure locally without contacting Website Carbon off production', async ({ page }) => {
+  const carbonRequests: string[] = [];
+  page.on('request', request => {
+    const { hostname } = new URL(request.url());
+    if (hostname === 'websitecarbon.com' || hostname.endsWith('.websitecarbon.com')) carbonRequests.push(request.url());
+  });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/about/', { waitUntil: 'load' });
+  const monitor = page.locator('[data-perf-mon]');
+  await expect(monitor).toBeVisible();
+  await expect(monitor.locator('[data-metric="ttfb"]')).toHaveText(/\d+(\.\d+)? m?s/);
+  await expect(monitor.locator('[data-metric="requests"]')).toHaveText(/^[1-9]\d*$/);
+  await expect(monitor.locator('[data-metric="co2-cold"]')).toHaveText(/^\d+\.\d+ g \((A\+|[A-F])\)$/);
+  const badge = page.locator('[data-carbon-badge]');
+  await expect(badge).toBeVisible();
+  await expect(badge.locator('[data-carbon-value]')).toHaveText(/^\d+\.\d+ g\/view$/);
+  await expect(badge.locator('[data-carbon-detail]')).toContainText('estimated locally');
+  const status = page.getByRole('contentinfo').locator('.site-status');
+  await expect(status.locator('[data-build-version]')).toHaveText(/^\d+\.\d+\.\d+$/);
+  await expect(status.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['privacy', 'rss', 'source']);
+  expect(carbonRequests).toEqual([]);
 });
 
 test('about exposes the skills tree and a hidden crawler-readable profile', async ({ page }) => {

@@ -1,6 +1,8 @@
 ---
 import { Image } from 'astro:assets';
-import { getPublishedCollection, getProjectWriteups } from './content';
+import type { MarkdownHeading } from 'astro';
+import { contentPath, getPublishedCollection, getProjectWriteups } from './content';
+import type { PaneContext } from '../terminal/panes';
 import BaseLayout from '../../shared/layouts/BaseLayout.astro';
 import Prompt from '../../shared/ui/Prompt.astro';
 import Button from '../../shared/ui/Button.astro';
@@ -11,9 +13,10 @@ import type { Props as SEOProps } from '../seo/SEO.astro';
 interface Props {
   content: Record<string, any>;
   schemaType: SEOProps['schemaType'];
+  headings?: MarkdownHeading[];
 }
 
-const { content, schemaType } = Astro.props;
+const { content, schemaType, headings = [] } = Astro.props;
 const imageSource = content.img || content.image;
 const isProject = schemaType === 'SoftwareSourceCode';
 const currentId = Astro.url.pathname.replace(/^\/(?:blog|project)\//, '').replace(/\/$/, '');
@@ -31,6 +34,23 @@ const projectLinks = isProject
       ['Project link', content.link],
     ].filter((item): item is [string, string] => Boolean(item[1]))
   : [];
+const panes: PaneContext = {
+  name: `${currentId.split('/').at(-1)} - ${content.title}`,
+  synopsis: [content.pubDate.toISOString().slice(0, 10), ...(content.tags ?? []).map((tag: string) => `#${tag}`)].join(' '),
+  description: content.description,
+  sections: headings
+    .filter(heading => heading.depth <= 3)
+    .map(heading => ({ href: `#${heading.slug}`, label: heading.text, depth: heading.depth })),
+  seeAlso: [
+    ...(project ? [{ href: `${contentPath(project)}/`, label: `project: ${project.data.title}` }] : []),
+    ...[...writeups, ...projectWriteups]
+      .filter(post => contentPath(post) !== Astro.url.pathname.replace(/\/$/, ''))
+      .map(post => ({ href: `${contentPath(post)}/`, label: post.data.title })),
+    isProject ? { href: '/projects', label: 'projects(1)' } : { href: '/blog/', label: 'blog(1)' },
+  ],
+  skills: projectTech,
+  focusDate: content.pubDate,
+};
 const viewsEnabled = Boolean(import.meta.env.PUBLIC_VIEWS_URL);
 const formatDate = (date: Date) => new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
 ---
@@ -46,6 +66,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('en', { dateStyle: 'm
   modified={content.updatedDate}
   keywords={content.tags}
   projectUrl={content.link || content.live || content.demo || content.github}
+  panes={panes}
 >
   <Prompt path="~/articles" command={`cat ${Astro.url.pathname.replace(/\/$/, '')}.md`} />
   <article class="prose">

@@ -4,14 +4,16 @@ import TerminalShell from '../../features/terminal/TerminalShell.astro';
 import TerminalWip from '../../features/terminal/TerminalWip.astro';
 import { defaultTheme } from '../../features/theme';
 import { isWip } from '../../features/terminal/wip';
+import type { PaneContext } from '../../features/terminal/panes';
 
 export interface Props extends HeadProps {
   currentPage?: string;
   lang?: string;
   footerCursor?: boolean;
+  panes?: PaneContext;
 }
 
-const { currentPage = '/', lang = 'en', footerCursor = true, ...head } = Astro.props;
+const { currentPage = '/', lang = 'en', footerCursor = true, panes, ...head } = Astro.props;
 const wip = isWip(currentPage);
 ---
 
@@ -22,7 +24,13 @@ const wip = isWip(currentPage);
     <slot name="head" />
   </head>
   <body>
-    <TerminalShell currentPage={currentPage} footerCursor={wip ? true : footerCursor}>
+    <TerminalShell
+      currentPage={currentPage}
+      footerCursor={wip ? true : footerCursor}
+      title={head.title}
+      description={head.description}
+      panes={wip ? undefined : panes}
+    >
       {wip ? <TerminalWip title={wip.title} note={wip.note} /> : <slot />}
     </TerminalShell>
   </body>

@@ -1,6 +1,6 @@
 ---
 import ArticleLayout from './ArticleLayout.astro';
-const { content } = Astro.props;
+const { content, headings } = Astro.props;
 ---
 
-<ArticleLayout content={content} schemaType="BlogPosting"><slot /></ArticleLayout>
+<ArticleLayout content={content} headings={headings} schemaType="BlogPosting"><slot /></ArticleLayout>

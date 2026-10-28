@@ -5,7 +5,7 @@ import ProfileSummary from '../features/resume/ProfileSummary.astro';
 import { profile } from '../features/seo/seo';
 ---
 
-<BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume" footerCursor={false}>
+<BaseLayout title={`Resume Generator | ${profile.contact.name}`} currentPage="/resume" footerCursor={false} panes={{ synopsis: 'python generator.py [help | generate pdf | export md]', allSkills: true, expandCareer: true, seeAlso: [{ href: '/about', label: 'about(1)' }, { href: '/contact', label: 'contact(1)' }] }}>
   <h1 class="visually-hidden">Resume Generator</h1>
   <ProfileSummary />
   <ResumeGenerator />

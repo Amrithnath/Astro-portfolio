@@ -60,7 +60,16 @@ const portfolioData = {
     />
 	</head>
     <body>
-        <TerminalShell currentPage="/">
+        <TerminalShell
+          currentPage="/"
+          title={profile.contact.name}
+          description={profile.summary}
+          panes={{
+            name: 'portfolio - Amrithnath Vijayakumar',
+            synopsis: 'portfolio.sh [about | projects | resume | blog]',
+            seeAlso: [{ href: '/about', label: 'about(1)' }, { href: '/projects', label: 'projects(1)' }, { href: '/resume', label: 'resume(1)' }, { href: '/blog/', label: 'blog(1)' }],
+          }}
+        >
           <h1 class="visually-hidden">Amrithnath Vijayakumar</h1>
 		  <TerminalView 
 			  title={portfolioData.title}
