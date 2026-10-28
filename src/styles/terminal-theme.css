@@ -349,3 +349,47 @@ body {
 
 .output pre.json-output { white-space: pre; }
 .output pre.ascii-art { white-space: pre; margin: var(--space-6) 0; }
+
+/* The Basic light profile keeps emulator chrome distinct from its untextured transcript. */
+[data-theme='light'] .window-chrome {
+  border-bottom-color: var(--window-border);
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+[data-theme='light'] .window-header {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  background: linear-gradient(var(--color-surface), var(--window-bg));
+  border-bottom-color: var(--window-border);
+}
+
+[data-theme='light'] .window-title { text-align: center; }
+[data-theme='light'] .control { box-shadow: inset 0 0 0 1px var(--color-shadow); }
+
+[data-theme='light'] .terminal-tabs { background: var(--window-bg); }
+[data-theme='light'] .tab {
+  background: var(--color-surface);
+  border-right-color: var(--window-border);
+  border-top: 2px solid transparent;
+}
+[data-theme='light'] .tab.active {
+  background: var(--color-bg);
+  border-top-color: var(--color-accent);
+  color: var(--color-text);
+}
+[data-theme='light'] .tab:hover,
+[data-theme='light'] .tab:focus-visible { background: var(--color-bg); }
+
+[data-theme='light'] .terminal-status {
+  background: var(--color-surface);
+  border-top-color: var(--window-border);
+}
+
+[data-theme='light'] .prompt { font-weight: 600; }
+[data-theme='light'] .command { color: var(--color-text); }
+[data-theme='light'] .cursor { color: var(--color-text); }
+[data-theme='light'] .nf-ascii::before { content: none; }
+[data-theme='light'] ::selection {
+  background: var(--color-link);
+  color: var(--color-on-accent);
+}

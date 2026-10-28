@@ -7,7 +7,7 @@ export interface Theme {
 
 export const themes = [
   { id: 'terminal', label: 'Terminal', colorScheme: 'dark', themeColor: '#1e1e2e' },
-  { id: 'light', label: 'Light', colorScheme: 'light', themeColor: '#f5f2e9' },
+  { id: 'light', label: 'Light', colorScheme: 'light', themeColor: '#ffffff' },
 ] as const satisfies readonly Theme[];
 
 export type ThemeId = (typeof themes)[number]['id'];

@@ -1,7 +1,34 @@
 # Portfolio themes
 
-`terminal` (dark) and `light` (warm paper/ink) are enabled. Themes change tokens and optional
+`terminal` (dark) and `light` (Terminal Basic light profile) are enabled. Themes change tokens and optional
 component styling, not content trees: render every component once and keep IDs unique.
+
+## Light terminal profile
+
+The light profile uses a white, untextured transcript with neutral gray window chrome,
+traffic-light controls, a green active-tab rule and a separate statusline. Fira Code,
+`user@host:~$` prompts, ANSI-style green/blue/magenta/cyan/red inks and the block cursor
+are the same terminal language as dark; commands use bold black ink to distinguish
+input from regular-weight output. Cards/buttons are square terminal-tool panels, not
+rounded website tiles. No scanlines or decorative background overlay obscure text.
+
+Colors live only in `src/styles/themes/light.css`; light-only shell and primitive
+rules live in `terminal-theme.css` and `ui.css`. Dark selectors/tokens are unchanged.
+The registry's light `themeColor` matches the transcript background. Keep foregrounds
+AA on the transcript, surface **and** titlebar; keep inverse labels AA on ANSI fills.
+
+Key WCAG contrast ratios (foreground / white transcript / gray surface):
+
+| Ink | Transcript | Surface |
+| --- | --- | --- |
+| Text `#24292f` | 14.65:1 | 13.31:1 |
+| Muted `#525860` | 7.18:1 | 6.53:1 |
+| Prompt green `#116329` | 7.39:1 | 6.72:1 |
+| Link blue `#0550ae` | 7.59:1 | 6.90:1 |
+| Cyan `#006570` (lowest ANSI pair) | 6.78:1 | 6.16:1 |
+
+Title text on the darkest titlebar gradient stop (`#e4e7eb`) is 11.81:1.
+Inverse white labels on green/blue are 7.39:1 / 7.59:1.
 
 ## Add a theme
 
