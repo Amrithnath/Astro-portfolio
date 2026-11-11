@@ -9,7 +9,7 @@ updates:
       default-days: 1
     open-pull-requests-limit: 10
     commit-message:
-      prefix: 'build'
+      prefix: 'build: 📦'
     ignore:
       # astro check rejects TypeScript 7; revisit once @astrojs/check supports it.
       - dependency-name: typescript
@@ -30,7 +30,7 @@ updates:
     cooldown:
       default-days: 1
     commit-message:
-      prefix: 'ci'
+      prefix: 'ci: 👷'
     groups:
       actions:
         patterns: ['*']
