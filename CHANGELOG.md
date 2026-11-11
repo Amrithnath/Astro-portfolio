@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.1](https://github.com/Amrithnath/Astro-portfolio/compare/v2.8.0...v2.8.1) (2026-11-11)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** 🔒 refresh dependencies and patch XML parser ([1b88316](https://github.com/Amrithnath/Astro-portfolio/commit/1b883164369eea730e0392505cc2d7c7a8871cc6))
+
 ## [2.8.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.7.0...v2.8.0) (2026-10-28)
 
 
