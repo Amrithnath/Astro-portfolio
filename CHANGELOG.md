@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.9.0](https://github.com/Amrithnath/Astro-portfolio/compare/v2.8.1...v2.9.0) (2026-11-25)
+
+
+### ✨ Features
+
+* **views:** ✨ add homepage counter ([#90](https://github.com/Amrithnath/Astro-portfolio/issues/90)) ([10d8c58](https://github.com/Amrithnath/Astro-portfolio/commit/10d8c58ca7a0718a21111930f791d401bf6f253c))
+
+
+### 📦 Build
+
+* 📦 bump the npm-all group with 5 updates ([#88](https://github.com/Amrithnath/Astro-portfolio/issues/88)) ([ee54935](https://github.com/Amrithnath/Astro-portfolio/commit/ee5493579ebbceeda24d1a8679fb5ed9f5111f4b))
+
 ## [2.8.1](https://github.com/Amrithnath/Astro-portfolio/compare/v2.8.0...v2.8.1) (2026-11-11)
 
 
