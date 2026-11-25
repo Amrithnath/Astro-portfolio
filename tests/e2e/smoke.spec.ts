@@ -4,8 +4,16 @@ import { test as base } from './csp-fixture';
 
 // Keep the guard active through deferred loading, interactions, and fixture teardown.
 const test = base.extend<{ browserErrors: void }>({
-  browserErrors: [async ({ page }, use) => {
+  browserErrors: [async ({ page, context }, use) => {
     const errors: string[] = [];
+    await context.route('https://views.amrithnath.dev/views**', route => {
+      const request = route.request();
+      if (request.method() !== 'GET') return route.fulfill({ status: 403 });
+      return route.fulfill({
+        json: { path: new URL(request.url()).searchParams.get('path'), count: 0 },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+    });
     page.on('console', message => {
       if (message.type() !== 'error') return;
       // Chromium reports the intentional missing-route response as a console error.
