@@ -1,6 +1,6 @@
-// Anonymous per-article view counter for amrithnath.dev, deployed as a Cloudflare Worker with D1.
+// Anonymous per-page view counter for amrithnath.dev, deployed as a Cloudflare Worker with D1.
 // Privacy: no cookies, and nothing about the visitor (IP, user agent, referrer) is read or stored;
-// the only data is one counter per article path. Requests that send `Sec-GPC: 1` or `DNT: 1` get
+// the only data is one counter per allowed path. Requests that send `Sec-GPC: 1` or `DNT: 1` get
 // the current count without incrementing it. Repeat views are de-duplicated by the browser, which
 // only POSTs once per path. Everything fails closed: unknown origins, malformed input and unknown
 // pages are rejected before touching the database.
@@ -11,7 +11,7 @@ const PATH_PATTERN = /^\/(?:blog|project)\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\/
 const ORIGIN_PATTERN = /^(?:https:\/\/[a-z0-9.-]+|http:\/\/(?:localhost|127\.0\.0\.1)(?::\d{1,5})?)$/;
 
 export const isValidPath = (path) =>
-  typeof path === 'string' && path.length <= MAX_PATH_LENGTH && PATH_PATTERN.test(path);
+  typeof path === 'string' && path.length <= MAX_PATH_LENGTH && (path === '/' || PATH_PATTERN.test(path));
 
 export const allowedOrigins = (env) =>
   (env.ALLOWED_ORIGINS ?? '')

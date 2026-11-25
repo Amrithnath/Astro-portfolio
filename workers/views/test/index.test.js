@@ -65,12 +65,14 @@ const post = (env, body, headers = {}) =>
 afterEach(() => mock.restoreAll());
 
 describe('path validation', () => {
-  it('accepts article paths only', () => {
-    for (const path of [PATH, '/project/webDev/weather-app/', '/blog/a_b-1/']) {
+  it('accepts the homepage and article paths only', () => {
+    for (const path of ['/', PATH, '/project/webDev/weather-app/', '/blog/a_b-1/']) {
       assert.equal(isValidPath(path), true, path);
     }
     for (const path of [
       '/blog/',
+      '//',
+      '/?x=1',
       '/blog/x',
       '/about/',
       '/blog//x/',
@@ -88,6 +90,11 @@ describe('path validation', () => {
 });
 
 describe('GET /views', () => {
+  it('returns the homepage count', async () => {
+    const response = await request(makeEnv(createDb({ '/': 7 })), { query: '?path=%2F' });
+    assert.deepEqual(await response.json(), { path: '/', count: 7 });
+  });
+
   it('returns the stored count', async () => {
     const env = makeEnv(createDb({ [PATH]: 41 }));
     const response = await request(env, { query: `?path=${encodeURIComponent(PATH)}` });
@@ -151,6 +158,21 @@ describe('origins', () => {
 });
 
 describe('POST /views', () => {
+  it('creates a homepage counter only after confirming the homepage exists', async () => {
+    const env = makeEnv();
+    const fetchMock = mock.method(globalThis, 'fetch', async () => new Response(null, { status: 200 }));
+    const response = await post(env, { path: '/' });
+    assert.deepEqual(await response.json(), { path: '/', count: 1, counted: true });
+    assert.equal(fetchMock.mock.calls[0].arguments[0], 'https://amrithnath.dev/');
+  });
+
+  it('does not increment the homepage with a privacy signal', async () => {
+    const env = makeEnv(createDb({ '/': 7 }));
+    const response = await post(env, { path: '/' }, { 'Sec-GPC': '1' });
+    assert.deepEqual(await response.json(), { path: '/', count: 7, counted: false });
+    assert.equal(env.DB.data.get('/'), 7);
+  });
+
   it('increments an existing counter', async () => {
     const env = makeEnv(createDb({ [PATH]: 9 }));
     const fetchMock = mock.method(globalThis, 'fetch');

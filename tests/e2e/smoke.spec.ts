@@ -4,8 +4,16 @@ import { test as base } from './csp-fixture';
 
 // Keep the guard active through deferred loading, interactions, and fixture teardown.
 const test = base.extend<{ browserErrors: void }>({
-  browserErrors: [async ({ page }, use) => {
+  browserErrors: [async ({ page, context }, use) => {
     const errors: string[] = [];
+    await context.route('https://views.amrithnath.dev/views**', route => {
+      const request = route.request();
+      if (request.method() !== 'GET') return route.fulfill({ status: 403 });
+      return route.fulfill({
+        json: { path: new URL(request.url()).searchParams.get('path'), count: 0 },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+    });
     page.on('console', message => {
       if (message.type() !== 'error') return;
       // Chromium reports the intentional missing-route response as a console error.
@@ -528,27 +536,96 @@ test('places map is self-contained and available without JavaScript', async ({ b
   } finally { await context.close(); }
 });
 
-test('article view counter only runs when PUBLIC_VIEWS_URL was set at build time', async ({ page }) => {
-  const viewRequests: string[] = [];
-  page.on('request', request => {
-    if (new URL(request.url()).pathname === '/views') viewRequests.push(`${request.method()} ${request.url()}`);
-  });
-  await page.route(/\/views(\?|$)/, route => route.fulfill({
-    json: { path: '/project/webDev/weather-app/', count: 1234 },
-    headers: { 'Access-Control-Allow-Origin': '*' },
-  }));
-  await page.goto('/project/webDev/weather-app/');
-  await page.waitForLoadState('networkidle');
-  const counter = page.locator('[data-view-count]');
-  if (!(await counter.count())) {
-    // CI default: no VIEWS_URL variable, so no markup and no network calls.
+test.describe('article view counter', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('skips unsupported loopback origins and reads on an allowed preview', async ({ page, baseURL }) => {
+    const viewRequests: string[] = [];
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === '/views') viewRequests.push(`${request.method()} ${request.url()}`);
+    });
+    await page.route(/\/views(\?|$)/, route => route.fulfill({
+      json: { path: '/project/webDev/weather-app/', count: 1234 },
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }));
+    await page.goto('/project/webDev/weather-app/');
+    await page.waitForLoadState('networkidle');
+    const counter = page.locator('[data-view-count]');
     expect(viewRequests).toEqual([]);
-    return;
-  }
-  // Off the production hostname the counter only reads, never increments.
-  await expect(counter).toHaveText('views: 1,234');
-  expect(viewRequests).toHaveLength(1);
-  expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
+    if (!(await counter.count())) {
+      return;
+    }
+    await expect(counter).toBeHidden();
+    await page.route('http://localhost:4321/**', async route => {
+      const url = new URL(route.request().url());
+      const response = await route.fetch({ url: `${baseURL}${url.pathname}${url.search}` });
+      await route.fulfill({ response });
+    });
+    await page.goto('http://localhost:4321/project/webDev/weather-app/');
+    await expect(counter).toHaveText('views: 1,234');
+    expect(viewRequests).toHaveLength(1);
+    expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
+  });
+});
+
+test.describe('homepage view counter', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('counts the homepage once and respects privacy signals', async ({ page, baseURL }) => {
+    const calls: { method: string; path: string | null }[] = [];
+    let count = 10;
+    await page.route('https://amrithnath.dev/**', async route => {
+      const url = new URL(route.request().url());
+      const response = await route.fetch({ url: `${baseURL}${url.pathname}${url.search}` });
+      await route.fulfill({ response });
+    });
+    await page.route('https://api.websitecarbon.com/**', route => route.fulfill({
+      json: { c: 0.1, p: 0.5 },
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }));
+    await page.route('https://views.amrithnath.dev/views**', async route => {
+      const request = route.request();
+      const headers = {
+        'Access-Control-Allow-Origin': 'https://amrithnath.dev',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+      if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+      const path = request.method() === 'POST'
+        ? request.postDataJSON().path
+        : new URL(request.url()).searchParams.get('path');
+      calls.push({ method: request.method(), path });
+      if (request.method() === 'POST') count += 1;
+      await route.fulfill({ json: { path, count }, headers });
+    });
+
+    await page.goto('https://amrithnath.dev/');
+    const counter = page.locator('.site-status [data-view-count]');
+    if (!(await counter.count())) {
+      expect(calls).toEqual([]);
+      return;
+    }
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([{ method: 'POST', path: '/' }]);
+    await page.reload();
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([{ method: 'POST', path: '/' }, { method: 'GET', path: '/' }]);
+
+    await page.evaluate(() => localStorage.removeItem('portfolio-viewed:/'));
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, configurable: true });
+    });
+    await page.reload();
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([
+      { method: 'POST', path: '/' },
+      { method: 'GET', path: '/' },
+      { method: 'GET', path: '/' },
+    ]);
+    expect(await page.evaluate(() => localStorage.getItem('portfolio-viewed:/'))).toBeNull();
+    await page.goto('https://amrithnath.dev/privacy-check/');
+    await expect(page.locator('[data-view-count]')).toHaveCount(0);
+  });
 });
 
 test('blog tab opens the blog index directly and /blogs/ falls back to it', async ({ page }) => {

@@ -1,13 +1,16 @@
 ---
-// Anonymous article view count from the views Worker (workers/views/). Rendered only when
+// Anonymous page view count from the views Worker (workers/views/). Rendered only when
 // PUBLIC_VIEWS_URL is set at build time. The line keeps its space while hidden, so loading or
 // failing never shifts layout. Each browser increments a path at most once (localStorage flag),
 // only on the production hostname, and never when GPC/DNT is on; otherwise it just reads.
 interface Props {
   path: string;
+  placement?: 'article' | 'status';
 }
 
+const { placement = 'article' } = Astro.props;
 const path = Astro.props.path.replace(/\/?$/, '/');
+const Tag = placement === 'status' ? 'span' : 'p';
 const configured = import.meta.env.PUBLIC_VIEWS_URL?.trim().replace(/\/+$/, '');
 const endpoint = (() => {
   if (!configured) return undefined;
@@ -23,9 +26,12 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
 
 {
   endpoint && (
-    <p class="view-count" data-view-count data-endpoint={endpoint} data-path={path} data-host={host}>
-      <span class="view-count-label">views:</span> <span data-view-count-value>0</span>
-    </p>
+    <Tag
+      class:list={['view-count', placement === 'status' && 'view-count--status', placement === 'status' && 'status-segment']}
+      data-view-count data-endpoint={endpoint} data-path={path} data-host={host}
+    >
+      <span class="view-count-label">{placement === 'status' ? 'home views:' : 'views:'}</span> <span data-view-count-value>0</span>
+    </Tag>
   )
 }
 
@@ -35,6 +41,14 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
   const load = async (element: HTMLElement) => {
     const { endpoint, path, host } = element.dataset;
     if (!endpoint || !path) return;
+    const loopback = ['localhost', '127.0.0.1', '[::1]'];
+    const endpointHost = new URL(endpoint).hostname;
+    // The remote Worker's local allowlist only includes localhost:4321.
+    if (
+      loopback.includes(location.hostname) &&
+      location.origin !== 'http://localhost:4321' &&
+      !loopback.includes(endpointHost)
+    ) return;
     const key = `portfolio-viewed:${path}`;
     let seen = false;
     try {
@@ -95,6 +109,12 @@ const host = new URL(Astro.site ?? 'https://amrithnath.dev').hostname;
 
   .view-count[data-loaded] {
     visibility: visible;
+  }
+
+  .view-count--status {
+    margin: 0;
+    min-width: 18ch;
+    font-size: inherit;
   }
 
   .view-count-label {

@@ -32,6 +32,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+        env:
+          PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+          PUBLIC_VIEWS_URL: ${{ vars.VIEWS_URL }}
       - run: pnpm test:visual --update-snapshots=all
       - name: Verify snapshot stability
         run: pnpm test:visual

@@ -357,11 +357,11 @@ jobs:
         uses: actions/deploy-pages@v5
 
   # Cloudflare and Vercel deploy here, after all gates, instead of from their Git integrations.
-  # Each job skips itself until its secrets are added.
+  # Cloudflare Pages is explicitly opt-in because its token may only be scoped for Workers.
   deploy-cloudflare:
     name: Deploy (Cloudflare)
     needs: [conventions, codeql, build, node-24, e2e, visual, lighthouse]
-    if: ${{ !cancelled() && !failure() && needs.build.result == 'success' }}
+    if: ${{ !cancelled() && !failure() && needs.build.result == 'success' && vars.CLOUDFLARE_PAGES_CI_DEPLOY == 'true' }}
     runs-on: ubuntu-slim
     timeout-minutes: 10
     env:
@@ -370,14 +370,16 @@ jobs:
       PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'portfolio' }}
       PAGES_BRANCH: ${{ github.head_ref || github.ref_name }}
     steps:
-      - if: env.CLOUDFLARE_API_TOKEN == ''
-        run: echo "::notice::Cloudflare secrets not set; skipping."
-      - if: env.CLOUDFLARE_API_TOKEN != ''
+      - if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == ''
+        run: |
+          echo "::error::Cloudflare Pages CI deploy requires CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID."
+          exit 1
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
-      - if: env.CLOUDFLARE_API_TOKEN != ''
+      - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         run: >-
           npx -y wrangler@4 pages deploy dist
           --project-name="$PAGES_PROJECT"
