@@ -28,14 +28,19 @@ for (const colorScheme of ['light', 'dark'] as const) {
 }
 
 for (const colorScheme of ['light', 'dark'] as const) {
-  test(`homepage counter (${colorScheme}) is accessible on mobile`, async ({ page }) => {
+  test(`homepage counter (${colorScheme}) is accessible on mobile`, async ({ page, baseURL }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ colorScheme });
+    await page.route('http://localhost:4321/**', async route => {
+      const url = new URL(route.request().url());
+      const response = await route.fetch({ url: `${baseURL}${url.pathname}${url.search}` });
+      await route.fulfill({ response });
+    });
     await page.route('https://views.amrithnath.dev/views**', route => route.fulfill({
       json: { path: '/', count: 1234 },
       headers: { 'Access-Control-Allow-Origin': '*' },
     }));
-    await page.goto('/');
+    await page.goto('http://localhost:4321/');
     const counter = page.locator('.site-status [data-view-count]');
     if (!(await counter.count())) return;
     await expect(counter).toHaveText('home views: 1,234');
