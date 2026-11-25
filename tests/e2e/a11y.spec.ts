@@ -21,6 +21,27 @@ for (const colorScheme of ['light', 'dark'] as const) {
 }
 
 for (const colorScheme of ['light', 'dark'] as const) {
+  test(`homepage counter (${colorScheme}) is accessible on mobile`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ colorScheme });
+    await page.route('https://views.amrithnath.dev/views**', route => route.fulfill({
+      json: { path: '/', count: 1234 },
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }));
+    await page.goto('/');
+    const counter = page.locator('.site-status [data-view-count]');
+    if (!(await counter.count())) return;
+    await expect(counter).toHaveText('home views: 1,234');
+    await expect(counter).toBeVisible();
+    const box = await counter.boundingBox();
+    expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
+    const { violations } = await new AxeBuilder({ page })
+      .include('.site-status')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+    expect(violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([]);
+  });
+
   test(`wide-screen side panes (${colorScheme}) have no serious or critical axe violations`, async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.emulateMedia({ colorScheme });

@@ -330,7 +330,7 @@ export function fingerprintVerdict(signals: FingerprintSignal[], randomised: boo
 const SITE_KEYS: [RegExp, string][] = [
   [/^portfolio-theme$/, 'your chosen colour theme'],
   [/^portfolio-layout-theme$/, 'colour theme from an older version (migrated on next load)'],
-  [/^portfolio-viewed:/, 'article already counted by the view counter'],
+  [/^portfolio-viewed:/, 'page already counted by the view counter'],
   [/^portfolio-carbon:/, 'cached Website Carbon result (1 day)'],
   [/^portfolio-session-bytes$/, 'bytes loaded this session, for the carbon estimate'],
 ];

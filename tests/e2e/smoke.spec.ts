@@ -551,6 +551,66 @@ test('article view counter only runs when PUBLIC_VIEWS_URL was set at build time
   expect(viewRequests[0]).toMatch(/^GET .*\/views\?path=%2Fproject%2FwebDev%2Fweather-app%2F$/);
 });
 
+test.describe('homepage view counter', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('counts the homepage once and respects privacy signals', async ({ page, baseURL }) => {
+    const calls: { method: string; path: string | null }[] = [];
+    let count = 10;
+    await page.route('https://amrithnath.dev/**', async route => {
+      const url = new URL(route.request().url());
+      const response = await route.fetch({ url: `${baseURL}${url.pathname}${url.search}` });
+      await route.fulfill({ response });
+    });
+    await page.route('https://api.websitecarbon.com/**', route => route.fulfill({
+      json: { c: 0.1, p: 0.5 },
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }));
+    await page.route('https://views.amrithnath.dev/views**', async route => {
+      const request = route.request();
+      const headers = {
+        'Access-Control-Allow-Origin': 'https://amrithnath.dev',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+      if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+      const path = request.method() === 'POST'
+        ? request.postDataJSON().path
+        : new URL(request.url()).searchParams.get('path');
+      calls.push({ method: request.method(), path });
+      if (request.method() === 'POST') count += 1;
+      await route.fulfill({ json: { path, count }, headers });
+    });
+
+    await page.goto('https://amrithnath.dev/');
+    const counter = page.locator('.site-status [data-view-count]');
+    if (!(await counter.count())) {
+      expect(calls).toEqual([]);
+      return;
+    }
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([{ method: 'POST', path: '/' }]);
+    await page.reload();
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([{ method: 'POST', path: '/' }, { method: 'GET', path: '/' }]);
+
+    await page.evaluate(() => localStorage.removeItem('portfolio-viewed:/'));
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, configurable: true });
+    });
+    await page.reload();
+    await expect(counter).toHaveText('home views: 11');
+    await expect.poll(() => calls).toEqual([
+      { method: 'POST', path: '/' },
+      { method: 'GET', path: '/' },
+      { method: 'GET', path: '/' },
+    ]);
+    expect(await page.evaluate(() => localStorage.getItem('portfolio-viewed:/'))).toBeNull();
+    await page.goto('https://amrithnath.dev/privacy-check/');
+    await expect(page.locator('[data-view-count]')).toHaveCount(0);
+  });
+});
+
 test('blog tab opens the blog index directly and /blogs/ falls back to it', async ({ page }) => {
   await page.goto('/about/');
   await page.locator('.terminal-tabs a[href="/blog/"]').click();
